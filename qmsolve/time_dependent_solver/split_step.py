@@ -28,7 +28,7 @@ class SplitStep(Method):
         self.p2 = self.H.particle_system.p2
 
 
-    def run(self, initial_wavefunction, total_time, dt, store_steps = 1):
+    def run(self, initial_wavefunction, total_time, dt, store_steps = 1, non_linear_function = None):
 
         self.simulation.store_steps = store_steps
         dt_store = total_time/store_steps
@@ -56,11 +56,17 @@ class SplitStep(Method):
 
         Ur = np.exp(-0.5j*(self.simulation.dt/hbar)*np.array(self.H.Vgrid))
         Uk = np.exp(-0.5j*(self.simulation.dt/(m*hbar))*self.p2)
+        
+        
+
 
         t0 = time.time()
         bar = progressbar.ProgressBar()
         for i in bar(range(store_steps)):
             tmp = np.copy(Ψ[i])
+            if non_linear_function is not None:
+                Ur = np.exp(-0.5j*(self.simulation.dt/hbar)*(np.array(self.H.Vgrid) + non_linear_function(tmp)))
+                #Ur *= np.exp(-0.5j*(self.simulation.dt/hbar)*non_linear_function(tmp))
             for j in range(Nt_per_store_step):
                 c = np.fft.fftshift(np.fft.fftn(Ur*tmp))
                 tmp = Ur*np.fft.ifftn( np.fft.ifftshift(Uk*c))
@@ -87,7 +93,7 @@ class SplitStepCupy(Method):
         self.p2 = self.H.particle_system.p2
 
 
-    def run(self, initial_wavefunction, total_time, dt, store_steps = 1):
+    def run(self, initial_wavefunction, total_time, dt, store_steps = 1, non_linear_function = None):
 
         import cupy as cp 
 
@@ -119,6 +125,9 @@ class SplitStepCupy(Method):
         bar = progressbar.ProgressBar()
         for i in bar(range(store_steps)):
             tmp = cp.copy(Ψ[i])
+            if non_linear_function is not None:
+                Ur = cp.exp(-0.5j*(self.simulation.dt/hbar)*(cp.array(self.H.Vgrid) + cp.array(non_linear_function(tmp))))
+                #Ur *= cp.exp(-0.5j*(self.simulation.dt/hbar)*non_linear_function(tmp))
             for j in range(Nt_per_store_step):
                 c = cp.fft.fftshift(cp.fft.fftn(Ur*tmp))
                 tmp = Ur*cp.fft.ifftn( cp.fft.ifftshift(Uk*c))
