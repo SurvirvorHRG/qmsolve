@@ -5,23 +5,6 @@ from qmsolve import Hamiltonian, SingleParticle, TimeSimulation, init_visualizat
 # First, we define the Hamiltonian of a single particle confined in an harmonic oscillator potential. 
 #=========================================================================================================#
 
-# File: ./examples1D/Solitons_in_phase_1D.py
-# Run as    python3 bpm.py Solitons_in_phase_1D 1D
-# Encounter of two solitons in phase, which traverse each other unaffected.
-# During the collision, an interference pattern is generated.
-
-
-import numpy as np
-
-Nx = 500						# Grid points
-Ny = Nx
-dt = 0.001					# Evolution step
-tmax = 5		            # End of propagation
-xmax = 10 					# x-window size
-ymax = xmax					# y-window size
-images = 100				# number of .png images
-
-
 def psi_0(particle):				# Initial wavefunction
 
 # Two solitons heading each other in phase coincidence
@@ -43,7 +26,7 @@ def harmonic_oscillator(particle):
     T = 0.6*femtoseconds
     w = 2*np.pi/T
     k = m* w**2
-    return 0.5*k*particle.x**2 
+    return 0.5*k*particle.x**2
 
 def non_linear_f(psi):
     m = m_e
