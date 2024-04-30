@@ -54,8 +54,13 @@ class SingleParticle(ParticleSystem):
             self.p2 = (px**2 + py**2)
 
         elif self.H.spatial_ndim == 3:
-            raise NotImplementedError(
-                f"split-step isn't implemented for a 3D single particle")
+            px = np.fft.fftshift(np.fft.fftfreq(H.N, d = H.dx)) * hbar  * 2*np.pi
+            py = np.fft.fftshift(np.fft.fftfreq(H.N, d = H.dx)) * hbar  * 2*np.pi
+            pz = np.fft.fftshift(np.fft.fftfreq(H.N, d = H.dx)) * hbar  * 2*np.pi
+            px, py, pz = np.meshgrid(px, py, pz, indexing='ij')
+
+
+            self.p2 = (px**2 + py**2 + pz**2)
 
 
 

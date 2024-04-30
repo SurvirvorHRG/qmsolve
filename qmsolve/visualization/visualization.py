@@ -83,9 +83,9 @@ def init_timesimulation_visualization(simulation):
         return TimeVisualizationSingleParticle2D(simulation) 
 
     elif (isinstance(simulation.H.particle_system , SingleParticle) and (simulation.H.spatial_ndim == 3)):
-        raise NotImplementedError()
-        #from .single_particle_3D import TimeVisualizationSingleParticle3D
-        #return TimeVisualizationSingleParticle3D(simulation)
+        #raise NotImplementedError()
+        from .single_particle_3D import TimeVisualizationSingleParticle3D
+        return TimeVisualizationSingleParticle3D(simulation)
 
     elif isinstance(simulation.H.particle_system , TwoParticles):
         return TimeVisualizationTwoIdenticalParticles1D(simulation)

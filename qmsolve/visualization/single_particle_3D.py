@@ -1,8 +1,12 @@
 import numpy as np
 from mayavi import mlab
 from .visualization import Visualization
-from ..util.colour_functions import complex_to_rgb
+from ..util.colour_functions import complex_to_rgb, complex_to_rgba
 from ..util.constants import *
+import matplotlib.pyplot as plt
+from matplotlib import widgets
+from matplotlib import animation
+
 
 
 class VisualizationSingleParticle3D(Visualization):
@@ -475,4 +479,91 @@ class VisualizationSingleParticle3D(Visualization):
                     yield
             animation()
             mlab.show()
+            
+
+from .visualization import TimeVisualization
+
+class TimeVisualizationSingleParticle3D(TimeVisualization):
+    def __init__(self,simulation):
+        self.simulation = simulation
+        self.H = simulation.H
+
+    def plot(self, t, xlim=None, ylim=None, figsize=(7, 7), potential_saturation=0.8, wavefunction_saturation=1.0):
+
+
+        self.simulation.Ψ_plot = self.simulation.Ψ/self.simulation.Ψmax
+        """
+        plt.style.use("dark_background")
+
+        fig = plt.figure(figsize=figsize)
+        
+        ax = fig.add_subplot(1, 1, 1)
+
+        ax.set_xlabel("[Å]")
+        ax.set_ylabel("[Å]")
+        ax.set_title("$\psi(x,y,t)$")
+
+        time_ax = ax.text(0.97,0.97, "",  color = "white",
+                        transform=ax.transAxes, ha="right", va="top")
+        time_ax.set_text(u"t = {} femtoseconds".format("%.3f"  % (t/femtoseconds)))
+
+
+
+        if xlim != None:
+            ax.set_xlim(np.array(xlim)/Å)
+        if ylim != None:
+            ax.set_ylim(np.array(ylim)/Å)
+
+
+        from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 unused import
+        index = int((self.simulation.store_steps)/self.simulation.total_time*t)
+        
+        L = self.simulation.H.extent/Å
+        ax.imshow((self.simulation.H.Vgrid + self.simulation.Vmin)/(self.simulation.Vmax-self.simulation.Vmin), vmax = 1.0/potential_saturation, vmin = 0, cmap = "gray", origin = "lower", interpolation = "bilinear", extent = [-L/2, L/2, -L/2, L/2])  
+
+        ax.imshow(complex_to_rgba(self.simulation.Ψ_plot[index], max_val= wavefunction_saturation), origin = "lower", interpolation = "bilinear", extent = [-L/2, L/2, -L/2, L/2])  
+        plt.show()
+        """
+        index = int((self.simulation.store_steps)/self.simulation.total_time*t)
+        contrast_vals= [0.1, 0.25]
+        mlab.figure(1, bgcolor=(0, 0, 0), size=(700, 700))
+
+        L = self.simulation.H.extent/2/Å
+        psi = self.simulation.Ψ_plot[index]
+        vol = mlab.pipeline.volume(mlab.pipeline.scalar_field(psi))
+
+        # Change the color transfer function
+        from tvtk.util import ctf
+        c = ctf.save_ctfs(vol._volume_property)
+        c['rgb'] = [[-0.45, 0.3, 0.3, 1.0],
+                    [-0.4, 0.1, 0.1, 1.0],
+                    [-0.3, 0.0, 0.0, 1.0],
+                    [-0.2, 0.0, 0.0, 1.0],
+                    [-0.001, 0.0, 0.0, 1.0],
+                    [0.0, 0.0, 0.0, 0.0],
+                    [0.001, 1.0, 0.0, 0.],
+                    [0.2, 1.0, 0.0, 0.0],
+                    [0.3, 1.0, 0.0, 0.0],
+                    [0.4, 1.0, 0.1, 0.1],
+                    [0.45, 1.0, 0.3, 0.3]]
+
+        c['alpha'] = [[-0.5, 1.0],
+                      [-contrast_vals[1], 1.0],
+                      [-contrast_vals[0], 0.0],
+                      [0, 0.0],
+                      [contrast_vals[0], 0.0],
+                      [contrast_vals[1], 1.0],
+                      [0.5, 1.0]]
+        ctf.load_ctfs(c, vol._volume_property)
+        # Update the shadow LUT of the volume module.
+        vol.update_ctf = True
+
+        mlab.outline()
+        mlab.axes(xlabel='x [Å]', ylabel='y [Å]', zlabel='z [Å]',
+                  nb_labels=6, ranges=(-L, L, -L, L, -L, L))
+        #azimuth angle
+        φ = 30
+        mlab.view(azimuth=φ,  distance=1*3.5)
+        mlab.show()
+
 
