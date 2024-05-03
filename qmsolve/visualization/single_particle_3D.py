@@ -556,7 +556,7 @@ class TimeVisualizationSingleParticle3D(TimeVisualization):
 
                     yield
 
-            animation()
+            ua = animation()
             mlab.show()
         
 

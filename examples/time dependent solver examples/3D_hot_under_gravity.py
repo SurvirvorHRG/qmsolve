@@ -85,7 +85,7 @@ def psi_function(x, y, z):
 
 
 def gravity_potential(particle):
-    V = -10e20*g*mass*particle.z
+    V = -g*mass*particle.z
     #•V = np.zeros_like(particle.x)
     return V
 
@@ -132,9 +132,9 @@ mlab.show()
 """
 
 
-total_time = 0.1 * nanoseconds
+total_time = 1 * nanoseconds
 sim = TimeSimulation(hamiltonian = H, method = "split-step-cupy")
-sim.run(initial_wavefunction, total_time = total_time, dt = total_time/1000., store_steps = 10)
+sim.run(initial_wavefunction, total_time = total_time, dt = total_time/1000., store_steps = 30)
 
 
 #=========================================================================================================#
