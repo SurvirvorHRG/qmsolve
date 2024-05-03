@@ -487,60 +487,78 @@ class TimeVisualizationSingleParticle3D(TimeVisualization):
     def __init__(self,simulation):
         self.simulation = simulation
         self.H = simulation.H
+        self.plot_type = 'abs-volume'
 
     def plot(self, t, xlim=None, ylim=None,figsize=(7, 7), potential_saturation=0.8, wavefunction_saturation=1.0,contrast_vals= [0.1, 0.25]):
 
-
+        mlab.figure(1, bgcolor=(0, 0, 0), size=(700, 700))
         self.simulation.Ψ_plot = self.simulation.Ψ/self.simulation.Ψmax
-        index = int((self.simulation.store_steps)/self.simulation.total_time*t)
-        
-        # abs_max= np.amax(np.abs(eigenstates))
-        # psi = (psi)/(abs_max)
+        index = int((self.simulation.store_steps)/self.simulation.total_time*t)   
         psi = self.simulation.Ψ_plot[index]
-
         L = self.simulation.H.extent/2/Å
         Z = self.simulation.H.z_extent/2/Å
 
-        vol = mlab.pipeline.volume(mlab.pipeline.scalar_field(np.abs(psi)), vmin= contrast_vals[0], vmax= contrast_vals[1])
-        # Change the color transfer function
+        vol = mlab.pipeline.volume(mlab.pipeline.scalar_field(np.abs(psi)**2), vmin= contrast_vals[0], vmax= contrast_vals[1])
 
         mlab.outline()
         mlab.axes(xlabel='x [Å]', ylabel='y [Å]', zlabel='z [Å]',nb_labels=6 , ranges = (-L,L,-L,L,-Z,Z) )
         mlab.show()
         
         
-        """
-        plt.style.use("dark_background")
+    def animate(self,  contrast_vals= [0.1, 0.25]):
+        #self.simulation.Ψ_plot = self.simulation.Ψ/self.simulation.Ψmax
+        mlab.figure(1, bgcolor=(0, 0, 0), size=(700, 700))
 
-        fig = plt.figure(figsize=figsize)
+        if self.plot_type == 'abs-volume':
+            psi = self.simulation.Ψ[0]
+            
+            abs_max = self.simulation.Ψmax
+            psi = np.abs((psi)/(abs_max))
+
+
+            L = self.simulation.H.extent/2/Å
+            Z = self.simulation.H.z_extent/2/Å
+            N = self.simulation.H.N
+            psi = np.where(psi > contrast_vals[1], contrast_vals[1],psi)
+            psi = np.where(psi < contrast_vals[0], contrast_vals[0],psi)
+            field = mlab.pipeline.scalar_field(psi)
+            vol = mlab.pipeline.volume(field)
+
+
+            # Update the shadow LUT of the volume module.
+            vol.update_ctf = True
+
+            mlab.outline()
+            mlab.axes(xlabel='x [Å]', ylabel='y [Å]', zlabel='z [Å]',nb_labels=6 , ranges = (-L,L,-L,L,-Z,Z) )
+
+            #azimuth angle
+            φ = 30
+            mlab.view(azimuth= φ,  distance=N*3.5)
+
+
+            data = {'t': 0.0}
+            @mlab.animate(delay=10)
+            def animation():
+                while (1):
+                    data['t'] += 0.05
+                    k1 = int(data['t']) % (self.simulation.store_steps)
+                    psi = self.simulation.Ψ[k1]
+
+                    psi = np.abs((psi)/(abs_max))
+                    psi = np.where(psi > contrast_vals[1], contrast_vals[1],psi)
+                    psi = np.where(psi < contrast_vals[0], contrast_vals[0],psi)
+
+                    field.mlab_source.scalars = psi
+                    # Change the color transfer function
+
+                    φ = 30 + data['t'] * 360 / 10 
+                    mlab.view(azimuth= φ, distance=N*3.5)
+
+                    yield
+
+            animation()
+            mlab.show()
         
-        ax = fig.add_subplot(1, 1, 1)
-
-        ax.set_xlabel("[Å]")
-        ax.set_ylabel("[Å]")
-        ax.set_title("$\psi(x,y,t)$")
-
-        time_ax = ax.text(0.97,0.97, "",  color = "white",
-                        transform=ax.transAxes, ha="right", va="top")
-        time_ax.set_text(u"t = {} femtoseconds".format("%.3f"  % (t/femtoseconds)))
-
-
-
-        if xlim != None:
-            ax.set_xlim(np.array(xlim)/Å)
-        if ylim != None:
-            ax.set_ylim(np.array(ylim)/Å)
-
-
-        from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 unused import
-        index = int((self.simulation.store_steps)/self.simulation.total_time*t)
-        
-        L = self.simulation.H.extent/Å
-        ax.imshow((self.simulation.H.Vgrid + self.simulation.Vmin)/(self.simulation.Vmax-self.simulation.Vmin), vmax = 1.0/potential_saturation, vmin = 0, cmap = "gray", origin = "lower", interpolation = "bilinear", extent = [-L/2, L/2, -L/2, L/2])  
-
-        ax.imshow(complex_to_rgba(self.simulation.Ψ_plot[index], max_val= wavefunction_saturation), origin = "lower", interpolation = "bilinear", extent = [-L/2, L/2, -L/2, L/2])  
-        plt.show()
-        """
 
 
 

@@ -1,6 +1,6 @@
 from tvtk.util import ctf
 import numpy as np
-from qmsolve import Hamiltonian, SingleParticle, TimeSimulation, init_visualization, nm, m, Å, J, Hz, kg, hbar, femtoseconds
+from qmsolve import Hamiltonian, SingleParticle, TimeSimulation, init_visualization, nanoseconds,microseconds,nm,s, m, Å, J, Hz, kg, hbar, femtoseconds,picoseconds
 from scipy.special import ellipj
 from scipy.constants import epsilon_0
 from scipy.special import mathieu_cem
@@ -51,10 +51,6 @@ def radians_to_degrees(radians):
 g = 9.81*(m*Hz*Hz)  # Example value for gravity
 
 
-def radians_to_degrees(radians):
-    return radians * (180.0 / math.pi)
-
-
 def w(z):
     return w_o * np.sqrt(1 + (z/z_R)**2)
 
@@ -89,13 +85,15 @@ def psi_function(x, y, z):
 
 
 def gravity_potential(particle):
-    return -g*mass*particle.z
+    V = -10e20*g*mass*particle.z
+    #•V = np.zeros_like(particle.x)
+    return V
 
 
 #build the Hamiltonian of the system
 H = Hamiltonian(particles=SingleParticle(),
                 potential=gravity_potential,
-                spatial_ndim=2, N=100, extent=4*w_o * Å,z_extent = 4*lambda_*Å)
+                spatial_ndim=3, N=100, extent=4*w_o * Å,z_extent = 4*lambda_*Å)
 
 
 def initial_wavefunction(particle):
@@ -106,11 +104,11 @@ def initial_wavefunction(particle):
 #=========================================================================================================#
 # Set and run the simulation
 #=========================================================================================================#
-
+"""
 # Generate grid for x and y
-N = 300
+N = 100
 extent = 4*w_o * Å
-z_extent = 8*lambda_*Å
+z_extent = 4*lambda_*Å
 x, y, z = np.mgrid[-extent/2: extent/2:N*1j, -H.extent /
                    2: extent/2:N*1j, -z_extent/2: z_extent/2:N*1j]
 
@@ -118,8 +116,8 @@ x, y, z = np.mgrid[-extent/2: extent/2:N*1j, -H.extent /
 contrast_vals= [0.1, 0.25]
 mlab.figure(1, bgcolor=(0, 0, 0), size=(700, 700))
 psi = psi_function(x, y, z)
-L = extent/2/Å/w_o
-Z = z_extent/2/Å/lambda_
+L = extent/2/Å
+Z = z_extent/2/Å
 
 abs_max= np.amax(np.abs(psi))
 psi = (psi)/(abs_max)
@@ -131,12 +129,12 @@ vol = mlab.pipeline.volume(mlab.pipeline.scalar_field(np.abs(psi)), vmin= contra
 mlab.outline()
 mlab.axes(xlabel='x [Å]', ylabel='y [Å]', zlabel='z [Å]',nb_labels=6 , ranges = (-L,L,-L,L,-Z,Z) )
 mlab.show()
-
 """
 
-total_time = 0.01 * femtoseconds
+
+total_time = 0.1 * nanoseconds
 sim = TimeSimulation(hamiltonian = H, method = "split-step-cupy")
-sim.run(initial_wavefunction, total_time = total_time, dt = 0.01, store_steps = 1)
+sim.run(initial_wavefunction, total_time = total_time, dt = total_time/1000., store_steps = 10)
 
 
 #=========================================================================================================#
@@ -147,5 +145,10 @@ visualization = init_visualization(sim)
 #visualization.animate(xlim=[-15* Å,15* Å], ylim=[-15* Å,15* Å], potential_saturation = 0.5, wavefunction_saturation = 0.2, animation_duration = 10, save_animation = False)
 
 #for visualizing a single frame, use plot method instead of animate:
-visualization.plot(t = 0 * femtoseconds,xlim=[-2*w_o* Å,2*w_o* Å], ylim=[-2*w_o* Å,2*w_o* Å])
+
+#visualization.plot(t = 0 * femtoseconds,xlim=[-2*w_o* Å,2*w_o* Å], ylim=[-2*w_o* Å,2*w_o* Å])
 """
+visualization.plot(t = 0.00025*s ,xlim=[-2*w_o* Å,2*w_o* Å], ylim=[-2*w_o* Å,2*w_o* Å])
+visualization.plot(t = 0.0005*s ,xlim=[-2*w_o* Å,2*w_o* Å], ylim=[-2*w_o* Å,2*w_o* Å])
+"""
+visualization.animate()

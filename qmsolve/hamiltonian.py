@@ -17,6 +17,7 @@ class Hamiltonian:
         if z_extent !=0:
             self.z_extent = z_extent
         self.dx = extent / N
+        self.dz = z_extent / N
         self.particle_system = particles
         self.particle_system.H = self
         self.spatial_ndim = spatial_ndim

@@ -64,10 +64,11 @@ class SplitStep(Method):
         bar = progressbar.ProgressBar()
         for i in bar(range(store_steps)):
             tmp = np.copy(Ψ[i])
-            if non_linear_function is not None:
+            #Ur = np.exp(-0.5j*(self.simulation.dt/hbar)*(np.array(self.H.Vgrid) + non_linear_function(tmp)))
+            #Ur *= np.exp(-0.5j*(self.simulation.dt/hbar)*non_linear_function(tmp))
+            for j in range(Nt_per_store_step):
                 Ur = np.exp(-0.5j*(self.simulation.dt/hbar)*(np.array(self.H.Vgrid) + non_linear_function(tmp)))
                 #Ur *= np.exp(-0.5j*(self.simulation.dt/hbar)*non_linear_function(tmp))
-            for j in range(Nt_per_store_step):
                 c = np.fft.fftshift(np.fft.fftn(Ur*tmp))
                 tmp = Ur*np.fft.ifftn( np.fft.ifftshift(Uk*c))
             Ψ[i+1] = tmp
@@ -125,10 +126,11 @@ class SplitStepCupy(Method):
         bar = progressbar.ProgressBar()
         for i in bar(range(store_steps)):
             tmp = cp.copy(Ψ[i])
-            if non_linear_function is not None:
+            #Ur = cp.exp(-0.5j*(self.simulation.dt/hbar)*(cp.array(self.H.Vgrid) + non_linear_function(tmp)))
+            #Ur *= cp.exp(-0.5j*(self.simulation.dt/hbar)*non_linear_function(tmp))
+            for j in range(Nt_per_store_step):
                 Ur = cp.exp(-0.5j*(self.simulation.dt/hbar)*(cp.array(self.H.Vgrid) + non_linear_function(tmp)))
                 #Ur *= cp.exp(-0.5j*(self.simulation.dt/hbar)*non_linear_function(tmp))
-            for j in range(Nt_per_store_step):
                 c = cp.fft.fftshift(cp.fft.fftn(Ur*tmp))
                 tmp = Ur*cp.fft.ifftn( cp.fft.ifftshift(Uk*c))
             Ψ[i+1] = tmp
