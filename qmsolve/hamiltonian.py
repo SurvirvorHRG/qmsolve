@@ -4,7 +4,7 @@ import time
 
 
 class Hamiltonian:
-    def __init__(self, particles, potential, N, extent, spatial_ndim, potential_type = "grid", E_min=0):
+    def __init__(self, particles, potential, N, extent, spatial_ndim, potential_type = "grid", E_min=0,z_extent = 0):
         """
         N: number of grid points
         extent: spacial extent, measured in bohr radius (length atomic unit)
@@ -13,6 +13,9 @@ class Hamiltonian:
 
         self.N = N
         self.extent = extent
+        self.z_extent = extent
+        if z_extent !=0:
+            self.z_extent = z_extent
         self.dx = extent / N
         self.particle_system = particles
         self.particle_system.H = self

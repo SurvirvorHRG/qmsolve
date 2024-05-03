@@ -126,7 +126,7 @@ class SplitStepCupy(Method):
         for i in bar(range(store_steps)):
             tmp = cp.copy(Ψ[i])
             if non_linear_function is not None:
-                Ur = cp.exp(-0.5j*(self.simulation.dt/hbar)*(cp.array(self.H.Vgrid) + cp.array(non_linear_function(tmp))))
+                Ur = cp.exp(-0.5j*(self.simulation.dt/hbar)*(cp.array(self.H.Vgrid) + non_linear_function(tmp)))
                 #Ur *= cp.exp(-0.5j*(self.simulation.dt/hbar)*non_linear_function(tmp))
             for j in range(Nt_per_store_step):
                 c = cp.fft.fftshift(cp.fft.fftn(Ur*tmp))
