@@ -553,8 +553,7 @@ class TimeVisualizationSingleParticle3D(TimeVisualization):
             L = self.simulation.H.extent/2/Å/L_norm
             Z = self.simulation.H.z_extent/2/Å/Z_norm
 
-            vol = mlab.pipeline.volume(mlab.pipeline.scalar_field(np.abs(psi)), vmin= contrast_vals[0], vmax= contrast_vals[1])
-            # Change the color transfer function
+            vol = mlab.pipeline.volume(mlab.pipeline.scalar_field(np.abs(psi)), vmin= contrast_vals[0], vmax= contrast_vals[1])          
             
             time_label = mlab.text(0.1,0.9,'',width=0.2)
             time_label.property.color = (1.0,1.0,1.0)
@@ -666,12 +665,12 @@ class TimeVisualizationSingleParticle3D(TimeVisualization):
 
 
                     field.mlab_source.scalars = psi
-                    # Change the color transfer function
+                    
                     update_time_label(k1*dt_store/unit)
-                    mlab.view(azimuth= 180)
+                    #mlab.view(azimuth= 180,distance=N*3.5)
                     yield
                     file = str(k1) + '.png'
-                    mlab.savefig(file)
+                    #◘mlab.savefig(file)
 
             ua = animation()
             mlab.show()
@@ -737,7 +736,7 @@ class TimeVisualizationSingleParticle3D(TimeVisualization):
                     
                     yield
                     file = str(k1) + '.png'
-                    mlab.savefig(file)
+                    #mlab.savefig(file)
             ua = animation()
             mlab.show()
         

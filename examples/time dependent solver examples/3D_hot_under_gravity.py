@@ -14,9 +14,10 @@ from matplotlib import animation
 
 # Parameters in SI converted to atomic units
 uaumass = 1.66053873e-27*kg
+N = 1000
 mass = 86.909
 mass = mass*uaumass
-N = 1000
+
 a = 5.2383
 w_o = 4e-6*m
 Er = 7.16e-32*J
@@ -43,12 +44,13 @@ q = ((np.abs(l)**2)/(4*(alpha**(3/2))))*(epsilon/Er)
 print('alpha = ', alpha)
 print('q =', q)
 
+yeetr = 9.0442161272e22
 
 def radians_to_degrees(radians):
     return radians * (180.0 / math.pi)
 
-#g = 9.8065  # Example value for gravity
-g = (9.8065*m)/(s*s)  # Example value for gravity
+g = 9.8065  # Example value for gravity
+#g = (9.8065*m)/(s*s)  # Example value for gravity
 
 
 def w(z):
@@ -99,7 +101,7 @@ def gravity_potential(particle):
 #build the Hamiltonian of the system
 H = Hamiltonian(particles=SingleParticle(),
                 potential=gravity_potential,
-                spatial_ndim=3, N=150, extent=4*w_o * Å,z_extent = 4*lambda_*Å)
+                spatial_ndim=3, N=100, extent=4*w_o * Å,z_extent = 4*lambda_*Å)
 
 
 def initial_wavefunction(particle):
@@ -112,9 +114,9 @@ def initial_wavefunction(particle):
 #=========================================================================================================#
 
 
-total_time = 10 * nanoseconds
+total_time = 35 * nanoseconds
 sim = TimeSimulation(hamiltonian = H, method = "split-step-cupy")
-sim.run(initial_wavefunction, total_time = total_time, dt = total_time/1000., store_steps = 5)
+sim.run(initial_wavefunction, total_time = total_time, dt = total_time/2000., store_steps = 15)
 
 
 #=========================================================================================================#
@@ -129,12 +131,14 @@ visualization = init_visualization(sim)
 
 #visualization.plot(t = 0 * femtoseconds,xlim=[-2*w_o* Å,2*w_o* Å], ylim=[-2*w_o* Å,2*w_o* Å])
 
-
+"""
 visualization.plot(t = 0 ,L_norm = w_o, Z_norm = lambda_,unit = nanoseconds)
 visualization.plot(t = 2*nanoseconds ,L_norm = w_o, Z_norm = lambda_,unit = nanoseconds)
 visualization.plot(t = 4*nanoseconds ,L_norm = w_o, Z_norm = lambda_,unit = nanoseconds)
 visualization.plot(t = 6*nanoseconds ,L_norm = w_o, Z_norm = lambda_,unit = nanoseconds)
 visualization.plot(t = 8*nanoseconds ,L_norm = w_o, Z_norm = lambda_,unit = nanoseconds)
 visualization.plot(t = 10*nanoseconds ,L_norm = w_o, Z_norm = lambda_,unit = nanoseconds)
+"""
 
-#visualization.animate(L_norm = w_o, Z_norm = lambda_,unit = nanoseconds,time = 'ns')
+visualization.animate(L_norm = w_o, Z_norm = lambda_,unit = nanoseconds,time = 'ns',contrast_vals= [0.1, 0.15])
+#visualization.plot(t = total_time ,L_norm = w_o, Z_norm = lambda_,unit =nanoseconds,contrast_vals= [0.1, 0.15])

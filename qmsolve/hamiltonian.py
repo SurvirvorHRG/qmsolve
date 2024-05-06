@@ -198,8 +198,9 @@ class Hamiltonian:
 
             from cupyx.scipy.sparse.linalg import lobpcg, LinearOperator
             from cupyx.scipy.sparse import diags
-            from cupyx.scipy.sparse.csr import csr_matrix
-            H = csr_matrix(H)
+            import cupyx.scipy.sparse
+            #from cupyx.scipy.sparse.csr import csr_matrix
+            H = cupyx.scipy.sparse.csr_matrix(H)
 
             if lobpcg_args['preconditioner'] == 'jacobi':
                 # preconditioning matrix should approximate the inverse of the hamiltonian
