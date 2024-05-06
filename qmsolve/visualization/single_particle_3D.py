@@ -6,6 +6,7 @@ from ..util.constants import *
 import matplotlib.pyplot as plt
 from matplotlib import widgets
 from matplotlib import animation
+from mlabtex import mlabtex
 
 
 
@@ -489,35 +490,137 @@ class TimeVisualizationSingleParticle3D(TimeVisualization):
         self.H = simulation.H
         self.plot_type = 'abs-volume'
 
-    def plot(self, t, xlim=None, ylim=None,figsize=(7, 7), potential_saturation=0.8, wavefunction_saturation=1.0,contrast_vals= [0.1, 0.25]):
+    def plot(self, t, L_norm = 1, Z_norm = 1,figsize=(7, 7),unit = femtoseconds, contrast_vals= [0.1, 0.25]):
 
         mlab.figure(1, bgcolor=(0, 0, 0), size=(700, 700))
         self.simulation.Ψ_plot = self.simulation.Ψ/self.simulation.Ψmax
         index = int((self.simulation.store_steps)/self.simulation.total_time*t)   
+        """
         psi = self.simulation.Ψ_plot[index]
-        L = self.simulation.H.extent/2/Å
-        Z = self.simulation.H.z_extent/2/Å
+        L = self.simulation.H.extent/2/Å/L_norm
+        Z = self.simulation.H.z_extent/2/Å/Z_norm
 
-        vol = mlab.pipeline.volume(mlab.pipeline.scalar_field(np.abs(psi)**2), vmin= contrast_vals[0], vmax= contrast_vals[1])
+        vol = mlab.pipeline.volume(mlab.pipeline.scalar_field(np.abs(psi)), vmin= contrast_vals[0], vmax= contrast_vals[1])
 
         mlab.outline()
         mlab.axes(xlabel='x [Å]', ylabel='y [Å]', zlabel='z [Å]',nb_labels=6 , ranges = (-L,L,-L,L,-Z,Z) )
         mlab.show()
+        """
+        if self.plot_type == 'volume':
+            
+            psi = self.simulation.Ψ_plot[index]
+            
+            L = self.simulation.H.extent/2/Å/L_norm
+            Z = self.simulation.H.z_extent/2/Å/Z_norm
+
+            vol = mlab.pipeline.volume(mlab.pipeline.scalar_field(psi))
+
+            # Change the color transfer function
+            from tvtk.util import ctf
+            c = ctf.save_ctfs(vol._volume_property)
+            c['rgb'] = [[-0.45, 0.3, 0.3, 1.0],
+                        [-0.4, 0.1, 0.1, 1.0],
+                        [-0.3, 0.0, 0.0, 1.0],
+                        [-0.2, 0.0, 0.0, 1.0],
+                        [-0.001, 0.0, 0.0, 1.0],
+                        [0.0, 0.0, 0.0, 0.0],
+                        [0.001, 1.0, 0.0, 0.],
+                        [0.2, 1.0, 0.0, 0.0],
+                        [0.3, 1.0, 0.0, 0.0],
+                        [0.4, 1.0, 0.1, 0.1],
+                        [0.45, 1.0, 0.3, 0.3]]
+
+            c['alpha'] = [[-0.5, 1.0],
+                          [-contrast_vals[1], 1.0],
+                          [-contrast_vals[0], 0.0],
+                          [0, 0.0],
+                          [contrast_vals[0], 0.0],
+                          [contrast_vals[1], 1.0],
+                         [0.5, 1.0]]
+            ctf.load_ctfs(c, vol._volume_property)
+            # Update the shadow LUT of the volume module.
+            vol.update_ctf = True
+
+            mlab.outline()
+            mlab.axes(xlabel='x [Å]', ylabel='y [Å]', zlabel='z [Å]',nb_labels=6 , ranges = (-L,L,-L,L,-Z,Z) )
+            mlab.show()
+
+
+        if self.plot_type == 'abs-volume':
+            
+            psi = self.simulation.Ψ_plot[index]
+
+            L = self.simulation.H.extent/2/Å/L_norm
+            Z = self.simulation.H.z_extent/2/Å/Z_norm
+
+            vol = mlab.pipeline.volume(mlab.pipeline.scalar_field(np.abs(psi)), vmin= contrast_vals[0], vmax= contrast_vals[1])
+            # Change the color transfer function
+            
+            time_label = mlab.text(0.1,0.9,'',width=0.2)
+            time_label.property.color = (1.0,1.0,1.0)
+            time_label.text = 'Time: {:.2f} ns'.format(t/unit)
+
+            mlab.outline()
+            x_latex = '$x/w_o$'
+            y_latex = '$y/w_o$'
+            z_latex = '$z/\lambda$'
+            
+           # x_latex = mlabtex(0.,0.,.0,x_latex)
+            #y_latex = mlabtex(0.,0.,.0,x_latex)
+           # z_latex = mlabtex(0.,0.,.0,x_latex)
+            
+        
+            mlab.axes(xlabel=x_latex, ylabel=y_latex, zlabel=z_latex,nb_labels=6 , ranges = (-L,L,-L,L,-Z,Z) )
+            #mlab.axes(xlabel='x [Å]', ylabel='y [Å]', zlabel='z [Å]',nb_labels=6 , ranges = (-L,L,-L,L,-Z,Z) )
+            mlab.show()
+
+        elif self.plot_type == 'contour':
+            psi = self.simulation.Ψ_plot[index]
+            
+            L = self.simulation.H.extent/2/Å/L_norm
+            Z = self.simulation.H.z_extent/2/Å/Z_norm
+            isovalue = np.mean(contrast_vals)
+
+            field = mlab.pipeline.scalar_field(np.abs(psi))
+
+            arr = mlab.screenshot(antialiased = False)
+
+            mlab.outline()
+            mlab.axes(xlabel='x [Å]', ylabel='y [Å]', zlabel='z [Å]',nb_labels=6 , ranges = (-L,L,-L,L,-L,L) )
+            colour_data = np.angle(psi.T.ravel())%(2*np.pi)
+            field.image_data.point_data.add_array(colour_data)
+            field.image_data.point_data.get_array(1).name = 'phase'
+            field.update()
+            field2 = mlab.pipeline.set_active_attribute(field, 
+                                                        point_scalars='scalar')
+            contour = mlab.pipeline.contour(field2)
+            contour.filter.contours= [isovalue,]
+            contour2 = mlab.pipeline.set_active_attribute(contour, 
+                                                        point_scalars='phase')
+            s = mlab.pipeline.surface(contour, colormap='hsv', vmin= 0.0 ,vmax= 2.*np.pi)
+
+            s.scene.light_manager.light_mode = 'vtk'
+            s.actor.property.interpolation = 'phong'
+            mlab.show()
         
         
-    def animate(self,  contrast_vals= [0.1, 0.25]):
+    def animate(self, L_norm = 1, Z_norm = 1, unit = femtoseconds,time = 'femtoseconds', contrast_vals= [0.1, 0.25]):
         #self.simulation.Ψ_plot = self.simulation.Ψ/self.simulation.Ψmax
         mlab.figure(1, bgcolor=(0, 0, 0), size=(700, 700))
+        
+
 
         if self.plot_type == 'abs-volume':
             psi = self.simulation.Ψ[0]
             
             abs_max = self.simulation.Ψmax
             psi = np.abs((psi)/(abs_max))
+            
+            dt_store = self.simulation.total_time/self.simulation.store_steps
 
 
-            L = self.simulation.H.extent/2/Å
-            Z = self.simulation.H.z_extent/2/Å
+            L = self.simulation.H.extent/2/Å/L_norm
+            Z = self.simulation.H.z_extent/2/Å/Z_norm
             N = self.simulation.H.N
             psi = np.where(psi > contrast_vals[1], contrast_vals[1],psi)
             psi = np.where(psi < contrast_vals[0], contrast_vals[0],psi)
@@ -529,11 +632,21 @@ class TimeVisualizationSingleParticle3D(TimeVisualization):
             vol.update_ctf = True
 
             mlab.outline()
-            mlab.axes(xlabel='x [Å]', ylabel='y [Å]', zlabel='z [Å]',nb_labels=6 , ranges = (-L,L,-L,L,-Z,Z) )
-
-            #azimuth angle
-            φ = 30
-            mlab.view(azimuth= φ,  distance=N*3.5)
+            x_latex = '$x/w_o$'
+            y_latex = '$y/w_o$'
+            z_latex = '$z/\lambda$'
+            
+           # x_latex = mlabtex(0.,0.,.0,x_latex)
+            #y_latex = mlabtex(0.,0.,.0,x_latex)
+           # z_latex = mlabtex(0.,0.,.0,x_latex)
+            
+        
+            mlab.axes(xlabel=x_latex, ylabel=y_latex, zlabel=z_latex,nb_labels=6 , ranges = (-L,L,-L,L,-Z,Z) )
+            # Define a text label for time
+            time_label = mlab.text(0.1, 0.9, '', width=0.3, color=(1, 1, 1))  # White text color
+            
+            def update_time_label(t):
+                time_label.text = 'Time: {:.2f} {}'.format(t,time)
 
 
             data = {'t': 0.0}
@@ -547,15 +660,84 @@ class TimeVisualizationSingleParticle3D(TimeVisualization):
                     psi = np.abs((psi)/(abs_max))
                     psi = np.where(psi > contrast_vals[1], contrast_vals[1],psi)
                     psi = np.where(psi < contrast_vals[0], contrast_vals[0],psi)
+                    
+                    
+                    
+
 
                     field.mlab_source.scalars = psi
                     # Change the color transfer function
-
-                    φ = 30 + data['t'] * 360 / 10 
-                    mlab.view(azimuth= φ, distance=N*3.5)
-
+                    update_time_label(k1*dt_store/unit)
+                    mlab.view(azimuth= 180)
                     yield
+                    file = str(k1) + '.png'
+                    mlab.savefig(file)
 
+            ua = animation()
+            mlab.show()
+        elif self.plot_type == 'contour':
+            psi = self.simulation.Ψ[0]
+            L = self.simulation.H.extent/2/Å/L_norm
+            Z = self.simulation.H.z_extent/2/Å/Z_norm
+            N = self.simulation.H.N
+            isovalue = np.mean(contrast_vals)
+
+            dt_store = self.simulation.total_time/self.simulation.store_steps
+            abs_max= self.simulation.Ψmax
+            psi = (psi)/(abs_max)
+
+            field = mlab.pipeline.scalar_field(np.abs(psi))
+
+            arr = mlab.screenshot(antialiased = False)
+
+            mlab.outline()
+            #mlab.axes(xlabel='x [Å]', ylabel='y [Å]', zlabel='z [Å]',nb_labels=6 , ranges = (-L,L,-L,L,-L,L) )
+            
+            x_latex = '$x/w_o$'
+            y_latex = '$y/w_o$'
+            z_latex = '$z/\lambda$'
+            
+           # x_latex = mlabtex(0.,0.,.0,x_latex)
+            #y_latex = mlabtex(0.,0.,.0,x_latex)
+           # z_latex = mlabtex(0.,0.,.0,x_latex)
+            
+        
+            mlab.axes(xlabel=x_latex, ylabel=y_latex, zlabel=z_latex,nb_labels=6 , ranges = (-L,L,-L,L,-Z,Z) )
+            colour_data = np.angle(psi.T.ravel())%(2*np.pi)
+            field.image_data.point_data.add_array(colour_data)
+            field.image_data.point_data.get_array(1).name = 'phase'
+            field.update()
+            field2 = mlab.pipeline.set_active_attribute(field, 
+                                                        point_scalars='scalar')
+            contour = mlab.pipeline.contour(field2)
+            contour.filter.contours= [isovalue,]
+            contour2 = mlab.pipeline.set_active_attribute(contour, 
+                                                        point_scalars='phase')
+            s = mlab.pipeline.surface(contour2, colormap='hsv', vmin= 0.0 ,vmax= 2.*np.pi)
+
+            s.scene.light_manager.light_mode = 'vtk'
+            s.actor.property.interpolation = 'phong'
+            time_label = mlab.text(0.1, 0.9, '', width=0.3, color=(1, 1, 1))  # White text color
+            def update_time_label(t):
+                time_label.text = 'Time: {:.2f} {}'.format(t, unit)
+
+            data = {'t': 0.0}
+            @mlab.animate(delay=10)
+            def animation():
+                while (1):
+                    data['t'] += 0.05
+                    k1 = int(data['t']) % (self.simulation.store_steps)
+
+                    psi = self.simulation.Ψ[k1]*np.exp( 1j*2*np.pi/10*k1)
+                    psi = (psi)/(abs_max)
+                    np.copyto(colour_data, np.angle(psi.T.ravel())%(2*np.pi))
+                    field.mlab_source.scalars = np.abs(psi)
+                    
+                    update_time_label(k1*dt_store/unit)
+                    
+                    yield
+                    file = str(k1) + '.png'
+                    mlab.savefig(file)
             ua = animation()
             mlab.show()
         

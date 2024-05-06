@@ -1,6 +1,6 @@
 from tvtk.util import ctf
 import numpy as np
-from qmsolve import Hamiltonian, SingleParticle, TimeSimulation, init_visualization, nanoseconds,microseconds,nm,s, m, Å, J, Hz, kg, hbar, femtoseconds,picoseconds
+from qmsolve import Hamiltonian, SingleParticle, TimeSimulation, init_visualization, nanoseconds,microseconds,nm,s,seconds, m, Å, J, Hz, kg, hbar, femtoseconds,picoseconds
 from scipy.special import ellipj
 from scipy.constants import epsilon_0
 from scipy.special import mathieu_cem
@@ -47,8 +47,8 @@ print('q =', q)
 def radians_to_degrees(radians):
     return radians * (180.0 / math.pi)
 
-
-g = 9.81*(m*Hz*Hz)  # Example value for gravity
+#g = 9.8065  # Example value for gravity
+g = (9.8065*m)/(s*s)  # Example value for gravity
 
 
 def w(z):
@@ -82,18 +82,24 @@ def psi_function(x, y, z):
     return radial_part(x, y, z) * angular_part(np.arctan2(y, x), z) * axial_part(z)
 
 #interaction potential
+#conv_s_ns = 1e9
+#g = g/(conv_s_ns*conv_s_ns)
+
+#g = (g*m)/(seconds*seconds)
 
 
 def gravity_potential(particle):
+
     V = -g*mass*particle.z
-    #•V = np.zeros_like(particle.x)
+    #V = -10*particle.z
+    #V = np.zeros_like(particle.x)
     return V
 
 
 #build the Hamiltonian of the system
 H = Hamiltonian(particles=SingleParticle(),
                 potential=gravity_potential,
-                spatial_ndim=3, N=100, extent=4*w_o * Å,z_extent = 4*lambda_*Å)
+                spatial_ndim=3, N=150, extent=4*w_o * Å,z_extent = 4*lambda_*Å)
 
 
 def initial_wavefunction(particle):
@@ -104,37 +110,11 @@ def initial_wavefunction(particle):
 #=========================================================================================================#
 # Set and run the simulation
 #=========================================================================================================#
-"""
-# Generate grid for x and y
-N = 100
-extent = 4*w_o * Å
-z_extent = 4*lambda_*Å
-x, y, z = np.mgrid[-extent/2: extent/2:N*1j, -H.extent /
-                   2: extent/2:N*1j, -z_extent/2: z_extent/2:N*1j]
-
-#x,y,z = meshgrid(x,y,z,indexing='ij')
-contrast_vals= [0.1, 0.25]
-mlab.figure(1, bgcolor=(0, 0, 0), size=(700, 700))
-psi = psi_function(x, y, z)
-L = extent/2/Å
-Z = z_extent/2/Å
-
-abs_max= np.amax(np.abs(psi))
-psi = (psi)/(abs_max)
 
 
-vol = mlab.pipeline.volume(mlab.pipeline.scalar_field(np.abs(psi)), vmin= contrast_vals[0], vmax= contrast_vals[1])
-# Change the color transfer function
-
-mlab.outline()
-mlab.axes(xlabel='x [Å]', ylabel='y [Å]', zlabel='z [Å]',nb_labels=6 , ranges = (-L,L,-L,L,-Z,Z) )
-mlab.show()
-"""
-
-
-total_time = 1 * nanoseconds
+total_time = 10 * nanoseconds
 sim = TimeSimulation(hamiltonian = H, method = "split-step-cupy")
-sim.run(initial_wavefunction, total_time = total_time, dt = total_time/1000., store_steps = 30)
+sim.run(initial_wavefunction, total_time = total_time, dt = total_time/1000., store_steps = 5)
 
 
 #=========================================================================================================#
@@ -142,13 +122,19 @@ sim.run(initial_wavefunction, total_time = total_time, dt = total_time/1000., st
 #=========================================================================================================#
 
 visualization = init_visualization(sim)
+#visualization.plot_type = 'contour'
 #visualization.animate(xlim=[-15* Å,15* Å], ylim=[-15* Å,15* Å], potential_saturation = 0.5, wavefunction_saturation = 0.2, animation_duration = 10, save_animation = False)
 
 #for visualizing a single frame, use plot method instead of animate:
 
 #visualization.plot(t = 0 * femtoseconds,xlim=[-2*w_o* Å,2*w_o* Å], ylim=[-2*w_o* Å,2*w_o* Å])
-"""
-visualization.plot(t = 0.00025*s ,xlim=[-2*w_o* Å,2*w_o* Å], ylim=[-2*w_o* Å,2*w_o* Å])
-visualization.plot(t = 0.0005*s ,xlim=[-2*w_o* Å,2*w_o* Å], ylim=[-2*w_o* Å,2*w_o* Å])
-"""
-visualization.animate()
+
+
+visualization.plot(t = 0 ,L_norm = w_o, Z_norm = lambda_,unit = nanoseconds)
+visualization.plot(t = 2*nanoseconds ,L_norm = w_o, Z_norm = lambda_,unit = nanoseconds)
+visualization.plot(t = 4*nanoseconds ,L_norm = w_o, Z_norm = lambda_,unit = nanoseconds)
+visualization.plot(t = 6*nanoseconds ,L_norm = w_o, Z_norm = lambda_,unit = nanoseconds)
+visualization.plot(t = 8*nanoseconds ,L_norm = w_o, Z_norm = lambda_,unit = nanoseconds)
+visualization.plot(t = 10*nanoseconds ,L_norm = w_o, Z_norm = lambda_,unit = nanoseconds)
+
+#visualization.animate(L_norm = w_o, Z_norm = lambda_,unit = nanoseconds,time = 'ns')
