@@ -489,6 +489,141 @@ class TimeVisualizationSingleParticle3D(TimeVisualization):
         self.simulation = simulation
         self.H = simulation.H
         self.plot_type = 'abs-volume'
+        
+        
+    def plot2D(self, t, xlim=None, ylim=None, L_norm = 1, Z_norm = 1,unit = femtoseconds, figsize=(18, 30), potential_saturation=0.8, wavefunction_saturation=1.0):
+
+
+        self.simulation.Ψ_plot = self.simulation.Ψ/self.simulation.Ψmax
+        plt.style.use("dark_background")
+        """
+        fig = plt.figure(figsize=figsize)
+        
+        ax = fig.add_subplot(1, 1, 1)
+        """
+        
+        sub = 4
+        fig, axs = plt.subplots(5,4,figsize = figsize)
+        mid = self.simulation.H.N / 2 - 1
+        
+        #time_axs = axs.text(0.97,0.97, "",  color = "white",transform=axs.transAxes, ha="right", va="top")
+        #time_axs.set_text(u"t = {} nanoseconds".format("%.3f"  % (t/unit)))
+        
+        for i in range(20):
+            #print(i)
+            z_val = self.simulation.H.particle_system.z[0,0,int(8*i+int(mid-100)) ]
+            axs[i // sub, i % sub].set_xlabel("x/w_o")
+            axs[i // sub, i % sub].set_ylabel("y/w_o")
+            axs[i // sub, i % sub].set_title('$z = {:.3f}$'.format(z_val / Z_norm))
+           # axs[i // 3, i % 3].set_title("$\psi(x,y,t)$")
+
+
+
+
+
+            if xlim != None:
+                axs.set_xlim(np.array(xlim)/Å)
+            if ylim != None:
+                axs.set_ylim(np.array(ylim)/Å)
+
+
+            from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 unused import
+            index = int((self.simulation.store_steps)/self.simulation.total_time*t)
+            
+            L = self.simulation.H.extent/Å/L_norm
+            #axs[i // sub, i % sub].imshow((self.simulation.H.Vgrid[:,0,:] + self.simulation.Vmin)/(self.simulation.Vmax-self.simulation.Vmin), vmax = 1.0/potential_saturation, vmin = 0, cmap = "gray", origin = "lower", interpolation = "bilinear", extent = [-L/2, L/2, -L/2, L/2])  
+
+            axs[i // sub, i % sub].imshow(complex_to_rgba(self.simulation.Ψ_plot[index][:,:,int(8*i+int(mid-100))  ], max_val= wavefunction_saturation), origin = "lower", interpolation = "bilinear", extent = [-L/2, L/2, -L/2, L/2])  
+        
+        strg = (u"t = {} nanoseconds".format("%.3f"  % (t/unit)))
+        fig.text(0,0,strg,ha='center',fontsize = 14)
+
+
+        """
+        ax.set_xlabel("[Å]")
+        ax.set_ylabel("[Å]")
+        ax.set_title("$\psi(x,y,t)$")
+
+        time_ax = ax.text(0.97,0.97, "",  color = "white",
+                        transform=ax.transAxes, ha="right", va="top")
+        time_ax.set_text(u"t = {} femtoseconds".format("%.3f"  % (t/femtoseconds)))
+
+
+
+        if xlim != None:
+            ax.set_xlim(np.array(xlim)/Å)
+        if ylim != None:
+            ax.set_ylim(np.array(ylim)/Å)
+
+
+        from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 unused import
+        index = int((self.simulation.store_steps)/self.simulation.total_time*t)
+        
+        L = self.simulation.H.extent/Å/L_norm
+        #ax.imshow((self.simulation.H.Vgrid[:,:,0] + self.simulation.Vmin)/(self.simulation.Vmax-self.simulation.Vmin), vmax = 1.0/potential_saturation, vmin = 0, cmap = "gray", origin = "lower", interpolation = "bilinear", extent = [-L/2, L/2, -L/2, L/2])  
+
+        ax.imshow(complex_to_rgba(self.simulation.Ψ_plot[index][:,:,49], max_val= wavefunction_saturation), origin = "lower", interpolation = "bilinear", extent = [-L/2, L/2, -L/2, L/2])  
+        """
+        plt.show()
+
+
+    def animate2D(self,xlim=None, ylim=None, figsize=(7, 7),L_norm = 1, unit = femtoseconds, animation_duration = 5, fps = 20, save_animation = False, potential_saturation=0.8, wavefunction_saturation=0.8):
+        total_frames = int(fps * animation_duration)
+        dt = self.simulation.total_time/total_frames
+        self.simulation.Ψ_plot = self.simulation.Ψ/self.simulation.Ψmax
+        plt.style.use("dark_background")
+
+        fig = plt.figure(figsize=figsize)
+        ax = fig.add_subplot(1, 1, 1)
+        index = 0
+        
+        L = self.simulation.H.extent/Å/L_norm
+        potential_plot = ax.imshow((self.simulation.H.Vgrid[:,0,:] + self.simulation.Vmin)/(self.simulation.Vmax-self.simulation.Vmin), vmax = 1.0/potential_saturation, vmin = 0, cmap = "gray", origin = "lower", interpolation = "bilinear", extent = [-L/2, L/2, -L/2, L/2])  
+        wavefunction_plot = ax.imshow(complex_to_rgba(self.simulation.Ψ_plot[0][:,:,49], max_val= wavefunction_saturation), origin = "lower", interpolation = "bilinear", extent=[-L / 2,L / 2,-L / 2,L / 2])
+
+
+        if xlim != None:
+            ax.set_xlim(np.array(xlim)/Å)
+        if ylim != None:
+            ax.set_ylim(np.array(ylim)/Å)
+
+        import matplotlib.animation as animation
+
+        ax.set_title("$\psi(x,y,t)$")
+        ax.set_xlabel('[Å]')
+        ax.set_ylabel('[Å]')
+
+        time_ax = ax.text(0.97,0.97, "",  color = "white",
+                        transform=ax.transAxes, ha="right", va="top")
+        time_ax.set_text(u"t = {} nanoseconds".format("%.3f"  % 0.00))
+
+
+        #print(total_frames)
+        animation_data = {'t': 0.0, 'ax':ax ,'frame' : 0}
+        def func_animation(*arg):
+            
+            time_ax.set_text(u"t = {} nanoseconds".format("%.3f"  % (animation_data['t']/unit)))
+
+            animation_data['t'] = animation_data['t'] + dt
+            if animation_data['t'] > self.simulation.total_time:
+                animation_data['t'] = 0.0
+
+            #print(animation_data['frame'])
+            animation_data['frame'] +=1
+            index = int((self.simulation.store_steps)/self.simulation.total_time * animation_data['t'])
+
+            wavefunction_plot.set_data(complex_to_rgba(self.simulation.Ψ_plot[index][:,:,49], max_val= wavefunction_saturation))
+            return potential_plot,wavefunction_plot, time_ax
+
+        frame = 0
+        a = animation.FuncAnimation(fig, func_animation,
+                                    blit=True, frames=total_frames, interval= 1/fps * 1000)
+        if save_animation == True:
+            Writer = animation.writers['ffmpeg']
+            writer = Writer(fps=fps, metadata=dict(artist='Me'), bitrate=1800)
+            a.save('animation.mp4', writer=writer)
+        else:
+            plt.show()
 
     def plot(self, t, L_norm = 1, Z_norm = 1,figsize=(7, 7),unit = femtoseconds, contrast_vals= [0.1, 0.25]):
 
@@ -560,10 +695,15 @@ class TimeVisualizationSingleParticle3D(TimeVisualization):
             time_label.text = 'Time: {:.2f} ns'.format(t/unit)
 
             mlab.outline()
+            
+            x_latex = 'x/w_o'
+            y_latex = 'y/w_o'
+            z_latex = 'z/lambda'
+            """
             x_latex = '$x/w_o$'
             y_latex = '$y/w_o$'
             z_latex = '$z/\lambda$'
-            
+            """
            # x_latex = mlabtex(0.,0.,.0,x_latex)
             #y_latex = mlabtex(0.,0.,.0,x_latex)
            # z_latex = mlabtex(0.,0.,.0,x_latex)
@@ -631,9 +771,9 @@ class TimeVisualizationSingleParticle3D(TimeVisualization):
             vol.update_ctf = True
 
             mlab.outline()
-            x_latex = '$x/w_o$'
-            y_latex = '$y/w_o$'
-            z_latex = '$z/\lambda$'
+            x_latex = 'x/w_o'
+            y_latex = 'y/w_o'
+            z_latex = 'z/lambda'
             
            # x_latex = mlabtex(0.,0.,.0,x_latex)
             #y_latex = mlabtex(0.,0.,.0,x_latex)

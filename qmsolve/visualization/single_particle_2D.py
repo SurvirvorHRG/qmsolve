@@ -337,7 +337,7 @@ class TimeVisualizationSingleParticle2D(TimeVisualization):
         self.simulation = simulation
         self.H = simulation.H
 
-    def plot(self, t, xlim=None, ylim=None, figsize=(7, 7), potential_saturation=0.8, wavefunction_saturation=1.0):
+    def plot(self, t, xlim=None, ylim=None, figsize=(50, 50), potential_saturation=0.8, wavefunction_saturation=1.0):
 
 
         self.simulation.Ψ_plot = self.simulation.Ψ/self.simulation.Ψmax

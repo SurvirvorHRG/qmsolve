@@ -44,6 +44,8 @@ q = ((np.abs(l)**2)/(4*(alpha**(3/2))))*(epsilon/Er)
 print('alpha = ', alpha)
 print('q =', q)
 
+yeetr = 9.0442161272e22
+
 def radians_to_degrees(radians):
     return radians * (180.0 / math.pi)
 
@@ -68,37 +70,43 @@ def angular_part(phi, z):
 def axial_part(z):
     xi = z / (np.abs(l)/k)
     sin_arg = np.arcsin(z / z_R) + np.pi / 2
-    ce_val = mathieu_cem(0,1000,radians_to_degrees(sin_arg))[0]
+    ce_val = mathieu_cem(0,(sin_arg),q)[0]
     sqrt_term = 1 - alpha * xi**2
     sqrt_term = np.maximum(sqrt_term, 0)
-    #if sqrt_term.any() == 0:
+    #if sqrt_term == 0:
     #    return np.zeros_like(ce_val)
     #else:
-     #   return np.sqrt(2 / np.pi) * (1 / np.sqrt(sqrt_term))**(1/4) * ce_val
+    #    return np.sqrt(2 / np.pi) * (1 / np.sqrt(sqrt_term))**(1/4) * ce_val
     return np.sqrt(2 / np.pi) * (1 / sqrt_term)**(1/4) * ce_val
+
+
 
 
 def psi_function(x, y, z):
     return radial_part(x, y, z) * angular_part(np.arctan2(y, x), z) * axial_part(z)
 
+z_extent_f = 4*lambda_*Å
+
+z_fixed = np.linspace(-z_extent_f/2, z_extent_f/2, 100)
 #interaction potential
 def gravity_potential(particle):
 
-    V = -g*mass*particle.z
+    V = -g*N*mass*z_fixed[0]
     #V = -10*particle.z
-    #V = np.zeros_like(particle.x)
+    V = np.zeros_like(particle.x)
     return V
 
 
 #build the Hamiltonian of the system
 H = Hamiltonian(particles=SingleParticle(),
                 potential=gravity_potential,
-                spatial_ndim=3, N=100,extent=4*w_o * Å,z_extent = 4*lambda_*Å)
+                spatial_ndim=2, N=500, extent=4*w_o * Å,z_extent = 4*lambda_*Å)
+
 
 
 def initial_wavefunction(particle):
     #my_z = np.zeros_like(particle.x)
-    return psi_function(particle.x, particle.y, particle.z)
+    return psi_function(particle.x, particle.y, z_fixed[49])
 
 
 #=========================================================================================================#
@@ -106,9 +114,9 @@ def initial_wavefunction(particle):
 #=========================================================================================================#
 
 
-total_time = 10 * femtoseconds
+total_time = 10 * nanoseconds
 sim = TimeSimulation(hamiltonian = H, method = "split-step-cupy")
-sim.run(initial_wavefunction, total_time = total_time, dt = total_time/1000., store_steps = 5)
+sim.run(initial_wavefunction, total_time = total_time, dt = total_time/1000., store_steps = 100)
 
 
 #=========================================================================================================#
@@ -116,29 +124,8 @@ sim.run(initial_wavefunction, total_time = total_time, dt = total_time/1000., st
 #=========================================================================================================#
 
 visualization = init_visualization(sim)
-#visualization.plot_type = 'contour'
-#visualization.animate(xlim=[-15* Å,15* Å], ylim=[-15* Å,15* Å], potential_saturation = 0.5, wavefunction_saturation = 0.2, animation_duration = 10, save_animation = False)
+#visualization.animate(xlim=[-2*w_o*Å,2*w_o *Å], ylim=[-2*w_o*Å,2*w_o* Å], potential_saturation = 0.5, wavefunction_saturation = 0.2, animation_duration = 10, save_animation = True)
+
 
 #for visualizing a single frame, use plot method instead of animate:
-
-#visualization.plot(t = 0 * femtoseconds,xlim=[-2*w_o* Å,2*w_o* Å], ylim=[-2*w_o* Å,2*w_o* Å])
-#visualization.plot2D(t = 0,L_norm = w_o,Z_norm = lambda_,unit = nanoseconds,potential_saturation = 0.1, wavefunction_saturation = 0.1)
-#visualization.plot(t = 0 ,L_norm = w_o, Z_norm = lambda_,unit = nanoseconds)
-
-#visualization.animate2D(L_norm = w_o,unit = nanoseconds, potential_saturation = 0.5, wavefunction_saturation = 0.2, animation_duration = 10, save_animation = True)
-"""
-for i in range(11):
-    visualization.plot2D(t = i *total_time/10,L_norm = w_o,Z_norm = lambda_,unit = nanoseconds,potential_saturation = 0.3, wavefunction_saturation = 0.1)
-"""
-#visualization.plot2D(t =  total_time,L_norm = w_o, Z_norm = lambda_,unit = nanoseconds,potential_saturation = 0.1, wavefunction_saturation = 0.1)
-"""
-
-visualization.plot(t = 2*nanoseconds ,L_norm = w_o, Z_norm = lambda_,unit = nanoseconds)
-visualization.plot(t = 4*nanoseconds ,L_norm = w_o, Z_norm = lambda_,unit = nanoseconds)
-visualization.plot(t = 6*nanoseconds ,L_norm = w_o, Z_norm = lambda_,unit = nanoseconds)
-visualization.plot(t = 8*nanoseconds ,L_norm = w_o, Z_norm = lambda_,unit = nanoseconds)
-visualization.plot(t = 10*nanoseconds ,L_norm = w_o, Z_norm = lambda_,unit = nanoseconds)
-"""
-
-visualization.animate(L_norm = w_o, Z_norm = lambda_,unit = femtoseconds,time = 'ns',contrast_vals=[0.0,0.8])
-#visualization.plot(t = total_time ,L_norm = w_o, Z_norm = lambda_,unit =nanoseconds,contrast_vals= [0.1, 0.15])
+visualization.plot(t = 0* nanoseconds,xlim=[-2*w_o*Å,2*w_o* Å], ylim=[-2*w_o*Å,2*w_o* Å], potential_saturation = 0.5, wavefunction_saturation = 0.2)
