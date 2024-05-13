@@ -68,7 +68,7 @@ class SplitStep(Method):
             #Ur *= np.exp(-0.5j*(self.simulation.dt/hbar)*non_linear_function(tmp))
             for j in range(Nt_per_store_step):
                 if non_linear_function is not None:
-                    Ur = np.exp(-0.5j*(self.simulation.dt/hbar)*(np.array(self.H.Vgrid) + non_linear_function(tmp)))
+                    Ur = np.exp(-0.5j*(self.simulation.dt/hbar)*(np.array(self.H.Vgrid) + non_linear_function(tmp,i*(j+1)*self.simulation.dt)))
                 #Ur *= np.exp(-0.5j*(self.simulation.dt/hbar)*non_linear_function(tmp))
                 c = np.fft.fftshift(np.fft.fftn(Ur*tmp))
                 tmp = Ur*np.fft.ifftn( np.fft.ifftshift(Uk*c))
@@ -125,13 +125,15 @@ class SplitStepCupy(Method):
 
         t0 = time.time()
         bar = progressbar.ProgressBar()
+        t_ = 0
         for i in bar(range(store_steps)):
             tmp = cp.copy(Ψ[i])
             #Ur = cp.exp(-0.5j*(self.simulation.dt/hbar)*(cp.array(self.H.Vgrid) + non_linear_function(tmp)))
             #Ur *= cp.exp(-0.5j*(self.simulation.dt/hbar)*non_linear_function(tmp))
             for j in range(Nt_per_store_step):
+                t_ += 1
                 if non_linear_function is not None:
-                    Ur = cp.exp(-0.5j*(self.simulation.dt/hbar)*(cp.array(self.H.Vgrid) + non_linear_function(tmp)))
+                    Ur = cp.exp(-0.5j*(self.simulation.dt/hbar)*(cp.array(self.H.Vgrid) + non_linear_function(tmp,t_*self.simulation.dt,self.H.particle_system)))
                 #Ur *= cp.exp(-0.5j*(self.simulation.dt/hbar)*non_linear_function(tmp))
                 c = cp.fft.fftshift(cp.fft.fftn(Ur*tmp))
                 tmp = Ur*cp.fft.ifftn( cp.fft.ifftshift(Uk*c))

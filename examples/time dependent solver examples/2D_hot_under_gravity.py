@@ -85,7 +85,7 @@ def axial_part(z):
 def psi_function(x, y, z):
     return radial_part(x, y, z) * angular_part(np.arctan2(y, x), z) * axial_part(z)
 
-z_extent_f = 4*lambda_*Å
+z_extent_f = 2*lambda_*Å
 
 z_fixed = np.linspace(-z_extent_f/2, z_extent_f/2, 100)
 #interaction potential
@@ -128,4 +128,4 @@ visualization = init_visualization(sim)
 
 
 #for visualizing a single frame, use plot method instead of animate:
-visualization.plot(t = 0* nanoseconds,xlim=[-2*w_o*Å,2*w_o* Å], ylim=[-2*w_o*Å,2*w_o* Å], potential_saturation = 0.5, wavefunction_saturation = 0.2)
+visualization.plot(t = 0* nanoseconds,xlim=[-2*w_o*Å,2*w_o* Å], ylim=[-2*w_o*Å,2*w_o* Å])

@@ -68,14 +68,14 @@ def angular_part(phi, z):
 def axial_part(z):
     xi = z / (np.abs(l)/k)
     sin_arg = np.arcsin(z / z_R) + np.pi / 2
-    ce_val = mathieu_cem(0,1000,radians_to_degrees(sin_arg))[0]
+    ce_val = mathieu_cem(0,sin_arg, q)[0]
     sqrt_term = 1 - alpha * xi**2
     sqrt_term = np.maximum(sqrt_term, 0)
-    #if sqrt_term.any() == 0:
+    #if sqrt_term == 0:
     #    return np.zeros_like(ce_val)
     #else:
-     #   return np.sqrt(2 / np.pi) * (1 / np.sqrt(sqrt_term))**(1/4) * ce_val
-    return np.sqrt(2 / np.pi) * (1 / sqrt_term)**(1/4) * ce_val
+    #    return np.sqrt(2 / np.pi) * (1 / np.sqrt(sqrt_term))**(1/4) * ce_val
+    return np.sqrt(2 / np.pi) * (1 / np.sqrt(sqrt_term))**(1/4) * ce_val
 
 
 def psi_function(x, y, z):
@@ -83,17 +83,24 @@ def psi_function(x, y, z):
 
 #interaction potential
 def gravity_potential(particle):
+    
+   # A coder: particle.z = -1/2*g*t**2
 
     V = -g*mass*particle.z
     #V = -10*particle.z
-    #V = np.zeros_like(particle.x)
+    V = np.zeros_like(particle.x)
+    return V
+
+def yeet(psi,t,particle):
+    particle.z = -1/2*g*t**2
+    V = -g*mass*particle.z
     return V
 
 
 #build the Hamiltonian of the system
 H = Hamiltonian(particles=SingleParticle(),
                 potential=gravity_potential,
-                spatial_ndim=3, N=100,extent=4*w_o * Å,z_extent = 4*lambda_*Å)
+                spatial_ndim=3, N=200,extent=4*w_o * Å,z_extent = 4*lambda_*Å)
 
 
 def initial_wavefunction(particle):
@@ -106,9 +113,9 @@ def initial_wavefunction(particle):
 #=========================================================================================================#
 
 
-total_time = 10 * femtoseconds
+total_time = 100 * nanoseconds
 sim = TimeSimulation(hamiltonian = H, method = "split-step-cupy")
-sim.run(initial_wavefunction, total_time = total_time, dt = total_time/1000., store_steps = 5)
+sim.run(initial_wavefunction, total_time = total_time, dt = total_time/1000., store_steps = 20)
 
 
 #=========================================================================================================#
@@ -121,15 +128,15 @@ visualization = init_visualization(sim)
 
 #for visualizing a single frame, use plot method instead of animate:
 
-#visualization.plot(t = 0 * femtoseconds,xlim=[-2*w_o* Å,2*w_o* Å], ylim=[-2*w_o* Å,2*w_o* Å])
-#visualization.plot2D(t = 0,L_norm = w_o,Z_norm = lambda_,unit = nanoseconds,potential_saturation = 0.1, wavefunction_saturation = 0.1)
+
+#visualization.plot2D(t = 0,L_norm = w_o,Z_norm = lambda_,unit = nanoseconds,potential_saturation = 0.1, wavefunction_saturation = 0.8)
 #visualization.plot(t = 0 ,L_norm = w_o, Z_norm = lambda_,unit = nanoseconds)
 
 #visualization.animate2D(L_norm = w_o,unit = nanoseconds, potential_saturation = 0.5, wavefunction_saturation = 0.2, animation_duration = 10, save_animation = True)
-"""
-for i in range(11):
-    visualization.plot2D(t = i *total_time/10,L_norm = w_o,Z_norm = lambda_,unit = nanoseconds,potential_saturation = 0.3, wavefunction_saturation = 0.1)
-"""
+
+#for i in range(21):
+   #visualization.plot(t = i *total_time/20,L_norm = w_o,Z_norm = lambda_,unit = nanoseconds,contrast_vals=[0.1,0.15])
+   
 #visualization.plot2D(t =  total_time,L_norm = w_o, Z_norm = lambda_,unit = nanoseconds,potential_saturation = 0.1, wavefunction_saturation = 0.1)
 """
 
@@ -140,5 +147,5 @@ visualization.plot(t = 8*nanoseconds ,L_norm = w_o, Z_norm = lambda_,unit = nano
 visualization.plot(t = 10*nanoseconds ,L_norm = w_o, Z_norm = lambda_,unit = nanoseconds)
 """
 
-visualization.animate(L_norm = w_o, Z_norm = lambda_,unit = femtoseconds,time = 'ns',contrast_vals=[0.0,0.8])
+#visualization.animate(L_norm = w_o, Z_norm = lambda_,unit = nanoseconds,time = 'ns',contrast_vals=[0.1,0.15])
 #visualization.plot(t = total_time ,L_norm = w_o, Z_norm = lambda_,unit =nanoseconds,contrast_vals= [0.1, 0.15])

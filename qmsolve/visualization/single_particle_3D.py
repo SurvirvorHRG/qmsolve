@@ -495,26 +495,26 @@ class TimeVisualizationSingleParticle3D(TimeVisualization):
 
 
         self.simulation.Ψ_plot = self.simulation.Ψ/self.simulation.Ψmax
-        plt.style.use("dark_background")
+        plt.style.use("classic")
         """
         fig = plt.figure(figsize=figsize)
         
         ax = fig.add_subplot(1, 1, 1)
         """
         
-        sub = 4
-        fig, axs = plt.subplots(5,4,figsize = figsize)
+        sub = 3
+        fig, axs = plt.subplots(4,3,figsize = figsize)
         mid = self.simulation.H.N / 2 - 1
         
         #time_axs = axs.text(0.97,0.97, "",  color = "white",transform=axs.transAxes, ha="right", va="top")
         #time_axs.set_text(u"t = {} nanoseconds".format("%.3f"  % (t/unit)))
-        
-        for i in range(20):
+        tmp = 0
+        for i in range(12):
             #print(i)
-            z_val = self.simulation.H.particle_system.z[0,0,int(8*i+int(mid-100)) ]
+            z_val = self.simulation.H.particle_system.z[0,0,0 + int(i*(100/12))]
             axs[i // sub, i % sub].set_xlabel("x/w_o")
             axs[i // sub, i % sub].set_ylabel("y/w_o")
-            axs[i // sub, i % sub].set_title('$z = {:.3f}$'.format(z_val / Z_norm))
+            axs[i // sub, i % sub].set_title('$z = {:.1f}*\lambda$'.format(z_val / Z_norm ))
            # axs[i // 3, i % 3].set_title("$\psi(x,y,t)$")
 
 
@@ -533,10 +533,13 @@ class TimeVisualizationSingleParticle3D(TimeVisualization):
             L = self.simulation.H.extent/Å/L_norm
             #axs[i // sub, i % sub].imshow((self.simulation.H.Vgrid[:,0,:] + self.simulation.Vmin)/(self.simulation.Vmax-self.simulation.Vmin), vmax = 1.0/potential_saturation, vmin = 0, cmap = "gray", origin = "lower", interpolation = "bilinear", extent = [-L/2, L/2, -L/2, L/2])  
 
-            axs[i // sub, i % sub].imshow(complex_to_rgba(self.simulation.Ψ_plot[index][:,:,int(8*i+int(mid-100))  ], max_val= wavefunction_saturation), origin = "lower", interpolation = "bilinear", extent = [-L/2, L/2, -L/2, L/2])  
-        
+            #axs[i // sub, i % sub].imshow(complex_to_rgba(self.simulation.Ψ_plot[index][:,:,0 + int(i*(100/12))], max_val= wavefunction_saturation), origin = "lower", interpolation = "bilinear", extent = [-L/2, L/2, -L/2, L/2])  
+            tmp = axs[i // sub, i % sub].imshow(abs(self.simulation.Ψ_plot[index][:,:,0 + int(i*(100/12))])**2,cmap='jet',  extent = [-L/2, L/2, -L/2, L/2])  
+            
+            #axs[i // sub, i % sub].colorbar()
         strg = (u"t = {} nanoseconds".format("%.3f"  % (t/unit)))
         fig.text(0,0,strg,ha='center',fontsize = 14)
+        fig.colorbar(tmp,ax = axs)
 
 
         """
@@ -627,7 +630,7 @@ class TimeVisualizationSingleParticle3D(TimeVisualization):
 
     def plot(self, t, L_norm = 1, Z_norm = 1,figsize=(7, 7),unit = femtoseconds, contrast_vals= [0.1, 0.25]):
 
-        mlab.figure(1, bgcolor=(0, 0, 0), size=(700, 700))
+        mlab.figure(1, size=(700, 700))
         self.simulation.Ψ_plot = self.simulation.Ψ/self.simulation.Ψmax
         index = int((self.simulation.store_steps)/self.simulation.total_time*t)   
         """
@@ -687,6 +690,7 @@ class TimeVisualizationSingleParticle3D(TimeVisualization):
 
             L = self.simulation.H.extent/2/Å/L_norm
             Z = self.simulation.H.z_extent/2/Å/Z_norm
+            N = self.simulation.H.N
 
             vol = mlab.pipeline.volume(mlab.pipeline.scalar_field(np.abs(psi)), vmin= contrast_vals[0], vmax= contrast_vals[1])          
             
@@ -699,11 +703,11 @@ class TimeVisualizationSingleParticle3D(TimeVisualization):
             x_latex = 'x/w_o'
             y_latex = 'y/w_o'
             z_latex = 'z/lambda'
-            """
+            
             x_latex = '$x/w_o$'
             y_latex = '$y/w_o$'
             z_latex = '$z/\lambda$'
-            """
+            
            # x_latex = mlabtex(0.,0.,.0,x_latex)
             #y_latex = mlabtex(0.,0.,.0,x_latex)
            # z_latex = mlabtex(0.,0.,.0,x_latex)
@@ -711,7 +715,13 @@ class TimeVisualizationSingleParticle3D(TimeVisualization):
         
             mlab.axes(xlabel=x_latex, ylabel=y_latex, zlabel=z_latex,nb_labels=6 , ranges = (-L,L,-L,L,-Z,Z) )
             #mlab.axes(xlabel='x [Å]', ylabel='y [Å]', zlabel='z [Å]',nb_labels=6 , ranges = (-L,L,-L,L,-Z,Z) )
+            mlab.view(azimuth=60,elevation=60,distance=N*4)
+            colorbar = mlab.colorbar(orientation = 'vertical')
+            colorbar.scalar_bar_representation.position = [0.85, 0.1]
+            file = str(t) + '.png'
+            mlab.savefig(file)
             mlab.show()
+
 
         elif self.plot_type == 'contour':
             psi = self.simulation.Ψ_plot[index]
@@ -745,7 +755,7 @@ class TimeVisualizationSingleParticle3D(TimeVisualization):
         
     def animate(self, L_norm = 1, Z_norm = 1, unit = femtoseconds,time = 'femtoseconds', contrast_vals= [0.1, 0.25]):
         #self.simulation.Ψ_plot = self.simulation.Ψ/self.simulation.Ψmax
-        mlab.figure(1, bgcolor=(0, 0, 0), size=(700, 700))
+        mlab.figure(1, size=(700, 700))
         
 
 
@@ -773,7 +783,7 @@ class TimeVisualizationSingleParticle3D(TimeVisualization):
             mlab.outline()
             x_latex = 'x/w_o'
             y_latex = 'y/w_o'
-            z_latex = 'z/lambda'
+            z_latex = '$z/\lambda$'
             
            # x_latex = mlabtex(0.,0.,.0,x_latex)
             #y_latex = mlabtex(0.,0.,.0,x_latex)
@@ -783,6 +793,8 @@ class TimeVisualizationSingleParticle3D(TimeVisualization):
             mlab.axes(xlabel=x_latex, ylabel=y_latex, zlabel=z_latex,nb_labels=6 , ranges = (-L,L,-L,L,-Z,Z) )
             # Define a text label for time
             time_label = mlab.text(0.1, 0.9, '', width=0.3, color=(1, 1, 1))  # White text color
+            
+            colorbar = mlab.colorbar(orientation='vertical')
             
             def update_time_label(t):
                 time_label.text = 'Time: {:.2f} {}'.format(t,time)
@@ -807,7 +819,8 @@ class TimeVisualizationSingleParticle3D(TimeVisualization):
                     field.mlab_source.scalars = psi
                     
                     update_time_label(k1*dt_store/unit)
-                    #mlab.view(azimuth= 180,distance=N*3.5)
+                    mlab.view(azimuth=60,elevation=60,distance=N*3.5)
+                    
                     yield
                     file = str(k1) + '.png'
                     #◘mlab.savefig(file)
