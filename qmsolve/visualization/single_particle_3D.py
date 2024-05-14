@@ -232,7 +232,7 @@ class VisualizationSingleParticle3D(Visualization):
 
                     yield
 
-            animation()
+            ua = animation()
             mlab.show()
 
 
@@ -288,7 +288,7 @@ class VisualizationSingleParticle3D(Visualization):
 
                     yield
 
-            animation()
+            ua = animation()
             mlab.show()
 
 
@@ -356,7 +356,7 @@ class VisualizationSingleParticle3D(Visualization):
 
 
                     yield
-            animation()
+            ua = animation()
             mlab.show()
 
 
@@ -630,7 +630,7 @@ class TimeVisualizationSingleParticle3D(TimeVisualization):
 
     def plot(self, t, L_norm = 1, Z_norm = 1,figsize=(7, 7),unit = femtoseconds, contrast_vals= [0.1, 0.25]):
 
-        mlab.figure(1, size=(700, 700))
+        mlab.figure(1,bgcolor=(0,0,0), size=(700, 700))
         self.simulation.Ψ_plot = self.simulation.Ψ/self.simulation.Ψmax
         index = int((self.simulation.store_steps)/self.simulation.total_time*t)   
         """
@@ -713,8 +713,8 @@ class TimeVisualizationSingleParticle3D(TimeVisualization):
            # z_latex = mlabtex(0.,0.,.0,x_latex)
             
         
-            mlab.axes(xlabel=x_latex, ylabel=y_latex, zlabel=z_latex,nb_labels=6 , ranges = (-L,L,-L,L,-Z,Z) )
-            #mlab.axes(xlabel='x [Å]', ylabel='y [Å]', zlabel='z [Å]',nb_labels=6 , ranges = (-L,L,-L,L,-Z,Z) )
+            #mlab.axes(xlabel=x_latex, ylabel=y_latex, zlabel=z_latex,nb_labels=6 , ranges = (-L,L,-L,L,-Z,Z) )
+            mlab.axes(xlabel='x [Å]', ylabel='y [Å]', zlabel='z [Å]',nb_labels=6 , ranges = (-L,L,-L,L,-Z,Z) )
             mlab.view(azimuth=60,elevation=60,distance=N*4)
             colorbar = mlab.colorbar(orientation = 'vertical')
             colorbar.scalar_bar_representation.position = [0.85, 0.1]
@@ -783,7 +783,7 @@ class TimeVisualizationSingleParticle3D(TimeVisualization):
             mlab.outline()
             x_latex = 'x/w_o'
             y_latex = 'y/w_o'
-            z_latex = '$z/\lambda$'
+            z_latex = 'z/\lambda'
             
            # x_latex = mlabtex(0.,0.,.0,x_latex)
             #y_latex = mlabtex(0.,0.,.0,x_latex)
