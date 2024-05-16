@@ -1,9 +1,5 @@
-from tvtk.util import ctf
 import numpy as np
-from qmsolve import visualization
-from qmsolve import Hamiltonian, SingleParticle, TimeSimulation, init_visualization, nanoseconds,microseconds,nm,s,seconds, m,m_e, Å, J, Hz, kg, hbar, femtoseconds,picoseconds
-import math
-
+from qmsolve import Hamiltonian, SingleParticle, TimeSimulation, init_visualization, femtoseconds, m_e, Å
 
 # conversion units
 
@@ -81,94 +77,56 @@ print(' Sizex = ',Sizex*(conv_au_ang/1.0e4),' microns.' )
 print(' Sizey = ',Sizey*(conv_au_ang/1.0e4),' microns.')
 print(' Sizez = ',Sizez*(conv_au_ang/1.0e4),' microns.')
 
+#=========================================================================================================#
+# First, we define the Hamiltonian of a single particle confined in an harmonic oscillator potential. 
+#=========================================================================================================#
 
 #interaction potential
+def harmonic_oscillator(particle):
+    m = m_e
+    T = 0.6*femtoseconds
+    w = 2*np.pi/T
+    k = m* w**2
+    return 0.5 * k * particle.x**2 
 
-def potential(particle):
-    V = np.zeros_like(particle.x)
-    return V
-
-
-def LG_potential(particle):
-    rho = np.sqrt(particle.x**2+particle.y**2)
-
-    #V = (0.5**l)*omega_l*((rho/length_l)**(2*l))*np.exp(-2*(rho**2)/w0**2) 
-    #+ (0.5**l)*omega_l*((particle.z/length_l)**(2*l))*np.exp(-2*(particle.z**2)/w0**2) 
-    
-    V = (0.5**l)*omega_l*((rho/length_l)**(2*l))
-    + (0.5**l)*omega_l*((particle.z/length_l)**(2*l))
-    return V
-
-
-def non_linear_f(psi,t,particle):
-    return gint*((np.abs(psi))**2)
-
-N = 100
-
+N = 500
 #build the Hamiltonian of the system
-H = Hamiltonian(particles=SingleParticle(),
-                potential=potential,
-                spatial_ndim=3, N=100,Nz = 100,extent=100* Å,z_extent=100* Å)
+H = Hamiltonian(particles = SingleParticle(m = m_e), 
+                potential = harmonic_oscillator, 
+                spatial_ndim = 1, N = 500, extent = 4 * Å)
 
 
+#=========================================================================================================#
+# Define the wavefunction at t = 0  (initial condition)
+#=========================================================================================================#
 
 def initial_wavefunction(particle):
-    V = LG_potential(particle)
-    #rho = np.sqrt(particle.x**2+particle.y**2)
-    #psi = np.exp(-0.5*mass*(omega_l*rho**2 + omega_z*particle.z**2))
-    """
+    #This wavefunction correspond to a gaussian wavepacket with a mean X momentum equal to p_x
+    V = harmonic_oscillator(particle)
     psi = np.zeros(particle.x.shape, dtype = np.complex128)
     for i in range(N):
-        for j in range(N):
-            if muc > V[i,j]:
-                psi[i,j] = np.sqrt( (muc - V[i,j]) / gint)
-            else:
-                psi[i,j] = 0
+        if muc > V[i]:
+            psi[i] = np.sqrt( (muc - V[i]) / gint)
+        else:
+            psi[i] = 0
     return psi
-    """
-    psi = np.zeros(particle.x.shape, dtype = np.complex128)
-    for i in range(N):
-        for j in range(N):
-            for k in range(N):
-                if muc > V[i,j,k]:
-                    psi[i,j,k] = np.sqrt( (muc - V[i,j,k]) / gint)
-                else:
-                    psi[i,j,k] = 0
-    return psi
-
-"""
-eigenstates = H.solve( max_states = 32, method ='lobpcg-cupy')
-print(eigenstates.energies)
-
-
-visualization = visualization.init_visualization(eigenstates)
-visualization.plot_type = 'contour'
-
-#visualization.plot_eigenstate(0)
-
-#visualization.plot_eigenstate(26)
-visualization.animate()
-"""
-
 
 #=========================================================================================================#
 # Set and run the simulation
 #=========================================================================================================#
 
-
-total_time = 100 * femtoseconds
-sim = TimeSimulation(hamiltonian = H, method = "split-step-cupy")
-sim.run(initial_wavefunction, total_time = total_time, dt = total_time/1000., store_steps = 20,non_linear_function=non_linear_f)
-
+total_time = 1.8 * femtoseconds
+#set the time dependent simulation
+sim = TimeSimulation(hamiltonian = H, method = "split-step")
+sim.run(initial_wavefunction, total_time = total_time, dt = total_time/1600., store_steps = 800)
 
 #=========================================================================================================#
 # Finally, we visualize the time dependent simulation
 #=========================================================================================================#
 
 visualization = init_visualization(sim)
-#visualization.plot(t = 0 * femtoseconds,xlim=[-15* Å,15* Å], ylim=[-15* Å,15* Å], potential_saturation = 0.5, wavefunction_saturation = 0.2)
-#visualization.plot2D(t = 0 ,unit = femtoseconds,contrast_vals=[0.9,1])
-visualization.plot2D(t = 0 ,unit = femtoseconds)
-#visualization.animate(unit = femtoseconds,contrast_vals=[0.99,1])
-#visualization.plot_type = 'contour'
-#visualization.animate(xlim=[-50* Å,50* Å], ylim=[-50* Å,50* Å], potential_saturation = 0.5, wavefunction_saturation = 0.2, animation_duration = 10, save_animation = True)
+visualization.animate(xlim=[-2* Å,2* Å], animation_duration = 10, save_animation = True, fps = 30)
+
+
+#for visualizing a single frame, use plot method instead of animate:
+#visualization.plot(t = 5/4 * 0.9 * femtoseconds,xlim=[-15* Å,15* Å])

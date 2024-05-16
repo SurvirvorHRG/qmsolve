@@ -491,7 +491,7 @@ class TimeVisualizationSingleParticle3D(TimeVisualization):
         self.plot_type = 'abs-volume'
         
         
-    def plot2D(self, t, xlim=None, ylim=None, L_norm = 1, Z_norm = 1,unit = femtoseconds, figsize=(18, 30), potential_saturation=0.8, wavefunction_saturation=1.0):
+    def plot2D(self, t, xlim=None, ylim=None, L_norm = 1, Z_norm = 1,unit = femtoseconds, figsize=(15, 15), potential_saturation=0.8, wavefunction_saturation=1.0):
 
 
         self.simulation.Ψ_plot = self.simulation.Ψ/self.simulation.Ψmax
@@ -501,20 +501,21 @@ class TimeVisualizationSingleParticle3D(TimeVisualization):
         
         ax = fig.add_subplot(1, 1, 1)
         """
+        """
         
-        sub = 3
-        fig, axs = plt.subplots(4,3,figsize = figsize)
+        sub = 2
+        fig, axs = plt.subplots(1,2,figsize = figsize)
         mid = self.simulation.H.N / 2 - 1
         
         #time_axs = axs.text(0.97,0.97, "",  color = "white",transform=axs.transAxes, ha="right", va="top")
         #time_axs.set_text(u"t = {} nanoseconds".format("%.3f"  % (t/unit)))
         tmp = 0
-        for i in range(12):
+        for i in range(1):
             #print(i)
-            z_val = self.simulation.H.particle_system.z[0,0,0 + int(i*(100/12))]
-            axs[i // sub, i % sub].set_xlabel("x/w_o")
-            axs[i // sub, i % sub].set_ylabel("y/w_o")
-            axs[i // sub, i % sub].set_title('$z = {:.1f}*\lambda$'.format(z_val / Z_norm ))
+            z_val = self.simulation.H.particle_system.z[0,0,49]
+            axs[i // sub, i % sub].set_xlabel("$x (\mu m)$")
+            axs[i // sub, i % sub].set_ylabel("$y (\mu m)$")
+            axs[i // sub, i % sub].set_title('$z = 0 \mu m$')
            # axs[i // 3, i % 3].set_title("$\psi(x,y,t)$")
 
 
@@ -534,12 +535,45 @@ class TimeVisualizationSingleParticle3D(TimeVisualization):
             #axs[i // sub, i % sub].imshow((self.simulation.H.Vgrid[:,0,:] + self.simulation.Vmin)/(self.simulation.Vmax-self.simulation.Vmin), vmax = 1.0/potential_saturation, vmin = 0, cmap = "gray", origin = "lower", interpolation = "bilinear", extent = [-L/2, L/2, -L/2, L/2])  
 
             #axs[i // sub, i % sub].imshow(complex_to_rgba(self.simulation.Ψ_plot[index][:,:,0 + int(i*(100/12))], max_val= wavefunction_saturation), origin = "lower", interpolation = "bilinear", extent = [-L/2, L/2, -L/2, L/2])  
-            tmp = axs[i // sub, i % sub].imshow(abs(self.simulation.Ψ_plot[index][:,:,0 + int(i*(100/12))])**2,cmap='jet',  extent = [-L/2, L/2, -L/2, L/2])  
+            tmp = axs[i // sub, i % sub].imshow(abs(self.simulation.Ψ_plot[index][:,:,49])**2,cmap='jet',  extent = [-L/2, L/2, -L/2, L/2])  
             
             #axs[i // sub, i % sub].colorbar()
         strg = (u"t = {} nanoseconds".format("%.3f"  % (t/unit)))
         fig.text(0,0,strg,ha='center',fontsize = 14)
         fig.colorbar(tmp,ax = axs)
+        """
+        #self.simulation.Ψ_plot = self.simulation.Ψ/self.simulation.Ψmax
+        plt.style.use("dark_background")
+
+        fig = plt.figure(figsize=figsize)
+        mid = self.simulation.H.N / 2 - 1
+        ax = fig.add_subplot(1, 1, 1)
+
+        ax.set_xlabel("$x (\mu m)$")
+        ax.set_ylabel("$y (\mu m)$")
+        ax.set_title("$\psi(x,y,t)$")
+
+        time_ax = ax.text(0.97,0.97, "",  color = "white",
+                        transform=ax.transAxes, ha="right", va="top")
+        time_ax.set_text(u"t = {} femtoseconds".format("%.3f"  % (t/femtoseconds)))
+
+
+
+        if xlim != None:
+            ax.set_xlim(np.array(xlim)/Å)
+        if ylim != None:
+            ax.set_ylim(np.array(ylim)/Å)
+
+
+        from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 unused import
+        index = int((self.simulation.store_steps)/self.simulation.total_time*t)
+        
+        L = self.simulation.H.extent/Å
+        #ax.imshow((self.simulation.H.Vgrid + self.simulation.Vmin)/(self.simulation.Vmax-self.simulation.Vmin), vmax = 1.0/potential_saturation, vmin = 0, cmap = "gray", origin = "lower", interpolation = "bilinear", extent = [-L/2, L/2, -L/2, L/2])  
+
+        tmp = ax.imshow(abs(self.simulation.Ψ_plot[index][:,:,49])**2, cmap='jet', extent = [-L/2, L/2, -L/2, L/2])  
+        fig.colorbar(tmp,ax = ax)
+        plt.show()
 
 
         """
@@ -687,6 +721,9 @@ class TimeVisualizationSingleParticle3D(TimeVisualization):
         if self.plot_type == 'abs-volume':
             
             psi = self.simulation.Ψ_plot[index]
+            
+            
+           # print(psi)
 
             L = self.simulation.H.extent/2/Å/L_norm
             Z = self.simulation.H.z_extent/2/Å/Z_norm
@@ -755,7 +792,7 @@ class TimeVisualizationSingleParticle3D(TimeVisualization):
         
     def animate(self, L_norm = 1, Z_norm = 1, unit = femtoseconds,time = 'femtoseconds', contrast_vals= [0.1, 0.25]):
         #self.simulation.Ψ_plot = self.simulation.Ψ/self.simulation.Ψmax
-        mlab.figure(1, size=(700, 700))
+        mlab.figure(1,bgcolor = (0,0,0), size=(700, 700))
         
 
 

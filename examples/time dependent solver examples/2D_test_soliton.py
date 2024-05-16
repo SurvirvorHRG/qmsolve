@@ -21,14 +21,15 @@ def psi_0(particle):				# Initial wavefunction
 
 	return f;
 #interaction potential
+l = 6
 def harmonic_oscillator(particle):
     m = m_e
     T = 0.6*femtoseconds
     w = 2*np.pi/T
     k = m* w**2
-    return 0.5*k*particle.x**2
+    return 0.5*k*particle.x**(2*l)
 
-def non_linear_f(psi):
+def non_linear_f(psi,t,particle):
     m = m_e
     T = 0.6*femtoseconds
     w = 2*np.pi/T
@@ -38,7 +39,7 @@ def non_linear_f(psi):
 #build the Hamiltonian of the system
 H = Hamiltonian(particles = SingleParticle(m = m_e), 
                 potential = harmonic_oscillator, 
-                spatial_ndim = 1, N = 500, extent = 20 * Å)
+                spatial_ndim = 1, N = 1000, extent = 20 * Å)
 
 
 

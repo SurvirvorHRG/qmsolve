@@ -5,7 +5,7 @@ from matplotlib import animation
 from .visualization import Visualization
 from ..util.colour_functions import complex_to_rgb, complex_to_rgba
 from ..util.constants import *
-
+from mayavi import mlab
 
 class VisualizationSingleParticle2D(Visualization):
     def __init__(self,eigenstates):
@@ -430,3 +430,132 @@ class TimeVisualizationSingleParticle2D(TimeVisualization):
             a.save('animation.mp4', writer=writer)
         else:
             plt.show()
+            
+    def plot3D(self, t, L_norm = 1, Z_norm = 1,figsize=(7, 7),unit = femtoseconds, contrast_vals= [0.1, 0.25]):
+
+        mlab.figure(bgcolor=(0,0,0), size=(700, 700))
+        self.simulation.Ψ_plot = self.simulation.Ψ/self.simulation.Ψmax
+        index = int((self.simulation.store_steps)/self.simulation.total_time*t)   
+        """
+        psi = self.simulation.Ψ_plot[index]
+        L = self.simulation.H.extent/2/Å/L_norm
+        Z = self.simulation.H.z_extent/2/Å/Z_norm
+
+        vol = mlab.pipeline.volume(mlab.pipeline.scalar_field(np.abs(psi)), vmin= contrast_vals[0], vmax= contrast_vals[1])
+
+        mlab.outline()
+        mlab.axes(xlabel='x [Å]', ylabel='y [Å]', zlabel='z [Å]',nb_labels=6 , ranges = (-L,L,-L,L,-Z,Z) )
+        mlab.show()
+        """
+        if 1==1:
+            psi = self.simulation.Ψ[index]
+            psi = np.abs(psi)**2
+            
+           # print(psi)
+
+            L = self.simulation.H.extent/2/Å/L_norm
+            Z = self.simulation.H.z_extent/2/Å/Z_norm
+            N = self.simulation.H.N
+
+            surf = mlab.mesh(self.simulation.H.particle_system.x,self.simulation.H.particle_system.y,psi,colormap='viridis')
+            mlab.colorbar(surf,orientation='vertical')  
+            
+            time_label = mlab.text(0.1,0.9,'',width=0.2)
+            time_label.property.color = (1.0,1.0,1.0)
+            time_label.text = 'Time: {:.2f} ns'.format(t/unit)
+
+            mlab.outline()
+            
+            x_latex = 'x/w_o'
+            y_latex = 'y/w_o'
+            z_latex = 'z/lambda'
+            
+            x_latex = '$x/w_o$'
+            y_latex = '$y/w_o$'
+            z_latex = '$z/\lambda$'
+            
+           # x_latex = mlabtex(0.,0.,.0,x_latex)
+            #y_latex = mlabtex(0.,0.,.0,x_latex)
+           # z_latex = mlabtex(0.,0.,.0,x_latex)
+            
+        
+            #mlab.axes(xlabel=x_latex, ylabel=y_latex, zlabel=z_latex,nb_labels=6 , ranges = (-L,L,-L,L,-Z,Z) )
+            #mlab.axes(xlabel='x [Å]', ylabel='y [Å]', zlabel='z [Å]',nb_labels=6 , ranges = (-L,L,-L,L,-Z,Z) )
+            #mlab.view(azimuth=60,elevation=60,distance=N*4)
+            colorbar = mlab.colorbar(orientation = 'vertical')
+            colorbar.scalar_bar_representation.position = [0.85, 0.1]
+            file = str(t) + '.png'
+            mlab.savefig(file)
+            mlab.show()
+
+
+
+    def animate3D(self, L_norm = 1, Z_norm = 1, unit = femtoseconds,time = 'femtoseconds', contrast_vals= [0.1, 0.25]):
+        self.simulation.Ψ_plot = self.simulation.Ψ/self.simulation.Ψmax
+        mlab.figure(bgcolor = (0,0,0), size=(700, 700))
+        
+        if 1==1:
+            psi = self.simulation.Ψ[0]
+            
+            abs_max = self.simulation.Ψmax
+            psi = np.abs((psi)/(abs_max))
+            
+            dt_store = self.simulation.total_time/self.simulation.store_steps
+
+
+            L = self.simulation.H.extent/2/Å/L_norm
+            Z = self.simulation.H.z_extent/2/Å/Z_norm
+            N = self.simulation.H.N
+            psi = np.where(psi > contrast_vals[1], contrast_vals[1],psi)
+            psi = np.where(psi < contrast_vals[0], contrast_vals[0],psi)
+            field = mlab.pipeline.scalar_field(psi)
+            vol = mlab.pipeline.volume(field)
+
+
+            # Update the shadow LUT of the volume module.
+            vol.update_ctf = True
+
+            mlab.outline()
+            x_latex = 'x/w_o'
+            y_latex = 'y/w_o'
+            z_latex = 'z/\lambda'
+            
+           # x_latex = mlabtex(0.,0.,.0,x_latex)
+            #y_latex = mlabtex(0.,0.,.0,x_latex)
+           # z_latex = mlabtex(0.,0.,.0,x_latex)
+            surf = mlab.mesh(self.simulation.H.particle_system.x,self.simulation.H.particle_system.y,psi)
+            mlab.colorbar(surf,orientation='vertical')
+        
+            mlab.axes(xlabel='x [Å]', ylabel='y [Å]', zlabel='z [Å]',nb_labels=6 , ranges = (-L,L,-L,L,-L,L) )
+            # Define a text label for time
+            time_label = mlab.text(0.1, 0.9, '', width=0.3, color=(1, 1, 1))  # White text color
+            
+            colorbar = mlab.colorbar(orientation='vertical')
+            
+            def update_time_label(t):
+                time_label.text = 'Time: {:.2f} {}'.format(t,time)
+
+
+            data = {'t': 0.0}
+            @mlab.animate(delay=10)
+            def animation():
+                while (1):
+                    data['t'] += 0.05
+                    k1 = int(data['t']) % (self.simulation.store_steps)
+                    psi = self.simulation.Ψ[k1]
+
+                    psi = np.abs((psi)/(abs_max))
+
+                    
+                    surf = mlab.mesh(self.simulation.H.particle_system.x,self.simulation.H.particle_system.y,psi)
+                    
+                    update_time_label(k1*dt_store/unit)
+                    mlab.view(azimuth=60,elevation=60,distance=N*3.5)
+                    
+                    yield
+                    file = str(k1) + '.png'
+                    #◘mlab.savefig(file)
+
+            ua = animation()
+            mlab.show()
+     

@@ -56,7 +56,7 @@ class SingleParticle(ParticleSystem):
         elif self.H.spatial_ndim == 3:
             px = np.fft.fftshift(np.fft.fftfreq(H.N, d = H.dx)) * hbar  * 2*np.pi
             py = np.fft.fftshift(np.fft.fftfreq(H.N, d = H.dx)) * hbar  * 2*np.pi
-            pz = np.fft.fftshift(np.fft.fftfreq(H.Nz, d = H.dz)) * hbar  * 2*np.pi
+            pz = np.fft.fftshift(np.fft.fftfreq(H.N, d = H.dx)) * hbar  * 2*np.pi
             px, py, pz = np.meshgrid(px, py, pz, indexing='ij')
 
 
