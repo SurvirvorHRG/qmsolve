@@ -166,7 +166,7 @@ visualization.animate()
 
 total_time = 10 * femtoseconds
 sim = TimeSimulation(hamiltonian = H, method = "split-step-cupy")
-sim.run(initial_wavefunction, total_time = total_time, dt = total_time/1000., store_steps = 20,non_linear_function=non_linear_potential)
+sim.run(initial_wavefunction, total_time = total_time, dt = total_time/1000., store_steps = 20)
 
 
 #=========================================================================================================#

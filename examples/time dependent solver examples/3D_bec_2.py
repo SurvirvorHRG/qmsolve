@@ -30,11 +30,14 @@ N=1000    # Number of condensed Bosons
 a=5.2383     # s-wave scattering length - Rb 5.2383 , Cs 3.45 - (nm)
 
 # Potentiel
-l=1            # Radial index
+l=1           # Radial index
 w0=30e-6   # Laser waist (mm) !1.0378725 pour l=1 0.0300185 pour l=6
 w1=30e-6    # Laser waist (mm) !1.0378725 pour l=1 0.0300185 pour l=6
 #w0=30e-6   # Laser waist (mm) ! 30 microns pour l=1 
 #w1=30e-6    # Laser waist (mm) !30 microns pour l=1 
+
+#w0=10e-6   # Laser waist (mm) ! 30 microns pour l=2
+#w1=10e-6    # Laser waist (mm) !30 microns pour l=2 
 #w0=0.1e-6   #  18 microns pour l=6
 #w1=0.1e-6    #  18 microns pour l=6
 muc=173.3014     # Pot. chim. du condensat (nK) !173.3014 pour l=1 86.7018 pour l=6
@@ -166,9 +169,9 @@ sim.run(initial_wavefunction, total_time = total_time, dt = total_time/1000., st
 
 visualization = init_visualization(sim)
 #visualization.plot(t = 0 * femtoseconds,xlim=[-15* Å,15* Å], ylim=[-15* Å,15* Å], potential_saturation = 0.5, wavefunction_saturation = 0.2)
-#visualization.plot(t = 0 ,unit = femtoseconds,contrast_vals=[0.5,1])
-visualization.animate(unit = femtoseconds,contrast_vals=[0.1,1])
+#visualization.plot3D(t = 200* femtoseconds ,unit = femtoseconds,contrast_vals=[0.1,1])
+#visualization.animate3D(unit = femtoseconds,contrast_vals=[0.1,1])
 for i in range(21):
-    visualization.plot2D(t = i * total_time/20 ,unit = femtoseconds)
+    visualization.plot3D(t = i * total_time/20 ,unit = femtoseconds)
 #visualization.plot_type = 'contour'
 #visualization.animate(xlim=[-15* Å,15* Å], ylim=[-15* Å,15* Å], potential_saturation = 0.5, wavefunction_saturation = 0.2, animation_duration = 10, save_animation = False)
