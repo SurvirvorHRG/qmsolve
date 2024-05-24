@@ -502,7 +502,7 @@ class TimeVisualizationSingleParticle1D(TimeVisualization):
         potential_plot = ax.plot(x/Å, (self.simulation.H.Vgrid + self.simulation.Vmin)/(self.simulation.Vmax-self.simulation.Vmin),color='red', label='$V(x)$')  
         #real_plot = ax.plot(x/Å, np.real(self.simulation.Ψ_plot[index]), label='$Re|\psi(x)|$')
         #imag_plot = ax.plot(x/Å, np.imag(self.simulation.Ψ_plot[index]), label='$Im|\psi(x)|$')
-        abs_plot = ax.plot(x/Å, np.abs(self.simulation.Ψ_plot[index]), label='$|\psi(x)|$', color='green')
+        abs_plot = ax.plot(x/Å, np.abs(self.simulation.Ψ_plot[index])**2, label='$|\psi(x)|$', color='green')
         ax.legend('lower left')
 
         plt.show()

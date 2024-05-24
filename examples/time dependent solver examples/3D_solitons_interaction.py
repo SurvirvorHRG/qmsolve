@@ -26,19 +26,19 @@ conv_K_au=kBoltzmann/auenergy
 
 # Parameters
 mass=86.909  # Atoms mass Cs 132.905 , Rb 86.909 (united atomic unit of mass)
-N=1000    # Number of condensed Bosons
+N=1000000   # Number of condensed Bosons
 a=5.2383     # s-wave scattering length - Rb 5.2383 , Cs 3.45 - (nm)
 
 # Potentiel
-l=6             # Radial index
+l=1             # Radial index
 #w0=30e-6   # Laser waist (mm) !1.0378725 pour l=1 0.0300185 pour l=6
 #w1=30e-6    # Laser waist (mm) !1.0378725 pour l=1 0.0300185 pour l=6
-#w0=30e-6   # Laser waist (mm) ! 30 microns pour l=1 
-#w1=30e-6    # Laser waist (mm) !30 microns pour l=1 
-w0=0.1e-6   #  18 microns pour l=6
-w1=0.1e-6    #  18 microns pour l=6
-#muc=173.3014     # Pot. chim. du condensat (nK) !173.3014 pour l=1 86.7018 pour l=6
-muc=86.7018     # Pot. chim. du condensat (nK) !173.3014 pour l=1 86.7018 pour l=6
+w0=30e-6   # Laser waist (mm) ! 30 microns pour l=1 
+w1=30e-6    # Laser waist (mm) !30 microns pour l=1 
+#w0=0.1e-6   #  18 microns pour l=6
+#w1=0.1e-6    #  18 microns pour l=6
+muc=173.3014     # Pot. chim. du condensat (nK) !173.3014 pour l=1 86.7018 pour l=6
+#muc=86.7018     # Pot. chim. du condensat (nK) !173.3014 pour l=1 86.7018 pour l=6
 Power=1.0       # Laser Power (W)
 delta=10.0      # Detuning / 2Pi (GHz)
 Is=16.0         # Saturation intensity (W/m^2)
@@ -92,6 +92,7 @@ print(' Sizez = ',Sizez*(conv_au_ang/1.0e4),' microns.')
 
 #interaction potential
 def free_fall_potential(particle):
+    print(particle.z.shape)
     V = np.zeros_like(particle.x)
     return V
 
@@ -109,6 +110,7 @@ def LG_potential(particle):
 
 
 def non_linear_potential(psi,t,particle):
+    print(particle.z.shape)
    
     if t < (20  * femtoseconds):
         a = 10.46
@@ -126,7 +128,7 @@ N_point = 100
 #build the Hamiltonian of the system
 H = Hamiltonian(particles=SingleParticle(),
                 potential=free_fall_potential,
-                spatial_ndim=3, N=100,Nz = 100,extent=500* Å,z_extent=500* Å)
+                spatial_ndim=3, N=100,extent=500* Å,z_extent=500* Å)
 
 
 
@@ -177,8 +179,8 @@ sim.run(initial_wavefunction, total_time = total_time, dt = total_time/1000., st
 visualization = init_visualization(sim)
 #visualization.plot(t = 0 * femtoseconds,xlim=[-15* Å,15* Å], ylim=[-15* Å,15* Å], potential_saturation = 0.5, wavefunction_saturation = 0.2)
 #visualization.plot(t = 0 ,unit = femtoseconds,contrast_vals=[0.5,1])
-visualization.animate(unit = femtoseconds,contrast_vals=[0.1,1])
+#visualization.animate(unit = femtoseconds,contrast_vals=[0.1,1])
 for i in range(21):
-    visualization.plot2D(t = i * total_time/20 ,unit = femtoseconds)
+    visualization.plot3D(t = i * total_time/20 ,unit = femtoseconds)
 #visualization.plot_type = 'contour'
 #visualization.animate(xlim=[-15* Å,15* Å], ylim=[-15* Å,15* Å], potential_saturation = 0.5, wavefunction_saturation = 0.2, animation_duration = 10, save_animation = False)

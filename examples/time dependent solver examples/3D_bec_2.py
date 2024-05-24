@@ -100,7 +100,9 @@ def free_fall_potential(particle):
 
 g = 9.81
 def gravity_potential(particle):
+    V = np.zeros_like(particle.x)
     V = -g*N*mass*particle.z
+    V = g*N*mass*particle.z
     return V
 
 def LG_potential(particle):
@@ -119,7 +121,7 @@ N_point = 100
 #build the Hamiltonian of the system
 H = Hamiltonian(particles=SingleParticle(),
                 potential=gravity_potential,
-                spatial_ndim=3, N=100,Nz = 100,extent=500* Å,z_extent=500* Å)
+                spatial_ndim=3, N=100,extent=500* Å,z_extent=500* Å)
 
 
 
@@ -160,7 +162,7 @@ visualization.animate()
 
 total_time = 500 * femtoseconds
 sim = TimeSimulation(hamiltonian = H, method = "split-step-cupy")
-sim.run(initial_wavefunction, total_time = total_time, dt = total_time/1000., store_steps = 20,non_linear_function=non_linear_f)
+sim.run(initial_wavefunction, total_time = total_time, dt = (0.01 * femtoseconds), store_steps = 100,non_linear_function=None)
 
 
 #=========================================================================================================#
@@ -171,7 +173,9 @@ visualization = init_visualization(sim)
 #visualization.plot(t = 0 * femtoseconds,xlim=[-15* Å,15* Å], ylim=[-15* Å,15* Å], potential_saturation = 0.5, wavefunction_saturation = 0.2)
 #visualization.plot3D(t = 200* femtoseconds ,unit = femtoseconds,contrast_vals=[0.1,1])
 #visualization.animate3D(unit = femtoseconds,contrast_vals=[0.1,1])
-for i in range(21):
-    visualization.plot3D(t = i * total_time/20 ,unit = femtoseconds)
+visualization.final_plot(L_norm = 1, Z_norm = 1,unit = femtoseconds,time = 'ns')
+visualization.final_plot3D(L_norm = 1, Z_norm = 1,unit = femtoseconds,time = 'ns')
+#for i in range(21):
+    #visualization.plot3D(t = i * total_time/20 ,unit = femtoseconds)
 #visualization.plot_type = 'contour'
 #visualization.animate(xlim=[-15* Å,15* Å], ylim=[-15* Å,15* Å], potential_saturation = 0.5, wavefunction_saturation = 0.2, animation_duration = 10, save_animation = False)

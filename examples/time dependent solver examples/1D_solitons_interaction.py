@@ -3,7 +3,6 @@ import numpy as np
 from qmsolve import visualization
 from qmsolve import Hamiltonian, SingleParticle, TimeSimulation, init_visualization, nanoseconds,microseconds,nm,s,seconds, m,m_e, Å, J, Hz, kg, hbar, femtoseconds,picoseconds
 import math
-import cupy as cp
 
 # conversion units
 
@@ -107,6 +106,8 @@ def psi_0(particle):				# Initial wavefunction: a Gaussian
 	return f;
 #interaction potential
 def V(particle):
+    #♥return np.zeros_like(particle.x)
+    return -m_e*particle.x
     return -np.exp(-((particle.x)/4)**2)
 
 def V_non_linear(psi,t,particle):		
@@ -211,7 +212,7 @@ visualization.animate()
 
 total_time = 10 
 sim = TimeSimulation(hamiltonian = H, method = "split-step")
-sim.run(psi_0, total_time = total_time, dt = 0.0002, store_steps = 400, non_linear_function=V_non_linear)
+sim.run(psi_0, total_time = total_time, dt = 0.0002, store_steps = 400, non_linear_function=None)
 
 
 #=========================================================================================================#

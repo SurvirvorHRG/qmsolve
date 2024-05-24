@@ -29,7 +29,7 @@ class SingleParticle(ParticleSystem):
 
 
         elif H.spatial_ndim ==3:
-            self.x, self.y, self.z  = np.mgrid[ -H.extent/2: H.extent/2:H.N*1j, -H.extent/2: H.extent/2:H.N*1j, -H.z_extent/2: H.z_extent/2:H.Nz*1j]
+            self.x, self.y, self.z  = np.mgrid[ -H.extent/2: H.extent/2:H.N*1j, -H.extent/2: H.extent/2:H.N*1j, -H.z_extent/2: H.z_extent/2:H.N*1j]
             H.ndim = 3
 
     def compute_momentum_space(self, H):

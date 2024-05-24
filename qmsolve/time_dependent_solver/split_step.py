@@ -135,7 +135,7 @@ class SplitStepCupy(Method):
             for j in range(Nt_per_store_step):
                 t_ += 1
                 if non_linear_function is not None:
-                    Ur = cp.exp(-0.5j*(self.simulation.dt/hbar)*(cp.array(self.H.Vgrid) + non_linear_function(tmp,(t_)*self.simulation.dt,self.H.particle_system)))
+                    Ur = cp.exp(-0.5j*(self.simulation.dt/hbar)*(cp.array(self.H.Vgrid) + cp.array(non_linear_function(tmp,(t_)*self.simulation.dt,self.H.particle_system))))
                 #Ur *= cp.exp(-0.5j*(self.simulation.dt/hbar)*non_linear_function(tmp))
                 c = cp.fft.fftshift(cp.fft.fftn(Ur*tmp))
                 tmp = Ur*cp.fft.ifftn( cp.fft.ifftshift(Uk*c))

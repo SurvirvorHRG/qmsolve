@@ -1,6 +1,6 @@
 from tvtk.util import ctf
 import numpy as np
-from qmsolve import Hamiltonian, SingleParticle, TimeSimulation, init_visualization, nanoseconds,microseconds,nm,s,seconds, m, Å, J, Hz, kg, hbar, femtoseconds,picoseconds
+from qmsolve import Hamiltonian, SingleParticle, TimeSimulation, init_visualization, nanoseconds,picoseconds,microseconds,nm,s,seconds, ms,m, Å, J, Hz, kg, hbar, femtoseconds,picoseconds
 from scipy.special import ellipj
 from scipy.constants import epsilon_0
 from scipy.special import mathieu_cem
@@ -14,7 +14,7 @@ from matplotlib import animation
 
 # Parameters in SI converted to atomic units
 uaumass = 1.66053873e-27*kg
-N = 1000
+N = 1
 mass = 86.909
 mass = mass*uaumass
 
@@ -82,25 +82,39 @@ def psi_function(x, y, z):
     return radial_part(x, y, z) * angular_part(np.arctan2(y, x), z) * axial_part(z)
 
 #interaction potential
-def gravity_potential(particle):
-    
-   # A coder: particle.z = -1/2*g*t**2
+def pot(particle):
+    #print(particle.z.shape)
+    #particle.z = -1/2*g*t**2
 
-    V = -g*mass*particle.z
+    #V = -g*mass*particle.z
     #V = -10*particle.z
     V = np.zeros_like(particle.x)
     return V
 
+def gravity_potential(particle):
+    # On essaye aussi : avec V = mass*g*particle.z particle.z = -1/2*g*t**2
+    # On essaye aussi : avec V = -mass*g*particle.z particle.z = -1/2*g*t**2
+    # On essaye aussi : avec V = mass*g*particle.z particle.z = 1/2*g*t**2
+    # On essaye aussi : avec V = -mass*g*particle.z particle.z = 1/2*g*t**2
+
+    #V = -g*mass*particle.z
+    #V = -particle.z
+    #V = -mass*N*g*particle.z
+    V = mass*N*g*particle.z
+    #V = np.zeros_like(particle.x)
+    return V
+
 def yeet(psi,t,particle):
-    particle.z = -1/2*g*t**2
-    V = -g*mass*particle.z
+    #for i in range(particle.z.shape[2]):
+        #particle.z[0,0,i] = +1/2*g*t**2 + particle.z[0,0,i]
+    V = -particle.z
     return V
 
 
 #build the Hamiltonian of the system
 H = Hamiltonian(particles=SingleParticle(),
                 potential=gravity_potential,
-                spatial_ndim=3, N=200,extent=4*w_o * Å,z_extent = 4*lambda_*Å)
+                spatial_ndim=3, N=150,extent=4*w_o * Å,z_extent = 4*lambda_*Å)
 
 
 def initial_wavefunction(particle):
@@ -115,7 +129,7 @@ def initial_wavefunction(particle):
 
 total_time = 100 * nanoseconds
 sim = TimeSimulation(hamiltonian = H, method = "split-step-cupy")
-sim.run(initial_wavefunction, total_time = total_time, dt = total_time/1000., store_steps = 20)
+sim.run(initial_wavefunction, total_time = total_time,dt = (0.01 * nanoseconds), store_steps = 20,non_linear_function=None)
 
 
 #=========================================================================================================#
@@ -146,6 +160,8 @@ visualization.plot(t = 6*nanoseconds ,L_norm = w_o, Z_norm = lambda_,unit = nano
 visualization.plot(t = 8*nanoseconds ,L_norm = w_o, Z_norm = lambda_,unit = nanoseconds)
 visualization.plot(t = 10*nanoseconds ,L_norm = w_o, Z_norm = lambda_,unit = nanoseconds)
 """
-
+visualization.animate(L_norm = w_o, Z_norm = lambda_,unit = nanoseconds,time = 'ns',contrast_vals=[0.1,0.15])
+#visualization.final_plot_m(L_norm = w_o, Z_norm = lambda_,unit = nanoseconds,time = 'ns')
+#visualization.final_plot3D_m(L_norm = w_o, Z_norm = lambda_,unit = nanoseconds,time = 'ns')
 #visualization.animate(L_norm = w_o, Z_norm = lambda_,unit = nanoseconds,time = 'ns',contrast_vals=[0.1,0.15])
 #visualization.plot(t = total_time ,L_norm = w_o, Z_norm = lambda_,unit =nanoseconds,contrast_vals= [0.1, 0.15])

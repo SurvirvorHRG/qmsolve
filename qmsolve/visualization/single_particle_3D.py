@@ -489,6 +489,247 @@ class TimeVisualizationSingleParticle3D(TimeVisualization):
         self.simulation = simulation
         self.H = simulation.H
         self.plot_type = 'abs-volume'
+        
+    def final_plot3D_m(self,L_norm = 1, Z_norm = 1,unit = femtoseconds, figsize=(15, 15),time="ns"):
+        
+        from mpl_toolkits.mplot3d import Axes3D
+        from matplotlib import cm
+        
+        z = self.simulation.H.particle_system.z[0,0,:]
+        total_time = self.simulation.Nt_per_store_step*self.simulation.store_steps*self.simulation.dt
+        tvec=np.linspace(0,self.simulation.Nt_per_store_step*self.simulation.store_steps*self.simulation.dt,self.simulation.store_steps+1)
+        tt,zz=np.meshgrid(tvec,z)
+        
+        # Generate the 3D plot
+        fig = plt.figure("Evolution of 1D cut at y=0")
+        ax = fig.add_subplot(111, projection='3d')
+        self.simulation.Ψ_plot = self.simulation.Ψ/self.simulation.Ψmax
+        toplot= np.abs(self.simulation.Ψ_plot[:,49,49,:])**2
+        toplot = toplot.T
+
+        # Generates the plot
+        # Plot the surface
+        surf = ax.plot_surface(zz/Z_norm/Å, tt/unit, toplot, cmap=cm.jet, linewidth=0, antialiased=False)
+        
+        # Add colorbar and labels
+        cbar = fig.colorbar(surf, shrink=0.5, aspect=5)
+        cbar.set_label('$|\psi|^2$', fontsize=14)
+        ax.set_xlabel('$z/\lambda$')
+        ax.set_ylabel('$t\ (ns)$')
+        ax.set_zlabel('$|Ψ|^2$')
+
+
+        
+        L = self.simulation.H.extent/2/Å/L_norm
+        Z = self.simulation.H.z_extent/2/Å/Z_norm
+        #tmp = ax.imshow(toplot, cmap='jet')  
+        #fig.colorbar(tmp,ax = ax)
+       
+        plt.show()      # Displays figure on screen
+        
+        mlab.figure(bgcolor=(0,0,0), size=(700, 700))
+        L = self.simulation.H.extent/2/Å/L_norm
+        Z = self.simulation.H.z_extent/2/Å/Z_norm
+        N = self.simulation.H.N
+        
+        #surf = mlab.mesh(self.simulation.H.particle_system.x[:,:,0],self.simulation.H.particle_system.y[:,:,0],psi[:,:,49],colormap='jet')
+        #surf = mlab.surf(zz/Z_norm/Å,tt/unit,toplot,warp_scale="auto",colormap='jet')
+        surf = mlab.surf(toplot,warp_scale="auto",colormap='jet')
+        
+        #surf = mlab.surf(psi[:,:,49],colormap='jet')
+        mlab.colorbar(surf,title='psi^2',orientation='vertical')  
+              
+        mlab.outline()
+        
+        #mlab.xlabel('x')
+        #mlab.ylabel('t')
+        #mlab.zlabel('|\psi|^2')
+         
+        x_latex = '$z/\lambda$'
+        y_latex = '$t\ (ns)$'
+        z_latex = ''
+         
+        #x_latex = '$x/w_o$'
+        #y_latex = '$y/w_o$'
+        #z_latex = '$z/\lambda$'
+         
+        # x_latex = mlabtex(0.,0.,.0,x_latex)
+         #y_latex = mlabtex(0.,0.,.0,x_latex)
+        # z_latex = mlabtex(0.,0.,.0,x_latex)
+         
+         
+        mlab.axes(xlabel=x_latex, ylabel=y_latex, zlabel=z_latex,nb_labels=3 , ranges = (-Z,Z,0,total_time/unit,np.min(toplot),np.max(toplot)) )
+        #mlab.axes(xlabel='x [Å]', ylabel='y [Å]',nb_labels=6 , ranges = (-L,L,-L,L,-Z,Z) )
+        colorbar = mlab.colorbar(orientation = 'vertical')
+        colorbar.scalar_bar_representation.position = [0.85, 0.1]
+        #file = str(t) + '.png'
+        #mlab.savefig(file)
+        mlab.show()
+        
+
+    def final_plot_m(self,L_norm = 1, Z_norm = 1,unit = femtoseconds, figsize=(15, 15),time="ns"):
+        
+        from mpl_toolkits.mplot3d import Axes3D
+        
+        z = self.simulation.H.particle_system.z[0,0,:]
+        tvec=np.linspace(0,self.simulation.Nt_per_store_step*self.simulation.store_steps*self.simulation.dt,self.simulation.store_steps+1)
+        tt,zz=np.meshgrid(tvec,z)
+        plt.figure("Evolution of 1D cut at y=0")              # figure
+        plt.clf()                       # clears the figure
+        
+        # Generates the plot
+        
+        self.simulation.Ψ_plot = self.simulation.Ψ/self.simulation.Ψmax
+        toplot= np.abs(self.simulation.Ψ_plot[:,49,49,:])**2
+        toplot = toplot.T
+        #if fixmaximum>0:
+            #toplot[toplot>fixmaximum]=fixmaximum 
+        
+        from matplotlib import cm
+        #print(zz[:,0])
+        #print(tt[:,1]/unit)
+        plt.contourf(zz/Z_norm/Å, tt/unit, toplot, 100, cmap=cm.jet, linewidth=0, antialiased=False)
+        #fig = plt.figure(figsize=figsize)
+        #ax = fig.add_subplot(1, 1, 1)
+        L = self.simulation.H.extent/2/Å/L_norm
+        Z = self.simulation.H.z_extent/2/Å/Z_norm
+        #tmp = ax.imshow(toplot, cmap='jet')  
+        #fig.colorbar(tmp,ax = ax)
+        
+        cbar=plt.colorbar()               # colorbar
+        
+        
+        plt.xlabel('$z/\lambda$')               # choose axes labels, title of the plot and axes range
+        plt.ylabel('$t\ (ns)$')
+        cbar.set_label('$|\psi|^2$',fontsize=14)
+        
+        #if fixmaximum>0:            # chooses the maximum for the color scale
+            #plt.clim(0,fixmaximum)
+        
+#        figname = folder+'/sectx.png'
+#        plt.savefig(figname)    # Saves the figure
+        plt.show()      # Displays figure on screen
+        
+    def final_plot3D(self,L_norm = 1, Z_norm = 1,unit = femtoseconds, figsize=(15, 15),time="ns"):
+        
+        from mpl_toolkits.mplot3d import Axes3D
+        from matplotlib import cm
+        
+        z = self.simulation.H.particle_system.z[0,0,:]
+        total_time = self.simulation.Nt_per_store_step*self.simulation.store_steps*self.simulation.dt
+        tvec=np.linspace(0,self.simulation.Nt_per_store_step*self.simulation.store_steps*self.simulation.dt,self.simulation.store_steps+1)
+        tt,zz=np.meshgrid(tvec,z)
+        
+        # Generate the 3D plot
+        fig = plt.figure("Evolution of 1D cut at y=0")
+        ax = fig.add_subplot(111, projection='3d')
+        self.simulation.Ψ_plot = self.simulation.Ψ/self.simulation.Ψmax
+        toplot= np.abs(self.simulation.Ψ_plot[:,49,49,:])**2
+        toplot = toplot.T
+
+        # Generates the plot
+        # Plot the surface
+        surf = ax.plot_surface(zz/Z_norm/Å, tt/unit, toplot, cmap=cm.jet, linewidth=0, antialiased=False)
+        
+        # Add colorbar and labels
+        cbar = fig.colorbar(surf, shrink=0.5, aspect=5)
+        cbar.set_label('$|\psi|^2$', fontsize=14)
+        ax.set_xlabel('$z$')
+        ax.set_ylabel('$t\ (ns)$')
+        ax.set_zlabel('$|Ψ|^2$')
+
+
+        
+        L = self.simulation.H.extent/2/Å/L_norm
+        Z = self.simulation.H.z_extent/2/Å/Z_norm
+        #tmp = ax.imshow(toplot, cmap='jet')  
+        #fig.colorbar(tmp,ax = ax)
+       
+        plt.show()      # Displays figure on screen
+        
+        mlab.figure(bgcolor=(0,0,0), size=(1400, 1400))
+        L = self.simulation.H.extent/2/Å/L_norm
+        Z = self.simulation.H.z_extent/2/Å/Z_norm
+        N = self.simulation.H.N
+        
+        #surf = mlab.mesh(zz/Z_norm/Å,tt/unit,toplot,colormap='jet')
+        surf = mlab.surf(toplot,warp_scale="auto",colormap='jet')
+        #surf = mlab.surf(toplot,warp_scale="auto",colormap='jet')
+        
+        #surf = mlab.surf(psi[:,:,49],colormap='jet')
+        mlab.colorbar(surf,title='psi',orientation='vertical')  
+              
+        mlab.outline()
+        
+        #mlab.xlabel('x')
+        #mlab.ylabel('t')
+        #mlab.zlabel('|\psi|^2')
+         
+        x_latex = 'z'
+        y_latex = 't (ns)'
+        z_latex = ''
+         
+        #x_latex = '$x/w_o$'
+        #y_latex = '$y/w_o$'
+        #z_latex = '$z/\lambda$'
+         
+        # x_latex = mlabtex(0.,0.,.0,x_latex)
+         #y_latex = mlabtex(0.,0.,.0,x_latex)
+        # z_latex = mlabtex(0.,0.,.0,x_latex)
+         
+         
+        mlab.axes(xlabel=x_latex, ylabel=y_latex, zlabel=z_latex,nb_labels=3 , ranges = (-Z,Z,0,total_time/unit,np.min(toplot),np.max(toplot)) )
+        #mlab.axes(xlabel='x [Å]', ylabel='y [Å]',nb_labels=6 , ranges = (-L,L,-L,L,-Z,Z) )
+        colorbar = mlab.colorbar(orientation = 'vertical')
+        colorbar.scalar_bar_representation.position = [0.85, 0.1]
+        #file = str(t) + '.png'
+        #mlab.savefig(file)
+        mlab.show()
+        
+
+    def final_plot(self,L_norm = 1, Z_norm = 1,unit = femtoseconds, figsize=(15, 15),time="ns"):
+        
+        from mpl_toolkits.mplot3d import Axes3D
+        
+        z = self.simulation.H.particle_system.z[0,0,:]
+        tvec=np.linspace(0,self.simulation.Nt_per_store_step*self.simulation.store_steps*self.simulation.dt,self.simulation.store_steps+1)
+        tt,zz=np.meshgrid(tvec,z)
+        plt.figure("Evolution of 1D cut at y=0")              # figure
+        plt.clf()                       # clears the figure
+        
+        # Generates the plot
+        
+        self.simulation.Ψ_plot = self.simulation.Ψ/self.simulation.Ψmax
+        toplot= np.abs(self.simulation.Ψ_plot[:,49,49,:])**2
+        toplot = toplot.T
+        #if fixmaximum>0:
+            #toplot[toplot>fixmaximum]=fixmaximum 
+        
+        from matplotlib import cm
+        #print(zz[:,0])
+        #print(tt[:,1]/unit)
+        plt.contourf(zz/Z_norm/Å, tt/unit, toplot, 100, cmap=cm.jet, linewidth=0, antialiased=False)
+        #fig = plt.figure(figsize=figsize)
+        #ax = fig.add_subplot(1, 1, 1)
+        L = self.simulation.H.extent/2/Å/L_norm
+        Z = self.simulation.H.z_extent/2/Å/Z_norm
+        #tmp = ax.imshow(toplot, cmap='jet')  
+        #fig.colorbar(tmp,ax = ax)
+        
+        cbar=plt.colorbar()               # colorbar
+        
+        
+        plt.xlabel('$z$')               # choose axes labels, title of the plot and axes range
+        plt.ylabel('$t\ (ns)$')
+        cbar.set_label('$|\psi|^2$',fontsize=14)
+        
+        #if fixmaximum>0:            # chooses the maximum for the color scale
+            #plt.clim(0,fixmaximum)
+        
+#        figname = folder+'/sectx.png'
+#        plt.savefig(figname)    # Saves the figure
+        plt.show()      # Displays figure on screen
+        
 
 
         
@@ -669,6 +910,7 @@ class TimeVisualizationSingleParticle3D(TimeVisualization):
 
         mlab.figure(bgcolor=(0,0,0), size=(700, 700))
         self.simulation.Ψ_plot = self.simulation.Ψ/self.simulation.Ψmax
+        #self.simulation.Ψ_plot = self.simulation.Ψ
         index = int((self.simulation.store_steps)/self.simulation.total_time*t)   
         """
         psi = self.simulation.Ψ_plot[index]
@@ -682,7 +924,9 @@ class TimeVisualizationSingleParticle3D(TimeVisualization):
         mlab.show()
         """
         psi = self.simulation.Ψ_plot[index]
-        psi = np.abs(psi)**2
+        psi = np.real(psi)
+        #psi = psi/np.sqrt(np.sum(psi))
+        #psi = np.abs(psi)**2
          
         # print(psi)
         
@@ -692,6 +936,8 @@ class TimeVisualizationSingleParticle3D(TimeVisualization):
         
         #surf = mlab.mesh(self.simulation.H.particle_system.x[:,:,0],self.simulation.H.particle_system.y[:,:,0],psi[:,:,49],colormap='jet')
         surf = mlab.surf(psi[:,:,49],warp_scale="auto",colormap='jet')
+        
+        #surf = mlab.surf(psi[:,:,49],colormap='jet')
         mlab.colorbar(surf,orientation='vertical')  
          
         time_label = mlab.text(0.1,0.9,'',width=0.2)
@@ -714,7 +960,7 @@ class TimeVisualizationSingleParticle3D(TimeVisualization):
          
          
          #mlab.axes(xlabel=x_latex, ylabel=y_latex, zlabel=z_latex,nb_labels=6 , ranges = (-L,L,-L,L,-Z,Z) )
-         #mlab.axes(xlabel='x [Å]', ylabel='y [Å]',nb_labels=6 , ranges = (-L,L,-L,L,-Z,Z) )
+        mlab.axes(xlabel='x [Å]', ylabel='y [Å]',nb_labels=6 , ranges = (-L,L,-L,L,-Z,Z) )
         colorbar = mlab.colorbar(orientation = 'vertical')
         colorbar.scalar_bar_representation.position = [0.85, 0.1]
         file = str(t) + '.png'
@@ -948,9 +1194,9 @@ class TimeVisualizationSingleParticle3D(TimeVisualization):
             vol.update_ctf = True
 
             mlab.outline()
-            x_latex = 'x/w_o'
-            y_latex = 'y/w_o'
-            z_latex = 'z/\lambda'
+            x_latex = '$x/w_o$'
+            y_latex = '$y/w_o$'
+            z_latex = '$z/\lambda$'
             
            # x_latex = mlabtex(0.,0.,.0,x_latex)
             #y_latex = mlabtex(0.,0.,.0,x_latex)
