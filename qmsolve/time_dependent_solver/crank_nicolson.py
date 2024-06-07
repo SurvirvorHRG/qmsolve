@@ -56,7 +56,7 @@ class CrankNicolson(Method):
         self.simulation.Vmin = np.amin(self.H.Vgrid)
         self.simulation.Vmax = np.amax(self.H.Vgrid)
 
-    def run(self, initial_wavefunction, total_time, dt, store_steps = 1):
+    def run(self, initial_wavefunction, total_time, dt, store_steps = 1, non_linear_function = None):
 
         self.simulation.store_steps = store_steps
         dt_store = total_time/store_steps
@@ -137,7 +137,7 @@ class CrankNicolsonCupy(Method):
         self.simulation.Vmin = np.amin(self.H.Vgrid)
         self.simulation.Vmax = np.amax(self.H.Vgrid)
 
-    def run(self, initial_wavefunction, total_time, dt, store_steps = 1):
+    def run(self, initial_wavefunction, total_time, dt, store_steps = 1, non_linear_function = None):
         import cupy as cp 
         from cupyx.scipy import sparse
 
@@ -169,8 +169,9 @@ class CrankNicolsonCupy(Method):
 
 
         BETA = 0.5j*self.simulation.dt/hbar
-
-        H_matrix = sparse.csr.csr_matrix(self.H.T + self.H.V)
+        import cupyx.scipy.sparse
+#        H_matrix = sparse.csr.csr_matrix(self.H.T + self.H.V)
+        H_matrix = cupyx.scipy.sparse.csr_matrix(self.H.T + self.H.V)
         A = I + BETA*H_matrix
         B = I - BETA*H_matrix
         #We are going to solve the equation A*Ψ_{i+1} = B*Ψ_{i} for Ψ_{i+1}

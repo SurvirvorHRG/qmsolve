@@ -58,7 +58,7 @@ class TimeSimulation:
 
 
 
-    def run(self, initial_wavefunction, total_time, dt, store_steps = 1, non_linear_function = None):
+    def run(self, initial_wavefunction, total_time, dt, store_steps = 1, non_linear_function = None, g = 1):
         """
         """
-        self.method.run(initial_wavefunction, total_time, dt, store_steps, non_linear_function)
+        self.method.run(initial_wavefunction, total_time, dt, store_steps, non_linear_function,g)

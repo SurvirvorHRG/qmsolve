@@ -360,6 +360,44 @@ class TimeVisualizationSingleParticle1D(TimeVisualization):
         self.simulation = simulation
         self.H = simulation.H
         
+    def plotSI(self, t, xlim=None, figsize=(16/9 *5.804 * 0.9,5.804)):
+
+
+        self.simulation.Ψ_plot = self.simulation.Ψ/self.simulation.Ψmax
+        plt.style.use("dark_background")
+
+        fig = plt.figure(figsize=figsize)
+        
+        ax = fig.add_subplot(1, 1, 1)
+
+        ax.set_xlabel("[Å]")
+        ax.set_title("$\psi(x,t)$")
+
+        time_ax = ax.text(0.97,0.97, "",  color = "white",
+                        transform=ax.transAxes, ha="right", va="top")
+        time_ax.set_text(u"t = {} femtoseconds".format("%.3f"  % (t/femtoseconds)))
+
+
+
+        if xlim != None:
+            ax.set_xlim(np.array(xlim))
+
+
+        index = int((self.simulation.store_steps)/self.simulation.total_time*t)
+        
+        L = self.simulation.H.extent
+
+        x = np.linspace(-self.simulation.H.extent/2, self.simulation.H.extent/2, self.simulation.H.N)
+
+
+        potential_plot = ax.plot(x, (self.simulation.H.Vgrid + self.simulation.Vmin)/(self.simulation.Vmax-self.simulation.Vmin), label='$V(x)$')  
+        #real_plot = ax.plot(x, np.real(self.simulation.Ψ_plot[index]), label='$Re|\psi(x)|$')
+        #imag_plot = ax.plot(x, np.imag(self.simulation.Ψ_plot[index]), label='$Im|\psi(x)|$')
+        abs_plot = ax.plot(x, np.abs(self.simulation.Ψ_plot[index]), label='$|\psi(x)|$', color='white')
+        ax.legend('lower left')
+
+        plt.show()
+        
     def plot(self, t, xlim=None, figsize=(16/9 *5.804 * 0.9,5.804)):
 
 

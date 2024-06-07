@@ -71,17 +71,15 @@ factl=np.math.factorial(l)
 
 
 # calcul of gint
-gint = N*4*np.pi*a/mass
-print(' gint = ',gint )
+#gint = N*4*np.pi*a/mass
+#print(' gint = ',gint )
 coeff1 = 2*(10**(-12))
 coeff2 = 1*(10**(-12))
-Ul=(Power*(Gamma**2)*(2**l))/(factl*4*np.pi*delta*Is*(w1**(2*l+2)))
-U0=(Power*(Gamma**2)*(2**l))/(factl*4*np.pi*delta*Is*(w0**(2*l+2)))
-print('U1 = ', Ul)
-print('U0 = ', U0)
-omega_l=(1/mass)*(((2**l)*mass*Ul))**(1/(l+1))
+#Ul=(Power*(Gamma**2)*(2**l))/(factl*4*np.pi*delta*Is*(w1**(2*l+2)))
+#U0=(Power*(Gamma**2)*(2**l))/(factl*4*np.pi*delta*Is*(w0**(2*l+2)))
+#print('U1 = ', Ul)
+#print('U0 = ', U0)
 
-length_l=np.sqrt(1/(mass*omega_l))
 
 
 #Characteristic sizes (au)
@@ -89,7 +87,7 @@ length_l=np.sqrt(1/(mass*omega_l))
 #omega_l=(one/mass)*(((two**l)*mass*Ul)**(one/real(l+1,real_8)))
 gl = (1/((2*l)**2))*np.exp(math.lgamma(1/l)*math.lgamma(1/(2*l)) - math.lgamma((2*l + 3)/(2*l)))
 print('gl = ',gl)
-R0 = 7.5/(conv_au_ang/1.0e4)
+R0 = 15/(conv_au_ang/1.0e4)
 Rl = R0/(gl**(1/3))
 print(' Rl = ',Rl*(conv_au_ang/1.0e4),' microns.' )
 Dx = 2*Rl
@@ -102,28 +100,26 @@ print('Dy = ',Dy*conv_au_ang/1.0e4,' microns.')
 print('Dz = ',Dz*conv_au_ang/1.0e4,' microns.')
 Vl = 4*np.pi*gl*(Rl**3)
 print('Vl = ',Vl)
-Sizex=2*((muc/Ul)**(1/(2*l)))
-Sizez=2*((muc/U0)**(1/(2*l)))
-Sizey=Sizex
-Rx=Sizex/2
-Ry=Sizey/2
-Rz=Sizez/2
-omega_z = (2/Sizez)*np.sqrt(2*muc/mass)
-length_z=np.sqrt(1/(mass*omega_z))
-print(' Sizex = ',Sizex*(conv_au_ang/1.0e4),' microns.' )
-print(' Sizey = ',Sizey*(conv_au_ang/1.0e4),' microns.')
-print(' Sizez = ',Sizez*(conv_au_ang/1.0e4),' microns.')
+#Sizex=2*((muc/Ul)**(1/(2*l)))
+#Sizez=2*((muc/U0)**(1/(2*l)))
+#Sizey=Sizex
+#Rx=Sizex/2
+#Ry=Sizey/2
+#Rz=Sizez/2
+
+#print(' Sizex = ',Sizex*(conv_au_ang/1.0e4),' microns.' )
+#print(' Sizey = ',Sizey*(conv_au_ang/1.0e4),' microns.')
+#print(' Sizez = ',Sizez*(conv_au_ang/1.0e4),' microns.')
 
 #Calcul de U0 et U1
 gi=(4*np.pi*a)/mass
 print( 'gi = ',gi)
 B=((2*l+3)*gi*n0eq/(4*np.pi))*np.exp(math.lgamma((2*l+3)/(2*l))-math.lgamma(1/l)-math.lgamma((2*l+1)/(2*l)))
 print(' B = ',B)
-"""
-#U0=B*((2/Dx)**(2*l+2))*(2/Dz)
+U0=B*((2/Dx)**(2*l+2))*(2/Dz)
 print('U0 = ',U0,' au')
-#U1=B*((2/Dx)**2)*((2/Dz)**(2*l+1))
-#print( 'U1 = ',U1,' au')
+U1=B*((2/Dx)**2)*((2/Dz)**(2*l+1))
+print( 'U1 = ',U1,' au')
 
  
 
@@ -156,7 +152,7 @@ print(' potentiel chimique du condensat à l équilibre = ',muceq,' au')
 U1=muceq/((Dz/2)**(2*l))
 
 U0=muceq/((Dx/2)**(2*l))
-print('U1 = ', Ul)
+print('U1 = ', U1)
 print('U0 = ', U0)
 
  
@@ -206,38 +202,78 @@ waist0=(((Gamma**2)*Pn*(2**l))/(np.exp(math.lgamma(l+1))*4*np.pi*delta*Is*U0))**
 
 print('waist0 = ',waist0*aulength*1.0e6,' microns.')
 
-print('waist1 = ',waist1*aulength*1.0e6,' microns.')"""
+print('waist1 = ',waist1*aulength*1.0e6,' microns.')
+
+omega_l=(1/mass)*(((2**l)*mass*U0))**(1/(l+1))
+
+length_l=np.sqrt(1/(mass*omega_l))
+
+omega_z = (2/Dz)*np.sqrt(2*muc/mass)
+length_z=np.sqrt(1/(mass*omega_z))
+print(' omega_l = ',omega_l,' au')
+print(' omega_z = ',omega_z,' au')
+
 
 #interaction potential
-def free_fall_potential(particle):
+def free(particle):
     V = np.zeros_like(particle.x)
     return V
 
-g = 9.81
+g = 1e-9
 def gravity_potential(particle):
-    V = np.zeros_like(particle.x)
-    V = -g*N*mass*particle.z
-    V = g*N*mass*particle.z
-    V = -10*particle.z
+    #☻V = np.zeros_like(particle.x)
+    V = -g*mass*particle.z
+    #V = g*N*mass*particle.z
+    V = -1*particle.z
     return V
 
 def LG_potential(particle):
     rho = np.sqrt(particle.x**2+particle.y**2)
 
-    V = (0.5**l)*omega_l*((rho/length_l)**(2*l))*np.exp(-2*(rho**2)/w0**2) + (0.5**l)*omega_l*((particle.z/length_l)**(2*l))*np.exp(-2*(particle.z**2)/w0**2)
+    V = (0.5**l)*omega_l*((rho/length_l)**(2*l))*np.exp(-2*(rho**2)/waist0**2)
    # V = (0.5**l)*omega_l*((rho/length_l)**(2*l)) + (0.5**l)*omega_l*((particle.z/length_l)**(2*l))
     return V
+def non_linear_f2(psi,t,particle):
+    
+    
+    my_gi = 4*np.pi*a/mass
+    
+ 
+    return my_gi*np.abs(psi)**2
+
 
 
 def non_linear_f(psi,t,particle):
-    return gint*((np.abs(psi))**2)
+    
+    
+    a=5.2383 
+    
+    # calcul of gint
+    
+    #l = 1
+    
+    if t < 0.1 * microseconds:
+        a = 5
+    elif t < 0.2 * microseconds:
+        a = 5
+    else:
+        a = 5
+        
+    a=10*a/conv_au_ang
+    
+    #print( 'a = ',a*conv_au_ang/10,' nanometres.')
 
-N_point = 100
+    my_gi = 4*np.pi*a/mass
+    
+ 
+    return my_gi*np.abs(psi)**2
+
+N_point = 1000
 
 #build the Hamiltonian of the system
 H = Hamiltonian(particles=SingleParticle(),
-                potential=gravity_potential,
-                spatial_ndim=3, N=100,extent=500* Å,z_extent=500* Å)
+                potential=free,
+                spatial_ndim=2, N=N_point,extent=2000000* Å,z_extent=2000000* Å)
 
 
 
@@ -249,13 +285,11 @@ def initial_wavefunction(particle):
     psi = np.zeros(particle.x.shape, dtype = np.complex128)
     for i in range(N_point):
         for j in range(N_point):
-            for k in range(N_point):
-                if muc > V[i,j,k]:
-                    psi[i,j,k] = np.sqrt( (muc - V[i,j,k]) / gint)
-                else:
-                    psi[i,j,k] = 0
+            if muceq > V[i,j]:
+                psi[i,j] = np.sqrt( (muceq - V[i,j]) / gi )
+            else:
+                psi[i,j] = 0
     return psi
-
 
 
 
@@ -264,9 +298,9 @@ def initial_wavefunction(particle):
 #=========================================================================================================#
 
 
-total_time = 2000 * femtoseconds
+total_time = 2 * microseconds
 sim = TimeSimulation(hamiltonian = H, method = "split-step-cupy")
-sim.run(initial_wavefunction, total_time = total_time, dt = (0.1 * femtoseconds), store_steps = 100,non_linear_function=None)
+sim.run(initial_wavefunction, total_time = total_time, dt = (0.001 * microseconds), store_steps = 20,non_linear_function=non_linear_f2)
 
 
 #=========================================================================================================#
@@ -274,10 +308,15 @@ sim.run(initial_wavefunction, total_time = total_time, dt = (0.1 * femtoseconds)
 #=========================================================================================================#
 
 visualization = init_visualization(sim)
+#visualization.animate(unit = microseconds,time = 'microseonds',contrast_vals=[0.1,0.25])
+#visualization.plot3D(t = 0, unit = microseconds)
+for i in range(21):
+    visualization.plot3D_SI(t = i * total_time/20, unit = microseconds, L_norm = 1e4)
 #visualization.plot(t = 0 * femtoseconds,xlim=[-15* Å,15* Å], ylim=[-15* Å,15* Å], potential_saturation = 0.5, wavefunction_saturation = 0.2)
-visualization.plot3D(t = 0* femtoseconds ,unit = femtoseconds,contrast_vals=[0.1,1])
-#visualization.animate3D(unit = femtoseconds,contrast_vals=[0.1,1])
-#visualization.final_plot(L_norm = 1, Z_norm = 1,unit = femtoseconds,time = 'ns')
+#visualization.plot3D(t = 200* femtoseconds ,unit = femtoseconds,contrast_vals=[0.1,1])
+#visualization.plot3D(t = 0,unit = nanoseconds)
+#visualization.plot(t = 0,unit = nanoseconds)
+#visualization.final_plot3D(L_norm = 1, Z_norm = 1,unit = microseconds,time = 'microseconds')
 #visualization.final_plot3D(L_norm = 1, Z_norm = 1,unit = femtoseconds,time = 'ns')
 #for i in range(21):
     #visualization.plot3D(t = i * total_time/20 ,unit = femtoseconds)

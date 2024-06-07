@@ -1,6 +1,6 @@
 from tvtk.util import ctf
 import numpy as np
-from qmsolve import Hamiltonian, SingleParticle, TimeSimulation, init_visualization, nanoseconds,picoseconds,microseconds,nm,s,seconds, ms,m, Å, J, Hz, kg, hbar, femtoseconds,picoseconds
+from qmsolve import Hamiltonian, SingleParticle, TimeSimulation, init_visualization, nanoseconds,picoseconds,microseconds,nm,s,seconds, ms,m, Å, J, Hz, kg, femtoseconds,picoseconds
 from scipy.special import ellipj
 from scipy.constants import epsilon_0
 from scipy.special import mathieu_cem
@@ -12,22 +12,30 @@ import matplotlib.pyplot as plt
 from matplotlib import widgets
 from matplotlib import animation
 
-# Parameters in SI converted to atomic units
-uaumass = 1.66053873e-27*kg
+# Define parameters
+hbar=1.054571596e-34
+clight=299792458.0
+echarge=1.602176462e-19
+emass=9.10938188e-31
+pmass=1.67262158e-27
+uaumass=1.66053873e-27
+epsilon0=1.0e7/(4*np.pi*clight*clight)
+kBoltzmann=1.3806503e-23
 N = 1
 mass = 86.909
 mass = mass*uaumass
+#mass = 1
 
 a = 5.2383
-w_o = 4e-6*m
-Er = 7.16e-32*J
+w_o = 4e-6
+Er = 7.16e-32
 print('Er =', Er)
-epsilon = 41.6*Er
-Delta = -100e13*Hz
+epsilon = 4.1*Er
+Delta = -100e13
 l = 1
-P = 5e-3*(J*Hz)
+P = 35e-3
 
-lambda_ = 4.65e-7*m
+lambda_ = 4.65e-7
 k = 2*(np.pi)/lambda_
 
 omega_rho = np.sqrt((8 * epsilon) / (mass * w_o**2))
@@ -48,6 +56,7 @@ def radians_to_degrees(radians):
     return radians * (180.0 / math.pi)
 
 g = 9.8065  # Example value for gravity
+#g = 1
 #g = (9.8065*m)/(s*s)  # Example value for gravity
 
 
@@ -92,33 +101,23 @@ def pot(particle):
     return V
 
 def gravity_potential(particle):
-    # On essaye aussi : avec V = mass*g*particle.z particle.z = -1/2*g*t**2
-    # On essaye aussi : avec V = -mass*g*particle.z particle.z = -1/2*g*t**2
-    # On essaye aussi : avec V = mass*g*particle.z particle.z = 1/2*g*t**2
-    # On essaye aussi : avec V = -mass*g*particle.z particle.z = 1/2*g*t**2
-
-    #V = -g*mass*particle.z
-    #V = -particle.z
-    #V = -mass*N*g*particle.z
-    V = mass*N*g*particle.z
-    #V = np.zeros_like(particle.x)
+    V = g*mass*particle.z
     return V
 
-def yeet(psi,t,particle):
-    #for i in range(particle.z.shape[2]):
-        #particle.z[0,0,i] = +1/2*g*t**2 + particle.z[0,0,i]
-    V = -particle.z
+def gravity(psi,t,particle):
+    for i in range(particle.z.shape[2]):
+        particle.z[0,0,i] = -1/2*g*t**2
+    V = np.zeros_like(particle.x)
     return V
 
 
 #build the Hamiltonian of the system
 H = Hamiltonian(particles=SingleParticle(),
                 potential=gravity_potential,
-                spatial_ndim=3, N=150,extent=4*w_o * Å,z_extent = 4*lambda_*Å)
+                spatial_ndim=3, N=150,extent=4*w_o,z_extent = 4*lambda_)
 
 
 def initial_wavefunction(particle):
-    #my_z = np.zeros_like(particle.x)
     return psi_function(particle.x, particle.y, particle.z)
 
 
@@ -127,9 +126,9 @@ def initial_wavefunction(particle):
 #=========================================================================================================#
 
 
-total_time = 100 * nanoseconds
+total_time = 10e-12
 sim = TimeSimulation(hamiltonian = H, method = "split-step-cupy")
-sim.run(initial_wavefunction, total_time = total_time,dt = (0.01 * nanoseconds), store_steps = 20,non_linear_function=None)
+sim.run(initial_wavefunction, total_time = total_time,dt = (0.01e-12), store_steps = 20,non_linear_function=None)
 
 
 #=========================================================================================================#
@@ -160,7 +159,9 @@ visualization.plot(t = 6*nanoseconds ,L_norm = w_o, Z_norm = lambda_,unit = nano
 visualization.plot(t = 8*nanoseconds ,L_norm = w_o, Z_norm = lambda_,unit = nanoseconds)
 visualization.plot(t = 10*nanoseconds ,L_norm = w_o, Z_norm = lambda_,unit = nanoseconds)
 """
-visualization.animate(L_norm = w_o, Z_norm = lambda_,unit = nanoseconds,time = 'ns',contrast_vals=[0.1,0.15])
+#for i in range(21):
+    #visualization.plot2D_hot(t = i * total_time/20,L_norm = w_o, Z_norm = lambda_,unit = 1/1e-12)
+#visualization.animate(L_norm = w_o, Z_norm = lambda_,unit = nanoseconds,time = 'ns',contrast_vals=[0.1,0.15])
 #visualization.final_plot_m(L_norm = w_o, Z_norm = lambda_,unit = nanoseconds,time = 'ns')
 #visualization.final_plot3D_m(L_norm = w_o, Z_norm = lambda_,unit = nanoseconds,time = 'ns')
 #visualization.animate(L_norm = w_o, Z_norm = lambda_,unit = nanoseconds,time = 'ns',contrast_vals=[0.1,0.15])

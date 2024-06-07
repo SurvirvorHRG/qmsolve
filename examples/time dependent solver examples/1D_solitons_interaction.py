@@ -107,8 +107,8 @@ def psi_0(particle):				# Initial wavefunction: a Gaussian
 #interaction potential
 def V(particle):
     #♥return np.zeros_like(particle.x)
-    return -m_e*particle.x
-    return -np.exp(-((particle.x)/4)**2)
+    return +9.81*m_e*particle.x
+    #return -np.exp(-((particle.x)/4)**2)
 
 def V_non_linear(psi,t,particle):		
 
