@@ -120,11 +120,11 @@ def V_non_linear(psi,t,particle):
 	a2=-35;   # attractive nonlinear coefficient for t>8
 
 	if t< 1 :
-		V=a0*abs(psi)**2
+		V= -np.exp(-((particle.x)/4)**2) + a0*abs(psi)**2
 	elif t<3 :
-		V= a1*abs(psi)**2
+		V= -np.exp(-((particle.x)/4)**2) +  a1*abs(psi)**2
 	else:
-		V= a2 *abs(psi)**2
+		V= -np.exp(-((particle.x)/4)**2) + a2 *abs(psi)**2
 
 	return V;
 
@@ -165,8 +165,8 @@ N_point = 1200
 
 #build the Hamiltonian of the system
 H = Hamiltonian(particles=SingleParticle(),
-                potential=V,
-                spatial_ndim=1, N=N_point,extent=120* Å)
+                potential=free_fall_potential,
+                spatial_ndim=1, N=N_point,extent=120)
 
 
 
@@ -212,7 +212,7 @@ visualization.animate()
 
 total_time = 10 
 sim = TimeSimulation(hamiltonian = H, method = "split-step")
-sim.run(psi_0, total_time = total_time, dt = 0.0002, store_steps = 400, non_linear_function=None)
+sim.run(psi_0, total_time = total_time, dt = 0.0002, store_steps = 400, non_linear_function=V_non_linear)
 
 
 #=========================================================================================================#
@@ -220,9 +220,10 @@ sim.run(psi_0, total_time = total_time, dt = 0.0002, store_steps = 400, non_line
 #=========================================================================================================#
 
 visualization = init_visualization(sim)
+visualization.final_plot()
 #visualization.plot(t = 0 * femtoseconds,xlim=[-15* Å,15* Å], ylim=[-15* Å,15* Å], potential_saturation = 0.5, wavefunction_saturation = 0.2)
 #visualization.plot(t = 0 ,unit = femtoseconds,contrast_vals=[0.5,1])
-visualization.animate(xlim=[-60* Å,60* Å], animation_duration = 10, save_animation = True, fps = 30)
+#visualization.animate(xlim=[-60* Å,60* Å], animation_duration = 10, save_animation = True, fps = 30)
 """
 visualization.animate(unit = femtoseconds,contrast_vals=[0.1,1])
 for i in range(21):

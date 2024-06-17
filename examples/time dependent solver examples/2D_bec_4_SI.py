@@ -1,7 +1,7 @@
 from tvtk.util import ctf
 import numpy as np
 from qmsolve import visualization
-from qmsolve import Hamiltonian, SingleParticle, TimeSimulation, init_visualization, milliseconds,microseconds,nm,s,seconds, m,m_e, Å, J, Hz, kg, hbar, femtoseconds,picoseconds
+from qmsolve import Hamiltonian, SingleParticle, TimeSimulation, init_visualization
 import math
 
 
@@ -15,6 +15,7 @@ pmass=1.67262158e-27 # proton mass in kg
 uaumass=1.66053873e-27 # unified atomic unit of mass (1/12 of (12)C) in kg
 epsilon0=1.0e7/(4*np.pi*clight*clight) # vacuum permittivity in C^2.kg-1.m-3.s^2
 kBoltzmann=1.3806503e-23 # constante de boltzmann
+"""
 aulength=4*np.pi*epsilon0*(hbar**2)/(emass*echarge*echarge)
 auenergy=hbar*hbar/(emass*aulength*aulength) # Hartree energy in J
 autime=hbar/auenergy
@@ -23,28 +24,16 @@ conv_C12_au=uaumass/emass
 conv_au_fs=autime/1.0e-15
 conv_au_ang=aulength/1.0e-10
 conv_K_au=kBoltzmann/auenergy
-
+"""
 # Parameters
 mass=86.909  # Atoms mass Cs 132.905 , Rb 86.909 (united atomic unit of mass)
 Ntot = 1e6
 #n0eq = 0.1*Ntot
 n0eq = Ntot
-N=1000    # Number of condensed Bosons
-a=5.2383     # s-wave scattering length - Rb 5.2383 , Cs 3.45 - (nm)
+a=5.2383e-9     # s-wave scattering length - Rb 5.2383 , Cs 3.45 - (nm)
 
 # Potentiel
 l=1           # Radial index
-w0=30e-6   # Laser waist (mm) !1.0378725 pour l=1 0.0300185 pour l=6
-w1=30e-6    # Laser waist (mm) !1.0378725 pour l=1 0.0300185 pour l=6
-#w0=30e-6   # Laser waist (mm) ! 30 microns pour l=1 
-#w1=30e-6    # Laser waist (mm) !30 microns pour l=1 
-
-#w0=10e-6   # Laser waist (mm) ! 30 microns pour l=2
-#w1=10e-6    # Laser waist (mm) !30 microns pour l=2 
-#w0=0.1e-6   #  18 microns pour l=6
-#w1=0.1e-6    #  18 microns pour l=6
-muc=173.3014     # Pot. chim. du condensat (nK) !173.3014 pour l=1 86.7018 pour l=6
-#muc=86.7018     # Pot. chim. du condensat (nK) !173.3014 pour l=1 86.7018 pour l=6
 Power=1.0       # Laser Power (W)
 delta=10.0      # Detuning / 2Pi (GHz)
 Is=16.0         # Saturation intensity (W/m^2)
@@ -52,16 +41,14 @@ Gamma=6.0       # Natural width / 2Pi (MHz)
 Plg = 1.0
 Pn = 1.0
 
-mass=mass*conv_C12_au
-a=10*a/conv_au_ang
-Power=Power*autime/auenergy
-Plg = Plg*autime/auenergy
-Pn = Pn*autime/auenergy
+mass=mass
+Power=Power
+Plg = Plg
+Pn = Pn
 #w0=w0*1.0e-3/aulength
 #w1=w1*1.0e-3/aulength
 
-w0=w0*1.0/aulength
-w1=w1*1.0/aulength
+
 delta=2*np.pi*delta*conv_au_fs/1.0e6
 Is=Is*autime*aulength*aulength/auenergy
 Gamma=2*np.pi*Gamma*conv_au_fs/1.0e9

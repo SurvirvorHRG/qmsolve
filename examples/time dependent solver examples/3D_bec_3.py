@@ -1,7 +1,7 @@
 from tvtk.util import ctf
 import numpy as np
 from qmsolve import visualization
-from qmsolve import Hamiltonian, SingleParticle, TimeSimulation, init_visualization, nanoseconds,microseconds,nm,s,seconds, m,m_e, Å, J, Hz, kg, hbar, femtoseconds,picoseconds
+from qmsolve import Hamiltonian, SingleParticle, TimeSimulation, init_visualization, milliseconds,microseconds,nm,s,seconds, m,m_e, Å, J, Hz, kg, hbar, femtoseconds,picoseconds
 import math
 
 
@@ -33,7 +33,7 @@ N=1000    # Number of condensed Bosons
 a=5.2383     # s-wave scattering length - Rb 5.2383 , Cs 3.45 - (nm)
 
 # Potentiel
-l=6           # Radial index
+l=1          # Radial index
 w0=30e-6   # Laser waist (mm) !1.0378725 pour l=1 0.0300185 pour l=6
 w1=30e-6    # Laser waist (mm) !1.0378725 pour l=1 0.0300185 pour l=6
 #w0=30e-6   # Laser waist (mm) ! 30 microns pour l=1 
@@ -235,16 +235,16 @@ def LG_potential(particle):
 
 
 def non_linear_f2(psi,t,particle):
-    return  - gi*np.abs(psi)**2
+    return  - n0eq * gi*np.abs(psi)**2
 
 def non_linear_f(psi,t,particle):
     
     
     l = 1
     
-    if t < 0.2 * microseconds:
+    if t < 0.01 * seconds:
         l = 1
-    elif t < 0.4 * microseconds:
+    elif t < 0.03 * seconds:
         l = 3
     else:
         l = 6
@@ -276,72 +276,7 @@ def non_linear_f(psi,t,particle):
     U1=B*((2/Dx)**2)*((2/Dz)**(2*l+1))
     #print( 'U1 = ',U1,' au')
 
-     
-
-    # Calcul de en0
-
-    gamal=np.sqrt(np.pi)*np.exp(math.lgamma((2*l+1)/(2*l))-math.lgamma((3*l+1)/(2*l)))
-
-    en0=((2/mass)**(l/(l+1)))*(U0**(1/(l+1)))*((np.pi/(2*gamal))**((2*l)/(l+1)))+ ((np.pi*(U1**(1/(2*l))))/(gamal*2*np.sqrt(2*mass)))**((2*l)/(l+1))
-
-    #print(' énergie du fondamental* = ',en0,' au')
-
-    alpha=((((2*l+3)*gi)/(4*np.pi))*np.exp(math.lgamma((2*l+3)/(2*l))-math.lgamma(1/l)-math.lgamma((2*l+1)/(2*l)))*(U0**(1/l))*(U1**(1/(2*l))))**(((2*l)/(2*l+3)))
-    nu=(en0/alpha)**((2*l+3)/(2*l))
-    # Calcul de mu
-
-    muceq=alpha*(n0eq+nu)**((2*l)/(2*l+3))
-
-    #print(' potentiel chimique du condensat à l équilibre = ',muceq,' au')
-
-     
-
-     
-
-    U1=muceq/((Dz/2)**(2*l))
-
-    U0=muceq/((Dx/2)**(2*l))
-    #print('U1 = ', U1)
-    #print('U0 = ', U0)
-
-     
-
-    #! Re-Calcul de en0
-
-    en0=((2/mass)**(l/(l+1)))*(U0**(1/(l+1)))*((np.pi/(2*gamal))**((2*l)/(l+1)))+ ((np.pi*(U1**(1/(2*l))))/(gamal*2*np.sqrt(2*mass)))**((2*l)/(l+1))
-
-    #print(' énergie du fondamental = ',en0,' au')
-
-    #print(' énergie du fondamental = ',en0/(conv_K_au/1.0e9),' nK')
-
-     
-
-    alpha=((((2*l+3)*gi)/(4*np.pi))*np.exp(math.lgamma((2*l+3)/(2*l))-math.lgamma(1/l)-math.lgamma((2*l+1)/(2*l)))*(U0**(1/l))*(U1**(1/(2*l))))**(((2*l)/(2*l+3)))
-
-     
-
-    nu=(en0/alpha)**((2*l+3)/(2*l))
-
-     
-
-    #! calcul de muceq
-
-    muceq=alpha*(n0eq+nu)**((2*l)/(2*l+3))
-
-    #print(' potentiel chimique du condensat à l équilibre = ',muceq,' au')
-
-    #print(' potentiel chimique du condensat à l équilibre en nanok = ',muceq/(conv_K_au/1.0e9))
-
-     
-     
-
-    #print('nu   = ',nu)
-
-    #print('n0eq = ',n0eq)
-
-     
-
-    #! calcul des waists
+   
 
     waist1=(((Gamma**2)*Plg*(2**l))/(np.exp(math.lgamma(l+1))*U1*4*np.pi*delta*Is))**(1/(2*l+2))
 
@@ -364,14 +299,14 @@ def non_linear_f(psi,t,particle):
     #V = (0.5**l)*omega_l*((rho/length_l)**(2*l))*np.exp(-2*(rho**2)/waist0**2) + (0.5**l)*omega_l*((particle.z/length_l)**(2*l))*np.exp(-2*(particle.z**2)/waist1**2)
     rho = np.sqrt(particle.x**2+particle.y**2)
     V = (0.5**l)*omega_l*((rho/length_l)**(2*l))*np.exp(-2*(rho**2)/waist0**2) + (0.5**l)*omega_l*((particle.z/length_l)**(2*l))*np.exp(-2*(particle.z**2)/waist1**2)
-    return cp.array(V) - gi*np.abs(psi)**2
+    return cp.array(V) + n0eq*gi*np.abs(psi)**2
 
 N_point = 100
 
 #build the Hamiltonian of the system
-H = Hamiltonian(particles=SingleParticle(),
+H = Hamiltonian(particles=SingleParticle(m = mass),
                 potential=free_fall_potential,
-                spatial_ndim=3, N=N_point,extent=1000000* Å,z_extent=1000000* Å)
+                spatial_ndim=3, N=N_point,extent=2000000* Å,z_extent=2000000* Å)
 
 
 
@@ -385,7 +320,7 @@ def initial_wavefunction(particle):
         for j in range(N_point):
             for k in range(N_point):
                 if muceq > V[i,j,k]:
-                    psi[i,j,k] = np.sqrt( (muceq - V[i,j,k]) / gi)
+                    psi[i,j,k] = np.sqrt( (muceq - V[i,j,k])  / n0eq / gi)
                 else:
                     psi[i,j,k] = 0
     return psi
@@ -397,9 +332,9 @@ def initial_wavefunction(particle):
 #=========================================================================================================#
 
 
-total_time = 2 * microseconds
+total_time = 0.05 * seconds
 sim = TimeSimulation(hamiltonian = H, method = "split-step-cupy")
-sim.run(initial_wavefunction, total_time = total_time, dt = (0.001 * microseconds), store_steps = 100,non_linear_function=non_linear_f2,m = mass,g = 9.81)
+sim.run(initial_wavefunction, total_time = total_time, dt = (0.0001 * seconds), store_steps = 20,non_linear_function=None)
 
 
 #=========================================================================================================#
@@ -407,15 +342,19 @@ sim.run(initial_wavefunction, total_time = total_time, dt = (0.001 * microsecond
 #=========================================================================================================#
 
 visualization = init_visualization(sim)
-#visualization.animate(unit = microseconds,time = 'microseonds',contrast_vals=[0.1,0.25])
+visualization.animate(unit = milliseconds,contrast_vals=[0.1,0.25])
 #visualization.plot3D(t = 0, unit = microseconds)
-#for i in range(21):
-    #visualization.plot3D(t = i * total_time/20, unit = microseconds)
+
+for i in range(21):
+    visualization.plot3D(t = i * total_time/20, unit = milliseconds)
+    
+for i in range(101):
+    visualization.plot2D_xy(t = i * total_time/100, unit = milliseconds)
 #visualization.plot(t = 0 * femtoseconds,xlim=[-15* Å,15* Å], ylim=[-15* Å,15* Å], potential_saturation = 0.5, wavefunction_saturation = 0.2)
 #visualization.plot3D(t = 200* femtoseconds ,unit = femtoseconds,contrast_vals=[0.1,1])
 #visualization.plot3D(t = 0,unit = nanoseconds)
 #visualization.plot(t = 0,unit = nanoseconds)
-visualization.final_plot3D(L_norm = 1, Z_norm = 1,unit = microseconds,time = 'microseconds')
+#visualization.final_plot3D(L_norm = 1, Z_norm = 1,unit = microseconds,time = 'microseconds')
 #visualization.final_plot3D(L_norm = 1, Z_norm = 1,unit = femtoseconds,time = 'ns')
 #for i in range(21):
     #visualization.plot3D(t = i * total_time/20 ,unit = femtoseconds)

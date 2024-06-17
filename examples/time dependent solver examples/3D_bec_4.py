@@ -25,15 +25,19 @@ conv_au_ang=aulength/1.0e-10
 conv_K_au=kBoltzmann/auenergy
 
 # Parameters
-mass=86.909  # Atoms mass Cs 132.905 , Rb 86.909 (united atomic unit of mass)
+mass=86.909  # Atoms mass Cs 132.905 , Rb 86.909 , Li 7.016 (united atomic unit of mass)
+#mass=7.016  # Atoms mass Cs 132.905 , Rb 86.909 , Li 7.016 (united atomic unit of mass)
 Ntot = 1e6
 #n0eq = 0.1*Ntot
+
+#N=1000    # Number of condensed Bosons
+#N_Li = 5e4
 n0eq = Ntot
-N=1000    # Number of condensed Bosons
 a=5.2383     # s-wave scattering length - Rb 5.2383 , Cs 3.45 - (nm)
+#a=0.2     # s-wave scattering length - Li 0.2 - (nm)
 
 # Potentiel
-l=1           # Radial index
+l=6         # Radial index
 w0=30e-6   # Laser waist (mm) !1.0378725 pour l=1 0.0300185 pour l=6
 w1=30e-6    # Laser waist (mm) !1.0378725 pour l=1 0.0300185 pour l=6
 #w0=30e-6   # Laser waist (mm) ! 30 microns pour l=1 
@@ -219,7 +223,7 @@ def free(particle):
     V = np.zeros_like(particle.x)
     return V
 
-g = 9.81 
+g = 9.81 * (m / seconds / seconds)
 #g= 9.81
 def gravity_potential(particle):
 
@@ -230,6 +234,7 @@ def LG_potential(particle):
     rho = np.sqrt(particle.x**2+particle.y**2)
 
     V = (0.5**l)*omega_l*((rho/length_l)**(2*l))*np.exp(-2*(rho**2)/waist0**2) + (0.5**l)*omega_l*((particle.z/length_l)**(2*l))*np.exp(-2*(particle.z**2)/waist1**2)
+    #V = (0.5**l)*omega_l*((rho/length_l)**(2*l))*np.exp(-2*(rho**2)/waist0**2) + (0.5**l)*omega_l*((particle.z/length_l)**(2*l))*( 1 - np.exp(-2*(particle.z**2)/waist1**2) )
    # V = (0.5**l)*omega_l*((rho/length_l)**(2*l)) + (0.5**l)*omega_l*((particle.z/length_l)**(2*l))
     return V
 
@@ -239,18 +244,18 @@ def LG_potential(particle):
 def non_linear_f(psi,t,particle):
     
     
-    a0=5.2383 
+     #a0=5.2383
+    a0 = 0.2
     
     # calcul of gint
     
     #l = 1
     
-    if t < 10 * milliseconds:
-        a0 = 5.2383
-    elif t < 40 * milliseconds:
-        a0 = 2
+
+    if t < 8 * milliseconds:
+        a0 = 1.5
     else:
-        a0 = -2
+        a0 = -0.2
         
     a0=10*a0/conv_au_ang
     
@@ -259,37 +264,39 @@ def non_linear_f(psi,t,particle):
     my_gi = 4*np.pi*a0/mass
     
  
-    return my_gi*np.abs(psi)**2
+    return n0eq*my_gi*np.abs(psi)**2
 
 
 def non_linear_f2(psi,t,particle):
     
 
-    my_gi = 4*np.pi*a/mass
+    my_gi = -4*np.pi*a/mass
+    
+    
     
  
-    return my_gi*np.abs(psi)**2
+    return n0eq*my_gi*np.abs(psi)**2
 
 N_point = 100
 
 #build the Hamiltonian of the system
 H = Hamiltonian(particles=SingleParticle(m = mass),
                 potential=free,
-                spatial_ndim=3, N=N_point,extent=4000000* Å,z_extent=4000000* Å)
+                spatial_ndim=3, N=N_point,extent=3000000* Å)
 
 
 
 def initial_wavefunction(particle):
     V = LG_potential(particle)
     #rho = np.sqrt(particle.x**2+particle.y**2)
-    #psi = np.exp(-0.5*mass*(omega_l*rho**2 + omega_z*particle.z**2))
+    #psi = np.exp(-0.5*mass*(omega_l*rho**2 + omega_z*particle.z**2))q
 
     psi = np.zeros(particle.x.shape, dtype = np.complex128)
     for i in range(N_point):
         for j in range(N_point):
             for k in range(N_point):
                 if muceq > V[i,j,k]:
-                    psi[i,j,k] = np.sqrt( (muceq - V[i,j,k]) / gi )
+                    psi[i,j,k] = np.sqrt( (muceq - V[i,j,k]) / n0eq /gi )
                 else:
                     psi[i,j,k] = 0
     return psi
@@ -301,9 +308,9 @@ def initial_wavefunction(particle):
 #=========================================================================================================#
 
 
-total_time = 100 * milliseconds
+total_time = 0.07 * seconds
 sim = TimeSimulation(hamiltonian = H, method = "split-step-cupy")
-sim.run(initial_wavefunction, total_time = total_time, dt = (0.01 * milliseconds), store_steps = 20,non_linear_function=non_linear_f)
+sim.run(initial_wavefunction, total_time = total_time, dt = total_time / 8000., store_steps = 20)
 
 
 #=========================================================================================================#
@@ -311,11 +318,12 @@ sim.run(initial_wavefunction, total_time = total_time, dt = (0.01 * milliseconds
 #=========================================================================================================#
 
 visualization = init_visualization(sim)
-#visualization.animate(unit = milliseconds ,contrast_vals=[0.1,0.25])
-#visualization.final_plot3D(L_norm = 1, Z_norm = 1,unit = microseconds,time = 'microseconds')
+visualization.animate(unit = milliseconds,contrast_vals=[0.1,0.25])
+#visualization.final_plot3D(L_norm = 1, Z_norm = 1,unit = milliseconds)
 #visualization.plot3D(t = 0, unit = microseconds)
-for i in range(21):
-    visualization.plot3D(t = i * total_time/20, unit = milliseconds)
+img = 20
+for i in range(img + 1):
+    visualization.plot2D_xy(t = i * total_time/img, unit = milliseconds)
 #visualization.plot(t = 0 * femtoseconds,xlim=[-15* Å,15* Å], ylim=[-15* Å,15* Å], potential_saturation = 0.5, wavefunction_saturation = 0.2)
 #visualization.plot3D(t = 200* femtoseconds ,unit = femtoseconds,contrast_vals=[0.1,1])
 #visualization.plot3D(t = 0,unit = nanoseconds)

@@ -1,6 +1,6 @@
 from tvtk.util import ctf
 import numpy as np
-from qmsolve import Hamiltonian, SingleParticle, TimeSimulation, init_visualization, nanoseconds,picoseconds,microseconds,nm,s,seconds, ms,m, Å, J, Hz, kg, femtoseconds,picoseconds
+from qmsolve import Hamiltonian, SingleParticle, TimeSimulation, init_visualization,kg,meters,Hz
 from scipy.special import ellipj
 from scipy.constants import epsilon_0
 from scipy.special import mathieu_cem
@@ -26,7 +26,6 @@ mass = 86.909
 mass = mass*uaumass
 #mass = 1
 
-a = 5.2383
 w_o = 4e-6
 Er = 7.16e-32
 print('Er =', Er)
@@ -101,7 +100,7 @@ def pot(particle):
     return V
 
 def gravity_potential(particle):
-    V = g*mass*particle.z
+    V = -g*mass*particle.z
     return V
 
 def gravity(psi,t,particle):
@@ -112,9 +111,9 @@ def gravity(psi,t,particle):
 
 
 #build the Hamiltonian of the system
-H = Hamiltonian(particles=SingleParticle(),
+H = Hamiltonian(particles=SingleParticle(m = mass),
                 potential=gravity_potential,
-                spatial_ndim=3, N=150,extent=4*w_o,z_extent = 4*lambda_)
+                spatial_ndim=3, N=100,extent=10*w_o,z_extent = 10*lambda_)
 
 
 def initial_wavefunction(particle):
@@ -126,9 +125,10 @@ def initial_wavefunction(particle):
 #=========================================================================================================#
 
 
-total_time = 10e-12
+total_time = 1e-30
 sim = TimeSimulation(hamiltonian = H, method = "split-step-cupy")
-sim.run(initial_wavefunction, total_time = total_time,dt = (0.01e-12), store_steps = 20,non_linear_function=None)
+#sim = TimeSimulation(hamiltonian = H, method = "nonlinear-split-step-cupy")
+sim.run(initial_wavefunction, total_time = total_time,dt = (1e-34), store_steps = 100)
 
 
 #=========================================================================================================#
@@ -136,6 +136,7 @@ sim.run(initial_wavefunction, total_time = total_time,dt = (0.01e-12), store_ste
 #=========================================================================================================#
 
 visualization = init_visualization(sim)
+visualization.animate(L_norm = 1, Z_norm = 1)
 #visualization.plot_type = 'contour'
 #visualization.animate(xlim=[-15* Å,15* Å], ylim=[-15* Å,15* Å], potential_saturation = 0.5, wavefunction_saturation = 0.2, animation_duration = 10, save_animation = False)
 

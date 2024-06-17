@@ -17,6 +17,7 @@ import matplotlib.pyplot as plt
 from ..util.colour_functions import complex_to_rgba
 
 from .split_step import SplitStep, SplitStepCupy
+from .nonlinear_splitstep import NonlinearSplitStep,NonlinearSplitStepCupy
 from .crank_nicolson import CrankNicolson, CrankNicolsonCupy
 
 class TimeSimulation:
@@ -27,8 +28,9 @@ class TimeSimulation:
     def __init__(self, hamiltonian, method = "split-step"):
 
         self.H = hamiltonian
+        self.method_name = method
 
-        implemented_solvers = ('split-step', 'split-step-cupy', 'crank-nicolson', 'crank-nicolson-cupy')
+        implemented_solvers = ('split-step','nonlinear-split-step','nonlinear-split-step-cupy', 'split-step-cupy', 'crank-nicolson', 'crank-nicolson-cupy')
 
         if method == "split-step":
 
@@ -37,11 +39,27 @@ class TimeSimulation:
             else:
                 raise NotImplementedError(
                 f"split-step can only be used with grid potential_type. Use crank-nicolson instead")
+                
+        elif method == "nonlinear-split-step":
+    
+            if self.H.potential_type == "grid":
+                self.method = NonlinearSplitStep(self)
+            else:
+                raise NotImplementedError(
+                f"split-step can only be used with grid potential_type. Use crank-nicolson instead")
 
         elif method == "split-step-cupy":
 
             if self.H.potential_type == "grid":
                 self.method = SplitStepCupy(self)
+            else:
+                raise NotImplementedError(
+                f"split-step can only be used with grid potential_type. Use crank-nicolson instead")
+
+        elif method == "nonlinear-split-step-cupy":
+    
+            if self.H.potential_type == "grid":
+                self.method = NonlinearSplitStepCupy(self)
             else:
                 raise NotImplementedError(
                 f"split-step can only be used with grid potential_type. Use crank-nicolson instead")
@@ -61,4 +79,7 @@ class TimeSimulation:
     def run(self, initial_wavefunction, total_time, dt, store_steps = 1, non_linear_function = None, g = 1):
         """
         """
-        self.method.run(initial_wavefunction, total_time, dt, store_steps, non_linear_function,g)
+        if self.method_name == "split-step" or self.method_name == "split-step-cupy":
+            self.method.run(initial_wavefunction, total_time, dt, store_steps, non_linear_function,g)
+        else:
+            self.method.run(initial_wavefunction, total_time, dt, store_steps)

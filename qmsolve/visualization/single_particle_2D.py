@@ -539,7 +539,7 @@ class TimeVisualizationSingleParticle2D(TimeVisualization):
             
             
         
-    def plot3D_SI(self, t, L_norm = 1, Z_norm = 1,unit = femtoseconds, contrast_vals= [0.1, 0.25]):
+    def plot3D_SI(self, t, L_norm = 1, Z_norm = 1,unit = milliseconds, contrast_vals= [0.1, 0.25]):
 
         mlab.figure(bgcolor=(0,0,0), size=(700, 700))
         self.simulation.Ψ_plot = self.simulation.Ψ/self.simulation.Ψmax
@@ -549,8 +549,8 @@ class TimeVisualizationSingleParticle2D(TimeVisualization):
         psi = np.abs(psi)
 
 
-        L = self.simulation.H.extent/2/Å/L_norm
-        Z = self.simulation.H.z_extent/2/Å/Z_norm
+        L = self.simulation.H.extent/2/Å/L_norm/1e7
+        Z = self.simulation.H.z_extent/2/Å/Z_norm/1e7
         N = self.simulation.H.N
 
         #surf = mlab.mesh(self.simulation.H.particle_system.x,self.simulation.H.particle_system.y, psi, colormap='jet')
@@ -560,15 +560,15 @@ class TimeVisualizationSingleParticle2D(TimeVisualization):
         time_label = mlab.text(0.1, 0.9, '', width=0.5)
         time_label.property.color = (1.0, 1.0, 1.0)
         
-        time_label.text = 't = {:.2f} µs'.format(t/unit)
+        time_label.text = 't = {:.2f} (ms)'.format(t/unit)
         
-        if np.max(psi) == 1.00:
-            time_label.text = 't-peak = {:.2f} µs'.format(t/unit)
+        if np.amax(np.abs(self.simulation.Ψ_plot)) == np.amax(np.abs(self.simulation.Ψ_plot[index])):
+            time_label.text = 't-peak = {:.2f} (ms)'.format(t/unit)
 
         mlab.outline()
 
-        mlab.axes(xlabel='x [µm]', ylabel='y [µm]', zlabel='z [µm]',
-                  nb_labels=6, ranges=(-L, L, -L, L, np.min(psi), np.max(psi)))
+        mlab.axes(xlabel='x [mm]', ylabel='y [mm]', zlabel='psi',
+                  nb_labels=6, ranges=(-L, L, -L, L, np.min(psi), np.amax(psi)))
         #mlab.view(azimuth=60,elevation=60,distance=N*4)
         colorbar = mlab.colorbar(orientation='vertical')
         colorbar.scalar_bar_representation.position = [0.85, 0.1]

@@ -360,6 +360,63 @@ class TimeVisualizationSingleParticle1D(TimeVisualization):
         self.simulation = simulation
         self.H = simulation.H
         
+    def final_plot(self,L_norm = 1, Z_norm = 1,unit = 1, figsize=(15, 15),time="ms"):
+        
+        from mpl_toolkits.mplot3d import Axes3D
+        from matplotlib import cm
+        
+
+        total_time = self.simulation.Nt_per_store_step*self.simulation.store_steps*self.simulation.dt
+        tvec=np.linspace(0,self.simulation.Nt_per_store_step*self.simulation.store_steps*self.simulation.dt,self.simulation.store_steps + 1)
+        x = self.simulation.H.particle_system.x
+        tt,xx=np.meshgrid(tvec,x)
+        
+        """
+        # Generate the 3D plot
+        
+        fig = plt.figure("Evolution of 1D cut at y=0")
+        ax = fig.add_subplot(111, projection='3d')
+        self.simulation.Ψ_plot = self.simulation.Ψ/self.simulation.Ψmax
+        mid = int(self.simulation.H.N / 2) + 1
+        toplot= np.abs(self.simulation.Ψ_plot[:,:,0])
+        toplot = toplot.T
+        """
+        figtx = plt.figure("Evolution of |psi(x)|^2")              # figure
+        plt.clf()                # clears the figure
+        figtx.set_size_inches(8,6)
+        
+        
+        
+        # Generates the plot
+        toplot=np.abs(self.simulation.Ψ)**2
+        
+        plt.contourf(xx, tt, toplot.T, 100, cmap=cm.jet, linewidth=0, antialiased=False)
+        cbar=plt.colorbar()               # colorbar
+        plt.xlabel('$x$')                 # axes labels, title, plot and axes range
+        plt.ylabel('$t$')
+        cbar.set_label('$|\psi|^2$',fontsize=14)
+        """
+        plt.show()      # Displays figure on screen
+
+    
+        figtx = plt.figure("Evolution of |psi(x)|^2")              # figure
+        plt.clf()                # clears the figure
+        figtx.set_size_inches(8,6)
+        
+        
+        
+        # Generates the plot
+        toplot= np.abs(self.simulation.Ψ)**2
+        toplot = toplot.T
+        
+        plt.contourf(xx, tt, toplot, 100, cmap=cm.jet, linewidth=0, antialiased=False)
+        cbar=plt.colorbar()               # colorbar
+        plt.xlabel('$x$')                 # axes labels, title, plot and axes range
+        plt.ylabel('$t$')
+        cbar.set_label('$|\psi|^2$',fontsize=14)
+        """
+        plt.show()      # Displays figure on scre
+        
     def plotSI(self, t, xlim=None, figsize=(16/9 *5.804 * 0.9,5.804)):
 
 

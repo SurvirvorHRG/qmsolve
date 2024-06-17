@@ -76,4 +76,6 @@ visualization.animate(xlim=[-L/2* Å,L/2* Å], animation_duration = 10, save_anima
 
 
 #for visualizing a single frame, use plot method instead of animate:
-#visualization.plot(t = 5/4 * 0.9 * femtoseconds,xlim=[-15* Ã…,15* Ã…])
+#visualization.plot(t = 5/4 * 0.9 * femtoseconds,xlim=[-15* Ã
+,15* Ã
+])

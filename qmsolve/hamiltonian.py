@@ -4,7 +4,7 @@ import time
 
 
 class Hamiltonian:
-    def __init__(self, particles, potential, N, extent, spatial_ndim,potential_type = "grid", E_min=0,z_extent = 0):
+    def __init__(self, particles, potential, N, extent, spatial_ndim,z_extent = 0, potential_type = "grid", E_min=0):
         """
         N: number of grid points
         extent: spacial extent, measured in bohr radius (length atomic unit)
@@ -12,13 +12,11 @@ class Hamiltonian:
         """
 
         self.N = N
-        self.Nz = N
         self.extent = extent
         self.z_extent = extent
-        if z_extent !=0:
+        if z_extent != 0:
             self.z_extent = z_extent
         self.dx = extent / N
-        self.dz = z_extent / N
         self.particle_system = particles
         self.particle_system.H = self
         self.spatial_ndim = spatial_ndim
@@ -199,9 +197,8 @@ class Hamiltonian:
 
             from cupyx.scipy.sparse.linalg import lobpcg, LinearOperator
             from cupyx.scipy.sparse import diags
-            import cupyx.scipy.sparse
-            #from cupyx.scipy.sparse.csr import csr_matrix
-            H = cupyx.scipy.sparse.csr_matrix(H)
+            from cupyx.scipy.sparse.csr import csr_matrix
+            H = csr_matrix(H)
 
             if lobpcg_args['preconditioner'] == 'jacobi':
                 # preconditioning matrix should approximate the inverse of the hamiltonian

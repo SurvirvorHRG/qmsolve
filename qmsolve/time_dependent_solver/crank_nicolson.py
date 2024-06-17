@@ -56,7 +56,7 @@ class CrankNicolson(Method):
         self.simulation.Vmin = np.amin(self.H.Vgrid)
         self.simulation.Vmax = np.amax(self.H.Vgrid)
 
-    def run(self, initial_wavefunction, total_time, dt, store_steps = 1, non_linear_function = None):
+    def run(self, initial_wavefunction, total_time, dt, store_steps = 1, non_linear_function = None,g = 0):
 
         self.simulation.store_steps = store_steps
         dt_store = total_time/store_steps
