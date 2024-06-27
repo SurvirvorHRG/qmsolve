@@ -360,7 +360,7 @@ class TimeVisualizationSingleParticle1D(TimeVisualization):
         self.simulation = simulation
         self.H = simulation.H
         
-    def final_plot(self,L_norm = 1, Z_norm = 1,unit = 1, figsize=(15, 15),time="ms"):
+    def final_plot(self,L_norm = 1, Z_norm = 1,unit = milliseconds,time="ms"):
         
         from mpl_toolkits.mplot3d import Axes3D
         from matplotlib import cm
@@ -370,7 +370,7 @@ class TimeVisualizationSingleParticle1D(TimeVisualization):
         tvec=np.linspace(0,self.simulation.Nt_per_store_step*self.simulation.store_steps*self.simulation.dt,self.simulation.store_steps + 1)
         x = self.simulation.H.particle_system.x
         tt,xx=np.meshgrid(tvec,x)
-        
+        self.simulation.Ψ_plot = self.simulation.Ψ/self.simulation.Ψmax
         """
         # Generate the 3D plot
         
@@ -388,9 +388,9 @@ class TimeVisualizationSingleParticle1D(TimeVisualization):
         
         
         # Generates the plot
-        toplot=np.abs(self.simulation.Ψ)**2
+        toplot=np.abs(self.simulation.Ψ_plot)
         
-        plt.contourf(xx, tt, toplot.T, 100, cmap=cm.jet, linewidth=0, antialiased=False)
+        plt.contourf(xx/L_norm, tt/unit, toplot.T, 100, cmap=cm.jet, linewidth=0, antialiased=False)
         cbar=plt.colorbar()               # colorbar
         plt.xlabel('$x$')                 # axes labels, title, plot and axes range
         plt.ylabel('$t$')

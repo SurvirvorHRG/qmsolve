@@ -1,12 +1,11 @@
 from tvtk.util import ctf
 import numpy as np
 from qmsolve import visualization
-from qmsolve import Hamiltonian, SingleParticle, TimeSimulation, init_visualization, nanoseconds,microseconds,nm,s,seconds, m,m_e, Å, J, Hz, kg, hbar, femtoseconds,picoseconds
+from qmsolve import Hamiltonian, SingleParticle, TimeSimulation, init_visualization, milliseconds,microseconds,nm,s,seconds, meters,m_e, Å, J, Hz, kg, hbar, femtoseconds,picoseconds
 import math
-
+import scipy.special as sc
 
 # conversion units
-
 hbar=1.054571596e-34
 clight=299792458.0 # speed of light in m.s-1
 echarge=1.602176462e-19 # electron charge in C
@@ -26,21 +25,33 @@ conv_K_au=kBoltzmann/auenergy
 
 # Parameters
 mass=86.909  # Atoms mass Cs 132.905 , Rb 86.909 (united atomic unit of mass)
-N=1000    # Number of condensed Bosons
+N=1e6    # Number of condensed Bosons
 a=5.2383     # s-wave scattering length - Rb 5.2383 , Cs 3.45 - (nm)
 
 # Potentiel
-l=1             # Radial index
-w0=1.0378725    # Laser waist (mm) !1.0378725 pour l=1 0.0300185 pour l=6
-w1=1.0378725    # Laser waist (mm) !1.0378725 pour l=1 0.0300185 pour l=6
-muc=173.3014     # Pot. chim. du condensat (nK) !173.3014 pour l=1 86.7018 pour l=6
+l=1            # Radial index
+w0=0.7936514     # Laser waist (mm) !0.7936514 pour l=1 0.7865231 pour l=6
+w1=1.7746586     # Laser waist (mm) !1.7746586 pour l=1 0.0738672 pour l=6
+muc=173.3320     # Pot. chim. du condensat (nK) !173.3320 pour l=1 144.6547 pour l=6
+
+#w0=0.7865231     # Laser waist (mm) !0.7936514 pour l=1 0.7865231 pour l=6
+#w1=0.0738672     # Laser waist (mm) !1.7746586 pour l=1 0.0738672 pour l=6
+#muc=144.6547     # Pot. chim. du condensat (nK) !173.3320 pour l=1 144.6547 pour l=6
+
+
 Power=1.0       # Laser Power (W)
 delta=10.0      # Detuning / 2Pi (GHz)
 Is=16.0         # Saturation intensity (W/m^2)
 Gamma=6.0       # Natural width / 2Pi (MHz)
+xmin = -2.0
+xmax = 2.0 
+ymin = xmin
+ymax = xmax
+zmin = -40.0
+zmax = 40.0
 
 mass=mass*conv_C12_au
-a=1*a/conv_au_ang
+a=10*a/conv_au_ang
 Power=Power*autime/auenergy
 w0=w0*1.0e-3/aulength
 w1=w1*1.0e-3/aulength
@@ -55,60 +66,107 @@ factl=np.math.factorial(l)
 # calcul of gint
 gint = N*4*np.pi*a/mass
 print(' gint = ',gint )
-coeff1 = 2*(10**(-12))
-coeff2 = 1*(10**(-12))
-Ul=(Power*(Gamma**2)*(2**l))/(factl*4*np.pi*delta*Is*(w1**(2*l+2)))
 U0=(Power*(Gamma**2)*(2**l))/(factl*4*np.pi*delta*Is*(w0**(2*l+2)))
-print('U1 = ', Ul)
+Ul=(Power*(Gamma**2)*(2**l))/(factl*4*np.pi*delta*Is*(w1**(2*l+2)))
 print('U0 = ', U0)
-omega_l=(1/mass)*(((2**l)*mass*Ul))**(1/(l+1))
+print('U1 = ', Ul)
 
-length_l=np.sqrt(1/(mass*omega_l))
+
 
 
 #Characteristic sizes (au)
 
 #omega_l=(one/mass)*(((two**l)*mass*Ul)**(one/real(l+1,real_8)))
-Sizex=2*((muc/Ul)**(1/(2*l)))
-Sizez=2*((muc/U0)**(1/(2*l)))
+omega_l=(1/mass)*(((2**l)*mass*Ul)**(1/(l+1)))
+Sizex=2*((muc/U0)**(1/(2*l)))
 Sizey=Sizex
+Sizez=2*((muc/Ul)**(1/(2*l)))
+
 Rx=Sizex/2
 Ry=Sizey/2
 Rz=Sizez/2
-omega_z = (2/Sizez)*np.sqrt(2*muc/mass)
-length_z=np.sqrt(1/(mass*omega_z))
+
 print(' Sizex = ',Sizex*(conv_au_ang/1.0e4),' microns.' )
 print(' Sizey = ',Sizey*(conv_au_ang/1.0e4),' microns.')
 print(' Sizez = ',Sizez*(conv_au_ang/1.0e4),' microns.')
 
+#facteur_gl=exp(gammln(one/real(l,real_8))+gammln(one/(two*real(l,real_8)))- gammln(one+(three/(two*real(l,real_8)))))/(four*real(l*l,real_8))
+facteur_gl=np.exp(sc.gammaln(1/(l))+sc.gammaln(1/(2*(l))) - sc.gammaln(1+(3/(2*(l)))))/(4*(l*l))
+R0=Rz*(facteur_gl**(1/3))
 
+print('Gamma_l = ',facteur_gl)
+
+print('R0 = ',R0*(conv_au_ang/1.0e4),' microns.')
+
+print('Rx/R0 = ',Rx/R0)
+print('Ry/R0 = ',Ry/R0)
+print('Rz/R0 = ',Rz/R0)
+
+print('Volume = ',4*np.pi*facteur_gl*Rx*Ry*Rz*((aulength*1.0e6)**3),' microns**3.')
+
+
+omega_z = (2/Sizez)*np.sqrt(2*muc/mass)
+length_l=np.sqrt(1/(mass*omega_l))
+length_z=np.sqrt(1/(mass*omega_z))
+
+print(' omega_l = ',omega_l,' au')
+print(' omega_z = ',omega_z,' au')
+
+print('omega_l / 2Pi = ',omega_l/(2*np.pi*1.0e-15*conv_au_fs),' Hz.')
+print('omega_z / 2Pi = ',omega_z/(2*np.pi*1.0e-15*conv_au_fs),' Hz.')
+print('length_l = ',length_l*aulength*1.0e6,' micro-m.') 
+print('length_z = ',length_z*aulength*1.0e6,' micro-m.') 
+
+
+#Define grid boundaries (au)
+xmin=xmin*R0
+xmax=xmax*R0
+ymin=ymin*R0
+ymax=ymax*R0
+zmin=zmin*R0
+zmax=zmax*R0
 #interaction potential
 
 def potential(particle):
     V = np.zeros_like(particle.x)
     return V
+g = 9.8065 * (meters / seconds / seconds)
 
-
-def LG_potential(particle):
-    rho = np.sqrt(particle.x**2+particle.y**2)
-
-    #V = (0.5**l)*omega_l*((rho/length_l)**(2*l))*np.exp(-2*(rho**2)/w0**2) 
-    #+ (0.5**l)*omega_l*((particle.z/length_l)**(2*l))*np.exp(-2*(particle.z**2)/w0**2) 
+def gravity(particle):
+    return N * g * mass * particle.z
     
-    V = (0.5**l)*omega_l*((rho/length_l)**(2*l))
-    + (0.5**l)*omega_l*((particle.z/length_l)**(2*l))
-    return V
+def LG_potential(particle):
+    #rho = np.sqrt(particle.x**2+particle.y**2)
+    x = particle.x 
+    y = particle.y 
+    z = particle.z 
+    
+   # V = (0.5**l)*omega_l*((rho/length_l)**(2*l))*np.exp(-2*(rho**2)/w0**2) + (0.5**l)*omega_l*((particle.z/length_l)**(2*l))*np.exp(-2*(particle.z**2)/w0**2) 
+                                                                                
+    Vtrap = (0.5**l)*omega_l*((np.sqrt((x)**2+(y)**2)/length_l)**((2*l)))*np.exp(-2*((x)**2+(y)**2)/(w0**2)) + (0.5**l)*omega_l*((z/length_l)**((2*l)))*np.exp(-2*((z)**2)/(w0**2))
+
+    return Vtrap
 
 
 def non_linear_f(psi,t,particle):
     return gint*((np.abs(psi))**2)
 
-N = 100
 
+def non_linear_f2(psi,t,particle):
+    if t < 10 * milliseconds:
+        return 0*((np.abs(psi))**2)
+    else:
+        return -gint*((np.abs(psi))**2)
+
+
+N = 512
+Nz = 64
+extent = 2 * xmax
+z_extent = 2* zmax
 #build the Hamiltonian of the system
-H = Hamiltonian(particles=SingleParticle(),
-                potential=potential,
-                spatial_ndim=3, N=100,Nz = 100,extent=100* Å,z_extent=100* Å)
+H = Hamiltonian(particles=SingleParticle(m = mass),
+                potential=LG_potential,
+                spatial_ndim=3, N=N,Nz = Nz,extent=extent,z_extent=z_extent)
 
 
 
@@ -129,36 +187,23 @@ def initial_wavefunction(particle):
     psi = np.zeros(particle.x.shape, dtype = np.complex128)
     for i in range(N):
         for j in range(N):
-            for k in range(N):
+            for k in range(Nz):
                 if muc > V[i,j,k]:
                     psi[i,j,k] = np.sqrt( (muc - V[i,j,k]) / gint)
                 else:
                     psi[i,j,k] = 0
     return psi
 
-"""
-eigenstates = H.solve( max_states = 32, method ='lobpcg-cupy')
-print(eigenstates.energies)
-
-
-visualization = visualization.init_visualization(eigenstates)
-visualization.plot_type = 'contour'
-
-#visualization.plot_eigenstate(0)
-
-#visualization.plot_eigenstate(26)
-visualization.animate()
-"""
-
-
 #=========================================================================================================#
 # Set and run the simulation
 #=========================================================================================================#
 
 
-total_time = 100 * femtoseconds
+total_time = 0.1 * seconds
+dt = 1e-4 * seconds
+#dt = min(dt/omega_l,dt/omega_z)
 sim = TimeSimulation(hamiltonian = H, method = "split-step-cupy")
-sim.run(initial_wavefunction, total_time = total_time, dt = total_time/1000., store_steps = 20,non_linear_function=non_linear_f)
+sim.run(initial_wavefunction, total_time = total_time, dt = dt, store_steps = 20,non_linear_function=non_linear_f2)
 
 
 #=========================================================================================================#
@@ -166,9 +211,12 @@ sim.run(initial_wavefunction, total_time = total_time, dt = total_time/1000., st
 #=========================================================================================================#
 
 visualization = init_visualization(sim)
+visualization.plot3D(0, unit = milliseconds)
+visualization.plot(0, unit = milliseconds)
 #visualization.plot(t = 0 * femtoseconds,xlim=[-15* Å,15* Å], ylim=[-15* Å,15* Å], potential_saturation = 0.5, wavefunction_saturation = 0.2)
 #visualization.plot2D(t = 0 ,unit = femtoseconds,contrast_vals=[0.9,1])
-visualization.plot2D(t = 0 ,unit = femtoseconds)
+for i in range(11):
+    visualization.plot2D_xy(t = i * total_time/10, unit = milliseconds)
 #visualization.animate(unit = femtoseconds,contrast_vals=[0.99,1])
 #visualization.plot_type = 'contour'
 #visualization.animate(xlim=[-50* Å,50* Å], ylim=[-50* Å,50* Å], potential_saturation = 0.5, wavefunction_saturation = 0.2, animation_duration = 10, save_animation = True)

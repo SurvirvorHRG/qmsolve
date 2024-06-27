@@ -40,16 +40,15 @@ N_g = 4 * np.pi * hbar**2 * a_s / m
 N_g = N_g  
 
 
-
 omega_mean = (omega_rho*omega_rho*omega_z)**(1/3)
 #omega_mean = (omega_rho*omega_rho*omega_rho)**(1/3)
 #omega_mean = (omega_rho*omega_rho)**(1/2)
 a_oh = np.sqrt(hbar / m / omega_mean)
-muq0 = 0.5 * (15 * Ntot * a_s / a_oh)**(2/5) * hbar * omega_mean
+muq = 0.5 * (15 * Ntot * a_s / a_oh)**(2/5) * hbar * omega_mean
+xmax =   2 * 0.3 * 1e-3 * meters      # x-window size
 
 
 
-xmax =   2* 0.3 * 1e-3 * meters      # x-window size
 
 def free(particle):
     return np.zeros_like(particle.x)
@@ -74,9 +73,9 @@ def ground(x,y,z):
     
     
 def potential(particle):
-    x = 0
+    x = particle.x
     y = 0
-    z = particle.x
+    z = particle.y
     rho = x**2 + y**2
     V_rho = 0.5 * m * omega_rho**2 * rho
     V_z = 0.5 * m * omega_z**2 * z**2
@@ -86,27 +85,17 @@ def potential(particle):
     
 
 N = 1000
-#build the Hamiltonian of the system
-H = Hamiltonian(particles = SingleParticle(m = mass), 
-                potential = potential, 
-                spatial_ndim = 1, N = N, extent=xmax )
-
-
-def mu_f(particle):
-    V = ground(particle.x,0,0)
-    mu = (Ntot * N_g +  np.sum(V)) * H.dx / H.extent
-    return mu
-
 def psi_0(particle):
-    Vuu = ground(0,0,particle.x)
-    muq = mu_f(particle)
+    Vuu = ground(particle.x,0,particle.y)
     #print(Vuu)
-    psi_0 = np.zeros((N,),dtype = np.complex128)
+    psi_0 = np.zeros((N,N),dtype = np.complex128)
     for i in range(N):
-        if muq > Vuu[i]:
-            psi_0[i] = np.sqrt((muq - Vuu[i]) / Ntot / N_g )
-        else:
-            psi_0[i] = 0
+        for j in range(N):
+            if muq > Vuu[i,j]:
+                psi_0[i,j] = np.sqrt((muq - Vuu[i,j]) / Ntot / N_g )
+            else:
+                psi_0[i,j] = 0
+    #print(psi_0)
     return psi_0
     
 
@@ -117,14 +106,19 @@ def interaction(psi,t,particle):
     if t < 3 * milliseconds:
         a0 = 0
     elif t < 8 *  milliseconds:
-        a0 = 1.5 * nm
+        a0 = 5 * nm
     else:
-        a0 = -0.2 * nm
+        a0 = -5 * nm
 
-
-    #import cupy as cp
-    g0 = np.array(4*np.pi*a0/mass)
-    return Ntot*g0*np.abs(psi)**2
+    """
+    if t < 8 * milliseconds:
+        a_z = 1.5 * nm
+    else:
+        a_z = -0.2 * nm
+    """
+    import cupy as cp
+    g0 = cp.array(4*np.pi*a0/mass)
+    return Ntot*g0*abs(psi)**2
 
 def zz(psi,t,particle):
     import cupy as cp
@@ -135,18 +129,21 @@ def zz(psi,t,particle):
     N_gn = Ntot * N_gn
     return N_gn*cp.abs(psi)**2
 
-
+#build the Hamiltonian of the system
+H = Hamiltonian(particles = SingleParticle(m = mass), 
+                potential = potential, 
+                spatial_ndim = 2, N = N, extent=xmax )
 
 
 
 #=========================================================================================================#
 # Set and run the simulation
 #=========================================================================================================#
-total_time = 160e-3 * seconds
+total_time = 100e-3 * seconds
 #set the time dependent simulation
 ##sim = TimeSimulation(hamiltonian = H, method = "crank-nicolson")
-sim = TimeSimulation(hamiltonian = H, method = "split-step")
-sim.run(psi_0, total_time = total_time, dt = ( 1e-3 * seconds), store_steps = 100,non_linear_function=interaction)
+sim = TimeSimulation(hamiltonian = H, method = "split-step-cupy")
+sim.run(psi_0, total_time = total_time, dt = ( 1e-5 * seconds), store_steps = 100,non_linear_function=interaction)
 
 #=========================================================================================================#
 # Finally, we visualize the time dependent simulation
@@ -154,3 +151,11 @@ sim.run(psi_0, total_time = total_time, dt = ( 1e-3 * seconds), store_steps = 10
 
 visualization = init_visualization(sim)
 visualization.final_plot(Z_norm = meters * 1e-3)
+#visualization.animate(xlim=[-xmax/2 * Å,xmax/2 * Å], animation_duration = 10, save_animation = True, fps = 30)
+#for i in range(101):
+    #visualization.plotSI( i * total_time / 100,L_norm = 1,Z_norm = 1)
+
+#for visualizing a single frame, use plot method instead of animate:
+#visualization.plot(t = 0 ,xlim=[-xmax* Å,xmax* Å])
+#visualization.final_plot()
+#visualization.plot(t = 160 * milliseconds,xlim=[-xmax* Å,xmax* Å])

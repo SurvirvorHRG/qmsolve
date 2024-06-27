@@ -272,9 +272,32 @@ N_point = 1000
 
 #build the Hamiltonian of the system
 H = Hamiltonian(particles=SingleParticle(m = mass),
-                potential=free,
+                potential=LG_potential,
                 spatial_ndim=2, N=N_point,extent=4000000* Å,z_extent=4000000* Å)
+def non_linear_f8(psi,t,particle):
+    
+    
+    a0=5.2383
+    
+    # calcul of gint
+    
+    #l = 1
+    
 
+    if t < 8 * milliseconds:
+        a0 = 5.2383
+    else:
+        a0 = -5.2383
+        
+    #a0=10*a0/conv_au_ang
+    a0 = a0 *nm
+    
+    #print( 'a = ',a*conv_au_ang/10,' nanometres.')
+
+    my_gi = 4*np.pi*a0/mass
+    
+ 
+    return n0eq*my_gi*np.abs(psi)**2
 
 
 def initial_wavefunction(particle):
@@ -298,9 +321,9 @@ def initial_wavefunction(particle):
 #=========================================================================================================#
 
 
-total_time = 0.05 * seconds
+total_time = 0.07 * seconds
 sim = TimeSimulation(hamiltonian = H, method = "split-step-cupy")
-sim.run(initial_wavefunction, total_time = total_time, dt = (0.001 * seconds), store_steps = 10,non_linear_function=non_linear_f2)
+sim.run(initial_wavefunction, total_time = total_time, dt = (0.001 * seconds), store_steps = 10,non_linear_function=non_linear_f8)
 
 
 #=========================================================================================================#

@@ -4,7 +4,7 @@ import time
 
 
 class Hamiltonian:
-    def __init__(self, particles, potential, N, extent, spatial_ndim,z_extent = 0, potential_type = "grid", E_min=0):
+    def __init__(self, particles, potential, N, extent, spatial_ndim,Nz = 0,z_extent = 0, potential_type = "grid", E_min=0):
         """
         N: number of grid points
         extent: spacial extent, measured in bohr radius (length atomic unit)
@@ -12,11 +12,15 @@ class Hamiltonian:
         """
 
         self.N = N
+        self.Nz = N
         self.extent = extent
         self.z_extent = extent
+        if Nz != 0:
+            self.Nz = Nz
         if z_extent != 0:
             self.z_extent = z_extent
-        self.dx = extent / N
+        self.dx = self.extent / self.N
+        self.dz = self.z_extent / self.Nz
         self.particle_system = particles
         self.particle_system.H = self
         self.spatial_ndim = spatial_ndim
@@ -48,7 +52,10 @@ class Hamiltonian:
                 V = self.potential(self.particle_system)
                 self.Vgrid = V
                 self.E_min = np.amin(V)
-                V = V.reshape(self.N ** self.ndim)
+                #V = V.reshape(self.N ** (self.ndim ))
+                V = V.reshape(self.N ** (self.ndim -1 ) * self.Nz)
+                #if self.ndim == 3:
+                    #V = V.reshape(self.N ** (self.ndim -1 ) * self.Nz)
                 V = diags([V], [0])
                 return V
 

@@ -1,6 +1,6 @@
 from tvtk.util import ctf
 import numpy as np
-from qmsolve import Hamiltonian, SingleParticle, TimeSimulation, init_visualization, nanoseconds,picoseconds,microseconds,nm,s,seconds, ms,m, Å, J, Hz, kg, femtoseconds,picoseconds
+from qmsolve import Hamiltonian, SingleParticle, TimeSimulation, init_visualization, nanoseconds,hbar,picoseconds,microseconds,nm,s,seconds, ms,meters, Å, J, Hz, kg, femtoseconds,picoseconds
 from scipy.special import ellipj
 from scipy.constants import epsilon_0
 from scipy.special import mathieu_cem
@@ -13,7 +13,7 @@ from matplotlib import widgets
 from matplotlib import animation
 
 # Define parameters
-hbar=1.054571596e-34
+#♠hbar=1.054571596e-34
 clight=299792458.0
 echarge=1.602176462e-19
 emass=9.10938188e-31
@@ -23,18 +23,18 @@ epsilon0=1.0e7/(4*np.pi*clight*clight)
 kBoltzmann=1.3806503e-23
 N = 1
 mass = 86.909
-mass = mass*uaumass
+mass = mass*uaumass * kg
+#mass = 1
 
-a = 5.2383
-w_o = 4e-6
-Er = 7.16e-32
+w_o = 4e-6 * meters
+Er = 7.16e-32 * J
 print('Er =', Er)
 epsilon = 4.1*Er
-Delta = -100e13
+Delta = -100e13 * Hz
 l = 1
-P = 35e-3
+P = 35e-3 * (J / seconds)
 
-lambda_ = 4.65e-7
+lambda_ = 4.65e-7 * meters
 k = 2*(np.pi)/lambda_
 
 omega_rho = np.sqrt((8 * epsilon) / (mass * w_o**2))
@@ -54,7 +54,10 @@ print('q =', q)
 def radians_to_degrees(radians):
     return radians * (180.0 / math.pi)
 
-g = (9.8065)/(1e12*1e12)  # Example value for gravity
+#g = 9.8065 *   # Example value for gravity
+#g = 1
+g = (9.8065*meters)/(s*s)  # Example value for gravity
+
 #g = 1
 #g = (9.8065*m)/(s*s)  # Example value for gravity
 

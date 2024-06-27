@@ -1,2 +1,2 @@
 from .time_dependent_solver import TimeSimulation
-
+from .nonlinear_splitstep import SplitStepMethodCupy, NonlinearSplitStepMethodCupy

@@ -1,6 +1,6 @@
 from tvtk.util import ctf
 import numpy as np
-from qmsolve import Hamiltonian, SingleParticle, TimeSimulation, init_visualization,kg,meters,Hz
+from qmsolve import Hamiltonian, SingleParticle, TimeSimulation, init_visualization,s,kg,meters,Hz,hbar,J,seconds,milliseconds
 from scipy.special import ellipj
 from scipy.constants import epsilon_0
 from scipy.special import mathieu_cem
@@ -13,7 +13,7 @@ from matplotlib import widgets
 from matplotlib import animation
 
 # Define parameters
-hbar=1.054571596e-34
+#♠hbar=1.054571596e-34
 clight=299792458.0
 echarge=1.602176462e-19
 emass=9.10938188e-31
@@ -23,18 +23,18 @@ epsilon0=1.0e7/(4*np.pi*clight*clight)
 kBoltzmann=1.3806503e-23
 N = 1
 mass = 86.909
-mass = mass*uaumass
+mass = mass*uaumass * kg
 #mass = 1
 
-w_o = 4e-6
-Er = 7.16e-32
+w_o = 4e-6 * meters
+Er = 7.16e-32 * J
 print('Er =', Er)
 epsilon = 4.1*Er
-Delta = -100e13
+Delta = -100e13 * Hz
 l = 1
-P = 35e-3
+P = 35e-3 * (J / seconds)
 
-lambda_ = 4.65e-7
+lambda_ = 4.65e-7 * meters
 k = 2*(np.pi)/lambda_
 
 omega_rho = np.sqrt((8 * epsilon) / (mass * w_o**2))
@@ -54,9 +54,9 @@ print('q =', q)
 def radians_to_degrees(radians):
     return radians * (180.0 / math.pi)
 
-g = 9.8065  # Example value for gravity
+#g = 9.8065 *   # Example value for gravity
 #g = 1
-#g = (9.8065*m)/(s*s)  # Example value for gravity
+g = (9.8065*meters)/(s*s)  # Example value for gravity
 
 
 def w(z):
@@ -100,20 +100,15 @@ def pot(particle):
     return V
 
 def gravity_potential(particle):
-    V = -g*mass*particle.z
+    V = g*mass*particle.z
     return V
 
-def gravity(psi,t,particle):
-    for i in range(particle.z.shape[2]):
-        particle.z[0,0,i] = -1/2*g*t**2
-    V = np.zeros_like(particle.x)
-    return V
 
 
 #build the Hamiltonian of the system
 H = Hamiltonian(particles=SingleParticle(m = mass),
                 potential=gravity_potential,
-                spatial_ndim=3, N=100,extent=10*w_o,z_extent = 10*lambda_)
+                spatial_ndim=3, N=128,Nz = 512,extent=40*w_o,z_extent = 100*lambda_)
 
 
 def initial_wavefunction(particle):
@@ -125,10 +120,13 @@ def initial_wavefunction(particle):
 #=========================================================================================================#
 
 
-total_time = 1e-30
+total_time = 0.01 * seconds
 sim = TimeSimulation(hamiltonian = H, method = "split-step-cupy")
 #sim = TimeSimulation(hamiltonian = H, method = "nonlinear-split-step-cupy")
-sim.run(initial_wavefunction, total_time = total_time,dt = (1e-34), store_steps = 100)
+dt = total_time / 10000.
+#dt =  0.01 * seconds
+store_steps = 20
+sim.run(initial_wavefunction, total_time = total_time,dt = dt, store_steps = store_steps)
 
 
 #=========================================================================================================#
@@ -136,7 +134,10 @@ sim.run(initial_wavefunction, total_time = total_time,dt = (1e-34), store_steps 
 #=========================================================================================================#
 
 visualization = init_visualization(sim)
-visualization.animate(L_norm = 1, Z_norm = 1)
+#visualization.plot(t = 0 ,L_norm = w_o, Z_norm = lambda_,unit =milliseconds)
+visualization.animate_hot(L_norm = w_o, Z_norm = lambda_)
+visualization.final_plot_hot(L_norm = w_o, Z_norm = lambda_)
+#visualization.final_plot3D_hot(L_norm = w_o, Z_norm = lambda_)
 #visualization.plot_type = 'contour'
 #visualization.animate(xlim=[-15* Å,15* Å], ylim=[-15* Å,15* Å], potential_saturation = 0.5, wavefunction_saturation = 0.2, animation_duration = 10, save_animation = False)
 
@@ -148,8 +149,9 @@ visualization.animate(L_norm = 1, Z_norm = 1)
 
 #visualization.animate2D(L_norm = w_o,unit = nanoseconds, potential_saturation = 0.5, wavefunction_saturation = 0.2, animation_duration = 10, save_animation = True)
 
-#for i in range(21):
-   #visualization.plot(t = i *total_time/20,L_norm = w_o,Z_norm = lambda_,unit = nanoseconds,contrast_vals=[0.1,0.15])
+#for i in range(11):
+   #visualization.plot_hot(t = i *total_time/10,L_norm = w_o,Z_norm = lambda_)
+   #visualization.subplot2D_hot(t = i *total_time/10, L_norm = w_o, Z_norm = lambda_,unit = milliseconds)
    
 #visualization.plot2D(t =  total_time,L_norm = w_o, Z_norm = lambda_,unit = nanoseconds,potential_saturation = 0.1, wavefunction_saturation = 0.1)
 """

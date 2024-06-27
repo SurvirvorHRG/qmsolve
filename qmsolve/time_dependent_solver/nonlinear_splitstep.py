@@ -1,16 +1,16 @@
 import numpy as np
 from .method import Method
 import time
-#from ..util.constants import hbar, Å, femtoseconds, m_e, seconds
+from ..util.constants import hbar, Å, femtoseconds, m_e, seconds
 from ..particle_system import SingleParticle, TwoParticles
 import progressbar
 from typing import Union, Callable, Tuple
 import scipy.constants as const
 
 # Constants and parameters
-hbar = const.hbar
-m_e = const.m_e
-seconds = 1
+#hbar = const.hbar
+#m_e = const.m_e
+#seconds = 1
 
 """
 Split-operator method for the Schrödinger equation.
@@ -176,10 +176,12 @@ class NonlinearSplitStep(Method):
         
         t0 = time.time()
         bar = progressbar.ProgressBar()
+        t_count = 0
         for i in bar(range(store_steps)):
             tmp = np.copy(Ψ[i])
             for j in range(Nt_per_store_step):
-                t = (i + j) * dt
+                t_count += 1
+                t = t_count * self.simulation.dt
                 tmp = self.split_step(self.simulation.H.particle_system,t,tmp)
             Ψ[i+1] = tmp
         print("Took", time.time() - t0)
@@ -332,23 +334,33 @@ class NonlinearSplitStepCupy(Method):
         self.simulation.total_time = total_time
 
         Nt = int(np.round(total_time / dt))
-        Nt_per_store_step = int(np.round(dt_store / dt))
+        Nt_per_store_step = int(np.round(dt_store / cp.abs(dt)))
         self.simulation.Nt_per_store_step = Nt_per_store_step
 
         #time/dt and dt_store/dt must be integers. Otherwise dt is rounded to match that the Nt_per_store_stepdivisions are integers
         self.simulation.dt = dt_store/Nt_per_store_step
+        
 
-
-        Ψ = cp.zeros((store_steps + 1, *([self.H.N] *self.H.ndim )), dtype = cp.complex128)
+        #Ψ = cp.zeros((store_steps + 1, *([self.H.N] *self.H.ndim )), dtype = cp.complex128)
+        Ψ = 0
+        
+        if self.H.ndim == 3:
+            Ψ = cp.zeros((store_steps + 1, self.H.N,self.H.N, self.H.Nz), dtype = cp.complex128)
+        else:
+            Ψ = cp.zeros((store_steps + 1, *([self.H.N] *self.H.ndim )), dtype = cp.complex128)
         Ψ[0] = cp.array(initial_wavefunction(self.H.particle_system))
+        
+
 
 
         t0 = time.time()
         bar = progressbar.ProgressBar()
+        t_count = 0
         for i in bar(range(store_steps)):
-            tmp = np.copy(Ψ[i])
+            tmp = cp.copy(Ψ[i])
             for j in range(Nt_per_store_step):
-                t = (i + j) * dt
+                t_count += 1
+                t = t_count * self.simulation.dt
                 tmp = self.split_step(self.simulation.H.particle_system,t,tmp)
             Ψ[i+1] = tmp
         print("Took", time.time() - t0)

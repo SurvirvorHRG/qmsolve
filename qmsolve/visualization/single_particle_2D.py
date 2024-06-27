@@ -336,6 +336,35 @@ class TimeVisualizationSingleParticle2D(TimeVisualization):
     def __init__(self,simulation):
         self.simulation = simulation
         self.H = simulation.H
+        
+    def final_plot(self,L_norm = 1, Z_norm = 1,unit = milliseconds, figsize=(15, 15),time="ms"):
+        
+        from mpl_toolkits.mplot3d import Axes3D
+        
+        z = self.simulation.H.particle_system.y[:,0]
+        tvec=np.linspace(0,self.simulation.Nt_per_store_step*self.simulation.store_steps*self.simulation.dt,self.simulation.store_steps+1)
+        tt,zz=np.meshgrid(tvec,z)
+        plt.figure("Evolution of 1D cut at y=0")              # figure
+        plt.clf()                       # clears the figure
+        
+        # Generates the plot
+        
+        self.simulation.Ψ_plot = self.simulation.Ψ/self.simulation.Ψmax
+        mid = int(self.simulation.H.N / 2) - 1
+        toplot= np.abs(self.simulation.Ψ_plot[:,:,0])
+        toplot = toplot.T
+        
+        from matplotlib import cm
+        plt.contourf(zz/Z_norm, tt/unit, toplot, 100, cmap=cm.jet, linewidth=0, antialiased=False)
+        L = self.simulation.H.extent/2/L_norm
+        Z = self.simulation.H.z_extent/2/Z_norm
+
+        cbar=plt.colorbar()               # colorbar
+        
+        plt.xlabel('$z$')               # choose axes labels, title of the plot and axes range
+        plt.ylabel('$t\ (ms)$')
+        cbar.set_label('$|\psi|^2$',fontsize=14)
+        plt.show()      # Displays figure on screen
 
     def final_plot3D(self,L_norm = 1, Z_norm = 1,unit = 1, figsize=(15, 15),time="ns"):
         
@@ -439,7 +468,7 @@ class TimeVisualizationSingleParticle2D(TimeVisualization):
     
         
         cbar.set_label('$|\psi|$',fontsize=14)
-        plt.title('$t= %.2f$ (ps) at $y/w_o= %.2f$' % (t * 1e12, 0))    # Title of the plot
+        plt.title('$t= %.2f$ (ms) at $y/w_o= %.2f$' % (t , 0))    # Title of the plot
         plt.show()
         
 

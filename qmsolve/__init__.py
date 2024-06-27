@@ -9,3 +9,5 @@ from .visualization import init_visualization
 
 
 from .time_dependent_solver import TimeSimulation
+
+from .time_dependent_solver import SplitStepMethodCupy, NonlinearSplitStepMethodCupy

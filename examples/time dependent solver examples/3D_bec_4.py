@@ -37,16 +37,8 @@ a=5.2383     # s-wave scattering length - Rb 5.2383 , Cs 3.45 - (nm)
 #a=0.2     # s-wave scattering length - Li 0.2 - (nm)
 
 # Potentiel
-l=6         # Radial index
-w0=30e-6   # Laser waist (mm) !1.0378725 pour l=1 0.0300185 pour l=6
-w1=30e-6    # Laser waist (mm) !1.0378725 pour l=1 0.0300185 pour l=6
-#w0=30e-6   # Laser waist (mm) ! 30 microns pour l=1 
-#w1=30e-6    # Laser waist (mm) !30 microns pour l=1 
+l=1         # Radial index
 
-#w0=10e-6   # Laser waist (mm) ! 30 microns pour l=2
-#w1=10e-6    # Laser waist (mm) !30 microns pour l=2 
-#w0=0.1e-6   #  18 microns pour l=6
-#w1=0.1e-6    #  18 microns pour l=6
 muc=173.3014     # Pot. chim. du condensat (nK) !173.3014 pour l=1 86.7018 pour l=6
 #muc=86.7018     # Pot. chim. du condensat (nK) !173.3014 pour l=1 86.7018 pour l=6
 Power=1.0       # Laser Power (W)
@@ -64,8 +56,7 @@ Pn = Pn*autime/auenergy
 #w0=w0*1.0e-3/aulength
 #w1=w1*1.0e-3/aulength
 
-w0=w0*1.0/aulength
-w1=w1*1.0/aulength
+
 delta=2*np.pi*delta*conv_au_fs/1.0e6
 Is=Is*autime*aulength*aulength/auenergy
 Gamma=2*np.pi*Gamma*conv_au_fs/1.0e9
@@ -230,22 +221,28 @@ def gravity_potential(particle):
     V = g*mass*particle.z
     return V
 
-def LG_potential(particle):
+def LG_potential2(particle):
     rho = np.sqrt(particle.x**2+particle.y**2)
 
-    V = (0.5**l)*omega_l*((rho/length_l)**(2*l))*np.exp(-2*(rho**2)/waist0**2) + (0.5**l)*omega_l*((particle.z/length_l)**(2*l))*np.exp(-2*(particle.z**2)/waist1**2)
+    V = (0.5**l)*omega_l*((rho/length_l)**(2*l))*np.exp(-2*(rho**2)/waist0**2) 
+    + (0.5**l)*omega_l*((particle.z/length_l)**(2*l))*np.exp(-2*(particle.z**2)/waist1**2)
+    
     #V = (0.5**l)*omega_l*((rho/length_l)**(2*l))*np.exp(-2*(rho**2)/waist0**2) + (0.5**l)*omega_l*((particle.z/length_l)**(2*l))*( 1 - np.exp(-2*(particle.z**2)/waist1**2) )
    # V = (0.5**l)*omega_l*((rho/length_l)**(2*l)) + (0.5**l)*omega_l*((particle.z/length_l)**(2*l))
     return V
 
+def LG_potential(particle):
+    rho = np.sqrt(particle.x**2+particle.y**2)
 
+    V = (0.5**l)*omega_l*((rho/length_l)**(2*l))*np.exp(-2*(rho**2)/waist0**2) + (0.5**l)*omega_l*((particle.z/length_l)**(2*l))*np.exp(-2*(particle.z**2)/waist1**2)
+   # V = (0.5**l)*omega_l*((rho/length_l)**(2*l)) + (0.5**l)*omega_l*((particle.z/length_l)**(2*l))
+    return V
 
 
 def non_linear_f(psi,t,particle):
     
     
-     #a0=5.2383
-    a0 = 0.2
+    a0=5.2383
     
     # calcul of gint
     
@@ -253,11 +250,12 @@ def non_linear_f(psi,t,particle):
     
 
     if t < 8 * milliseconds:
-        a0 = 1.5
+        a0 = 5.2383
     else:
-        a0 = -0.2
+        a0 = -5.2383
         
-    a0=10*a0/conv_au_ang
+    #a0=10*a0/conv_au_ang
+    a0 = a0 *nm
     
     #print( 'a = ',a*conv_au_ang/10,' nanometres.')
 
@@ -308,9 +306,9 @@ def initial_wavefunction(particle):
 #=========================================================================================================#
 
 
-total_time = 0.07 * seconds
+total_time = 0.2 * seconds
 sim = TimeSimulation(hamiltonian = H, method = "split-step-cupy")
-sim.run(initial_wavefunction, total_time = total_time, dt = total_time / 8000., store_steps = 20)
+sim.run(initial_wavefunction, total_time = total_time, dt = total_time / 8000., store_steps = 100,non_linear_function=non_linear_f)
 
 
 #=========================================================================================================#

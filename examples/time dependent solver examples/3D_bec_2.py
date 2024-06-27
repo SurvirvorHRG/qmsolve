@@ -1,7 +1,7 @@
 from tvtk.util import ctf
 import numpy as np
 from qmsolve import visualization
-from qmsolve import Hamiltonian, SingleParticle, TimeSimulation, init_visualization, nanoseconds,microseconds,nm,s,seconds, m,m_e, Å, J, Hz, kg, hbar, femtoseconds,picoseconds
+from qmsolve import Hamiltonian, SingleParticle, TimeSimulation, init_visualization, nanoseconds,microseconds,nm,s,seconds,milliseconds, meters,m_e, Å, J, Hz, kg, hbar, femtoseconds,picoseconds
 import math
 
 
@@ -26,11 +26,12 @@ conv_K_au=kBoltzmann/auenergy
 
 # Parameters
 mass=86.909  # Atoms mass Cs 132.905 , Rb 86.909 (united atomic unit of mass)
+mass=7.016004   # Atoms mass Cs 132.905 , Rb 86.909 (united atomic unit of mass)
 Ntot = 1e6
 #n0eq = 0.1*Ntot
 n0eq = Ntot
-N=1000    # Number of condensed Bosons
-a=5.2383     # s-wave scattering length - Rb 5.2383 , Cs 3.45 - (nm)
+#N=1000    # Number of condensed Bosons
+a=-1.35    # s-wave scattering length - Rb 5.2383 , Cs 3.45 - (nm)
 
 # Potentiel
 l=1           # Radial index
@@ -71,10 +72,9 @@ factl=np.math.factorial(l)
 
 
 # calcul of gint
-gint = N*4*np.pi*a/mass
+gint = Ntot*4*np.pi*a/mass
 print(' gint = ',gint )
-coeff1 = 2*(10**(-12))
-coeff2 = 1*(10**(-12))
+
 Ul=(Power*(Gamma**2)*(2**l))/(factl*4*np.pi*delta*Is*(w1**(2*l+2)))
 U0=(Power*(Gamma**2)*(2**l))/(factl*4*np.pi*delta*Is*(w0**(2*l+2)))
 print('U1 = ', Ul)
@@ -117,8 +117,8 @@ print(' Sizez = ',Sizez*(conv_au_ang/1.0e4),' microns.')
 #Calcul de U0 et U1
 gi=(4*np.pi*a)/mass
 print( 'gi = ',gi)
-B=((2*l+3)*gi*n0eq/(4*np.pi))*np.exp(math.lgamma((2*l+3)/(2*l))-math.lgamma(1/l)-math.lgamma((2*l+1)/(2*l)))
-print(' B = ',B)
+#B=((2*l+3)*gi*n0eq/(4*np.pi))*np.exp(math.lgamma((2*l+3)/(2*l))-math.lgamma(1/l)-math.lgamma((2*l+1)/(2*l)))
+#print(' B = ',B)
 """
 #U0=B*((2/Dx)**(2*l+2))*(2/Dz)
 print('U0 = ',U0,' au')
@@ -213,12 +213,11 @@ def free_fall_potential(particle):
     V = np.zeros_like(particle.x)
     return V
 
-g = 9.81
+g = 9.81 * meters / seconds / seconds
 def gravity_potential(particle):
     V = np.zeros_like(particle.x)
-    V = -g*N*mass*particle.z
-    V = g*N*mass*particle.z
-    V = -10*particle.z
+    #V = -gmass*particle.z
+    V = g*mass*particle.z
     return V
 
 def LG_potential(particle):
@@ -235,7 +234,7 @@ def non_linear_f(psi,t,particle):
 N_point = 100
 
 #build the Hamiltonian of the system
-H = Hamiltonian(particles=SingleParticle(),
+H = Hamiltonian(particles=SingleParticle(m = mass),
                 potential=gravity_potential,
                 spatial_ndim=3, N=100,extent=500* Å,z_extent=500* Å)
 
@@ -254,6 +253,7 @@ def initial_wavefunction(particle):
                     psi[i,j,k] = np.sqrt( (muc - V[i,j,k]) / gint)
                 else:
                     psi[i,j,k] = 0
+        
     return psi
 
 
@@ -264,9 +264,9 @@ def initial_wavefunction(particle):
 #=========================================================================================================#
 
 
-total_time = 2000 * femtoseconds
+total_time = 0.05 * seconds
 sim = TimeSimulation(hamiltonian = H, method = "split-step-cupy")
-sim.run(initial_wavefunction, total_time = total_time, dt = (0.1 * femtoseconds), store_steps = 100,non_linear_function=None)
+sim.run(initial_wavefunction, total_time = total_time, dt = (0.0001 * seconds), store_steps = 100,non_linear_function=non_linear_f)
 
 
 #=========================================================================================================#
@@ -274,8 +274,10 @@ sim.run(initial_wavefunction, total_time = total_time, dt = (0.1 * femtoseconds)
 #=========================================================================================================#
 
 visualization = init_visualization(sim)
+for i in range(21):
+    visualization.plot3D(t = i * total_time/20, unit = milliseconds)
 #visualization.plot(t = 0 * femtoseconds,xlim=[-15* Å,15* Å], ylim=[-15* Å,15* Å], potential_saturation = 0.5, wavefunction_saturation = 0.2)
-visualization.plot3D(t = 0* femtoseconds ,unit = femtoseconds,contrast_vals=[0.1,1])
+#visualization.plot3D(t = 0* femtoseconds ,unit = femtoseconds,contrast_vals=[0.1,1])
 #visualization.animate3D(unit = femtoseconds,contrast_vals=[0.1,1])
 #visualization.final_plot(L_norm = 1, Z_norm = 1,unit = femtoseconds,time = 'ns')
 #visualization.final_plot3D(L_norm = 1, Z_norm = 1,unit = femtoseconds,time = 'ns')
