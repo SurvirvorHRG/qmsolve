@@ -1,6 +1,6 @@
 import numpy as np
 
-from qmsolve import Hamiltonian, SingleParticle, TimeSimulation, init_visualization,meters, m_e
+from qmsolve import Hamiltonian, SingleParticle, TimeSimulation,NonlinearSplitStepMethod, init_visualization,meters, m_e
 
 # Define parameters
 hbar=1.054571596e-34
@@ -21,7 +21,7 @@ r_t = np.sqrt(hbar/mass/omega_rho) # 3e-6 meters
 print('r_t =', r_t)
 
 print('omega_rho =', omega_rho)
-omega_z = 0
+omega_z = 0.01 * omega_rho
 print('omega_z =', omega_z)
 
 V0 = (hbar*omega_rho)/4
@@ -42,8 +42,12 @@ ymax = xmax                    # y-window size
 images = 100                # number of .png images
 
 
+
 def psi_0(particle):
     return np.sqrt(N) / np.pi**(1/4) / np.sqrt(L_tilde) * np.exp(-(particle.x/(np.sqrt(2)*L_tilde))**2)
+
+
+
 
 def V(particle):        
 
@@ -51,8 +55,11 @@ def V(particle):
     # The nonlinear part is a cubic term whose sign and strength change abruptly in time.
     
     V_d = V0*(1-np.exp(-(particle.x/L)**2))
+    V_z = 0.5  * mass* omega_z**2 * particle.x**2
     
-    f_n  = V_d / hbar / omega_rho
+    #V_d += V_z
+    
+    f_n  = ( V_d) / hbar / omega_rho
     
     V = f_n
 
@@ -79,14 +86,46 @@ def interaction(psi,t,particle):
 H = Hamiltonian(particles = SingleParticle(m = m_e), 
                 potential = V, 
                 spatial_ndim = 1, N = Nx, extent=xmax )
+
+
+total_time = 160
+DT = dt = (total_time / 5000)
+
+dt_0 = 0.0001
+def psi_1(particle):
+    Vuu = V(particle)
+
+    #muq = mu_f(particle)
+    psi_11 = psi_0(particle)
+    #psi_0 = np.exp( -(particle.x/L)**2  -(particle.y/L)**2 -(particle.z/L)**2)
+    #psi_0 = ground(particle.x,particle.y,particle.z)
+    
+
+    
+    U = NonlinearSplitStepMethod(Vuu, (H.extent,), -1.0j*dt_0,1)
+    U.set_timestep(-1.0j*dt_0)
+    g1 = 2* a_s / r_t
+    U.set_nonlinear_term(lambda particle,t,psi: 
+                         g1*np.abs(psi)**2)
+   # for i in range(20000):
+    #    psi_0 = U(particle,0,psi_0).get()
+    import time
+    import progressbar
+    store_steps = 100
+    t0 = time.time()
+    bar = progressbar.ProgressBar()
+    for i in bar(range(store_steps)):
+        psi_11 = U(0,0,psi_11)
+    print("Took", time.time() - t0)
+    return psi_11
 #=========================================================================================================#
 # Set and run the simulation
 #=========================================================================================================#
-total_time = tmax
+#total_time = tmax
 #set the time dependent simulation
 ##sim = TimeSimulation(hamiltonian = H, method = "crank-nicolson")
 sim = TimeSimulation(hamiltonian = H, method = "split-step")
-sim.run(psi_0, total_time = total_time, dt = dt, store_steps = 100,non_linear_function=interaction)
+sim.run(psi_1, total_time = total_time, dt = dt, store_steps = 100,non_linear_function=interaction)
 
 #=========================================================================================================#
 # Finally, we visualize the time dependent simulation

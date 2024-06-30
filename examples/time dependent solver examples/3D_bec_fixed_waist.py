@@ -1,7 +1,7 @@
 from tvtk.util import ctf
 import numpy as np
 from qmsolve import visualization
-from qmsolve import Hamiltonian, SingleParticle, TimeSimulation, init_visualization, milliseconds,microseconds,nm,s,seconds, meters,m_e, Å, J, Hz, kg, hbar, femtoseconds,picoseconds
+from qmsolve import Hamiltonian, SingleParticle, TimeSimulation, init_visualization, milliseconds,microseconds,nm,s,seconds, meters,m_e, Å, J, Hz, kg
 import math
 import scipy.special as sc
 
@@ -29,14 +29,18 @@ N=1e6    # Number of condensed Bosons
 a=5.2383     # s-wave scattering length - Rb 5.2383 , Cs 3.45 - (nm)
 
 # Potentiel
-l=1            # Radial index
-w0=0.7936514     # Laser waist (mm) !0.7936514 pour l=1 0.7865231 pour l=6
-w1=1.7746586     # Laser waist (mm) !1.7746586 pour l=1 0.0738672 pour l=6
-muc=173.3320     # Pot. chim. du condensat (nK) !173.3320 pour l=1 144.6547 pour l=6
 
-#w0=0.7865231     # Laser waist (mm) !0.7936514 pour l=1 0.7865231 pour l=6
-#w1=0.0738672     # Laser waist (mm) !1.7746586 pour l=1 0.0738672 pour l=6
-#muc=144.6547     # Pot. chim. du condensat (nK) !173.3320 pour l=1 144.6547 pour l=6
+
+#l=1            # Radial index
+#w0=0.7936514     # Laser waist (mm) !0.7936514 pour l=1 0.7865231 pour l=6
+#w1=1.7746586     # Laser waist (mm) !1.7746586 pour l=1 0.0738672 pour l=6
+#muc=173.3320     # Pot. chim. du condensat (nK) !173.3320 pour l=1 144.6547 pour l=6
+
+
+l=6            # Radial index
+w0=0.7865231     # Laser waist (mm) !0.7936514 pour l=1 0.7865231 pour l=6
+w1=0.0738672     # Laser waist (mm) !1.7746586 pour l=1 0.0738672 pour l=6
+muc=144.6547     # Pot. chim. du condensat (nK) !173.3320 pour l=1 144.6547 pour l=6
 
 
 Power=1.0       # Laser Power (W)
@@ -159,10 +163,10 @@ def non_linear_f2(psi,t,particle):
         return -gint*((np.abs(psi))**2)
 
 
-N = 512
-Nz = 64
-extent = 2 * xmax
-z_extent = 2* zmax
+N = 256
+Nz = 512
+extent =  2 * 1e1 * xmax
+z_extent =   1/2 * zmax
 #build the Hamiltonian of the system
 H = Hamiltonian(particles=SingleParticle(m = mass),
                 potential=LG_potential,
@@ -194,6 +198,13 @@ def initial_wavefunction(particle):
                     psi[i,j,k] = 0
     return psi
 
+
+def initial_wavefunction_1(particle):
+    #psi = initial_wavefunction(particle)
+    
+    V = LG_potential(particle)
+    return V
+
 #=========================================================================================================#
 # Set and run the simulation
 #=========================================================================================================#
@@ -201,9 +212,11 @@ def initial_wavefunction(particle):
 
 total_time = 0.1 * seconds
 dt = 1e-4 * seconds
+dt = total_time
+stored = 1
 #dt = min(dt/omega_l,dt/omega_z)
 sim = TimeSimulation(hamiltonian = H, method = "split-step-cupy")
-sim.run(initial_wavefunction, total_time = total_time, dt = dt, store_steps = 20,non_linear_function=non_linear_f2)
+sim.run(initial_wavefunction_1, total_time = total_time, dt = dt, store_steps = stored,non_linear_function=non_linear_f2)
 
 
 #=========================================================================================================#
@@ -211,12 +224,12 @@ sim.run(initial_wavefunction, total_time = total_time, dt = dt, store_steps = 20
 #=========================================================================================================#
 
 visualization = init_visualization(sim)
-visualization.plot3D(0, unit = milliseconds)
-visualization.plot(0, unit = milliseconds)
+#visualization.plot(t = 0,L_norm = meters * 1e-3, Z_norm = meters * 1e-3)
+visualization.plot3D(t = 0,L_norm = meters * 1e-3, Z_norm = meters * 1e-3)
 #visualization.plot(t = 0 * femtoseconds,xlim=[-15* Å,15* Å], ylim=[-15* Å,15* Å], potential_saturation = 0.5, wavefunction_saturation = 0.2)
 #visualization.plot2D(t = 0 ,unit = femtoseconds,contrast_vals=[0.9,1])
-for i in range(11):
-    visualization.plot2D_xy(t = i * total_time/10, unit = milliseconds)
+#for i in range(11):
+    #visualization.plot2D_xy(t = i * total_time/10, unit = milliseconds)
 #visualization.animate(unit = femtoseconds,contrast_vals=[0.99,1])
 #visualization.plot_type = 'contour'
 #visualization.animate(xlim=[-50* Å,50* Å], ylim=[-50* Å,50* Å], potential_saturation = 0.5, wavefunction_saturation = 0.2, animation_duration = 10, save_animation = True)

@@ -46,8 +46,8 @@ omega_mean = (omega_rho*omega_rho*omega_z)**(1/3)
 a_oh = np.sqrt(hbar / m / omega_mean)
 muq0 = 0.5 * (15 * Ntot * a_s / a_oh)**(2/5) * hbar * omega_mean
 
-zmax =   2*100* r_t       # x-window size
-xmax =    2* zmax 
+zmax =  2* 2*100* r_t       # x-window size
+xmax =     zmax /8
 #xmax = 2*0.3e-3 * meters
 
 
@@ -111,8 +111,10 @@ def mu_f(particle):
 
 total_time = 160e-3 * seconds
 DT = dt = ( 1e-5 * seconds)
+DT = dt = total_time
+stored = 1
 
-dt_0 = 1e-9 * seconds
+dt_0 = 0.0001
 def psi_1(particle):
     import cupy as cp
     Vuu = ground(particle.x,particle.y,particle.z)
@@ -127,7 +129,7 @@ def psi_1(particle):
         for j in range(N):
             for k in range(Nz):
                 if muq > Vuu[i,j,k]:
-                    psi_0[i,j,k] = np.sqrt((muq - Vuu[i,j,k]) / Ntot / N_g )
+                    psi_0[i,j,k] = np.sqrt((muq - Vuu[i,j,k])  / N_g )
                 else:
                     psi_0[i,j,k] = 0
     
@@ -137,7 +139,7 @@ def psi_1(particle):
     U = NonlinearSplitStepMethodCupy(Vuu, (H.extent, H.extent, H.z_extent), -1.0j*dt_0,mass)
     U.set_timestep(-1.0j*dt_0)
     U.set_nonlinear_term(lambda particle,t,psi:
-                         Ntot*N_gi*np.abs(psi)**2)
+                         N_gi*np.abs(psi)**2)
    # for i in range(20000):
     #    psi_0 = U(particle,0,psi_0).get()
     import time
@@ -186,7 +188,7 @@ def interaction(psi,t,particle):
     #g0 = cp.array(4*np.pi*a0/mass)
     g0 = 4*np.pi*a0/mass
     #return a0*abs(psi)**2
-    return Ntot*g0*abs(psi)**2
+    return g0*abs(psi)**2
 
 def interaction2(psi,t,particle):
     
@@ -236,15 +238,16 @@ def zz(psi,t,particle):
 sim = TimeSimulation(hamiltonian = H, method = "split-step-cupy")
 #sim = TimeSimulation(hamiltonian = H, method = "nonlinear-split-step-cupy")
 #sim.method.split_step.set_nonlinear_term(interaction3)
-sim.run(psi_0, total_time = total_time, dt = DT, store_steps = 100,non_linear_function=interaction)
+
+sim.run(psi_0, total_time = total_time, dt = DT, store_steps = stored,non_linear_function=interaction)
 
 #=========================================================================================================#
 # Finally, we visualize the time dependent simulation
 #=========================================================================================================#
 
 visualization = init_visualization(sim)
-visualization.plot(t = 0)
-visualization.final_plot(Z_norm = meters * 1e-3)
+visualization.plot(t = 0,L_norm = meters * 1e-3, Z_norm = meters * 1e-3)
+visualization.final_plot(L_norm = meters * 1e-3, Z_norm = meters * 1e-3)
 #visualization.animate(xlim=[-xmax/2 * Å,xmax/2 * Å], animation_duration = 10, save_animation = True, fps = 30)
 #for i in range(101):
     #visualization.plotSI( i * total_time / 100,L_norm = 1,Z_norm = 1)
