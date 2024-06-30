@@ -378,7 +378,7 @@ class TimeVisualizationSingleParticle1D(TimeVisualization):
         
         
         # Generates the plot
-        toplot=np.abs(self.simulation.Ψ_plot)
+        toplot=np.abs(self.simulation.Ψ)
         if fixmaximum > 0:
             toplot[toplot > fixmaximum] = fixmaximum
         

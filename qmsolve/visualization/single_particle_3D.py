@@ -850,7 +850,8 @@ class TimeVisualizationSingleParticle3D(TimeVisualization):
         mid = int(self.simulation.H.Nz / 2) - 1
         psi = np.abs(psi[:,:,mid])
         
-        psi_normalized = (psi - np.min(psi)) / (np.max(psi) - np.min(psi))
+        #psi_normalized = (psi - np.min(psi)) / (np.max(psi) - np.min(psi))
+        psi_normalized = psi
 
          
 
@@ -869,16 +870,18 @@ class TimeVisualizationSingleParticle3D(TimeVisualization):
         #surf = mlab.surf(psi[:,:,49],colormap='jet')
         #mlab.colorbar(surf,title='psi',orientation='vertical')  
         #time_label.text = 'Time: {:.2f} {}'.format(t/unit)
-        time_label = mlab.text(0.1,0.7,'',width=0.11)
+        time_label = mlab.text(0.1,0.7,'',width=0.13)
         time_label.property.color = (1.0,1.0,1.0)
-        time_label.text = '$T = {:.2f}\ (ms)$'.format(t/unit) 
+        if np.amax(np.abs(self.simulation.Ψ_plot)) == np.amax(np.abs(self.simulation.Ψ_plot[index])):
+            time_label.text = '$T-peak = {:.2f}\ (ms)$'.format(t/unit)
+        else:
+            time_label.text = '$T = {:.2f}\ (ms)$'.format(t/unit) 
         time_label.property.font_family = 'times'
         #print(np.amax(psi))
         #print(self.simulation.Ψmax)
         #print(np.amax(np.abs(self.simulation.Ψ_plot)))
         #print(np.amax(np.abs(self.simulation.Ψ_plot[index])))
-        #if np.amax(np.abs(self.simulation.Ψ_plot)) == np.amax(np.abs(self.simulation.Ψ_plot[index])):
-            #time_label.text = '$t-peak = {:.2f}\ (ms)$'.format(t/unit)
+
               
         #mlab.outline()
         
@@ -900,7 +903,7 @@ class TimeVisualizationSingleParticle3D(TimeVisualization):
         ax.axes.y_axis_visibility = False
         ax.axes.label_format = '%-#6.1g'
         
-        """
+        
         colorbar = mlab.colorbar(nb_labels=6,orientation = 'vertical')
         colorbar.scalar_bar_representation.position = [0.85, 0.1]
         #colorbar.data_range = (0, 0.37)
@@ -909,9 +912,9 @@ class TimeVisualizationSingleParticle3D(TimeVisualization):
         colorbar.scalar_bar.label_format = '%.2f'
         colorbar.scalar_bar.unconstrained_font_size = True
         colorbar_label.font_size = 10
-        """
+        
 
-        mlab.view(azimuth=60,elevation=60,distance=(N +N + Nz)/3 *4)
+        mlab.view(azimuth=60,elevation=60,distance=(N +N + Nz)/3 *2.5)
         file = str(t) + '.png'
         mlab.savefig(file)
         mlab.show()

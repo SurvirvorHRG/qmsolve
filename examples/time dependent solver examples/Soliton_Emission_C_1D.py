@@ -14,7 +14,7 @@ kBoltzmann=1.3806503e-23
 conv_C12_au=uaumass/emass
 
 # Define parameters
-mass=7.016004 * uaumass # Lithium
+mass=86.909 * uaumass # Lithium
 N= 5e4
 omega_rho = 1.0e3 # 1kHz
 r_t = np.sqrt(hbar/mass/omega_rho) # 3e-6 meters
@@ -35,7 +35,7 @@ a_s = L * V0_tilde * np.sqrt(np.pi) / 2 / N
 
 Nx = 2000                        # Grid points
 Ny = Nx
-tmax = 160                # End of propagation
+tmax = 120                # End of propagation
 dt = tmax/5000                # Evolution step
 xmax =  2 *200                    # x-window size
 ymax = xmax                    # y-window size
@@ -88,7 +88,7 @@ H = Hamiltonian(particles = SingleParticle(m = m_e),
                 spatial_ndim = 1, N = Nx, extent=xmax )
 
 
-total_time = 160
+total_time = tmax
 DT = dt = (total_time / 5000)
 
 dt_0 = 0.0001
@@ -125,11 +125,11 @@ def psi_1(particle):
 #set the time dependent simulation
 ##sim = TimeSimulation(hamiltonian = H, method = "crank-nicolson")
 sim = TimeSimulation(hamiltonian = H, method = "split-step")
-sim.run(psi_1, total_time = total_time, dt = dt, store_steps = 100,non_linear_function=interaction)
+sim.run(psi_1, total_time = total_time, dt = dt, store_steps = 500,non_linear_function=interaction)
 
 #=========================================================================================================#
 # Finally, we visualize the time dependent simulation
 #=========================================================================================================#
 
 visualization = init_visualization(sim)
-visualization.final_plot(L_norm = 1/r_t,unit = 1e3 )
+visualization.final_plot(L_norm = 1,unit = 1 )
