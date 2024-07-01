@@ -14,7 +14,8 @@ kBoltzmann=1.3806503e-23
 conv_C12_au=uaumass/emass
 
 # Define parameters
-mass=86.909 * uaumass # Lithium
+#mass=86.909 * uaumass # Lithium
+mass=7.016004 * uaumass # Lithium
 N= 5e4
 omega_rho = 1.0e3 # 1kHz
 r_t = np.sqrt(hbar/mass/omega_rho) # 3e-6 meters
@@ -35,7 +36,7 @@ a_s = L * V0_tilde * np.sqrt(np.pi) / 2 / N
 
 Nx = 2000                        # Grid points
 Ny = Nx
-tmax = 120                # End of propagation
+tmax = 100                # End of propagation
 dt = tmax/5000                # Evolution step
 xmax =  2 *200                    # x-window size
 ymax = xmax                    # y-window size
