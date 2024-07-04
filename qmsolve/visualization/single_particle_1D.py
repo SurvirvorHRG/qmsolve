@@ -360,7 +360,7 @@ class TimeVisualizationSingleParticle1D(TimeVisualization):
         self.simulation = simulation
         self.H = simulation.H
         
-    def final_plot(self,L_norm = 1, Z_norm = 1,unit = milliseconds,time="ms",fixmaximum = 0):
+    def final_plot(self,L_norm = meters, Z_norm = meters,unit = milliseconds,time="ms",fixmaximum = 0):
         
         from mpl_toolkits.mplot3d import Axes3D
         from matplotlib import cm
@@ -378,13 +378,13 @@ class TimeVisualizationSingleParticle1D(TimeVisualization):
         
         
         # Generates the plot
-        toplot=np.abs(self.simulation.Ψ)
+        toplot=np.abs(self.simulation.Ψ_plot)**2
         if fixmaximum > 0:
             toplot[toplot > fixmaximum] = fixmaximum
         
         plt.contourf(xx/L_norm, tt/unit, toplot.T, 100, cmap=cm.jet, linewidth=0, antialiased=False)
         cbar=plt.colorbar()               # colorbar
-        plt.xlabel('$z$')                 # axes labels, title, plot and axes range
+        plt.xlabel('$x$')                 # axes labels, title, plot and axes range
         plt.ylabel('$t$')
         cbar.set_label('$|\psi|^2$',fontsize=14)
         plt.show()      # Displays figure on scre
@@ -426,6 +426,28 @@ class TimeVisualizationSingleParticle1D(TimeVisualization):
         ax.legend('lower left')
 
         plt.show()
+        
+    def plot1D(self,t,L_norm = meters,unit = milliseconds,fixmaximum = 0):
+        
+
+        ## The plot
+        plt.style.use("classic")
+        index = int((self.simulation.store_steps)/self.simulation.total_time*t)
+        self.simulation.Ψ_plot = self.simulation.Ψ/self.simulation.Ψmax
+        fig = plt.figure("1D plot")    # figure
+        fig.set_size_inches(8,6)
+        plt.plot(self.simulation.H.particle_system.x/L_norm, abs(self.simulation.Ψ_plot[index])**2)  # makes the plot
+        plt.xlabel('$x$')           # format LaTeX if installed (choose axes labels, 
+        plt.ylabel('$|\psi|^2$')    # title of the plot and axes range
+        plt.title('$t=$ %f'%(t/unit))    # title of the plot
+    
+        if fixmaximum>0:              # choose maximum |psi|^2 to be depicted in the vertical axis
+            plt.axis([min(x),max(x),0,fixmaximum])
+            
+            
+
+        plt.show()
+        return;
         
     def plot(self, t, xlim=None, figsize=(16/9 *5.804 * 0.9,5.804)):
 

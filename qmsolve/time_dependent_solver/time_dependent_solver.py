@@ -80,6 +80,6 @@ class TimeSimulation:
         """
         """
         if self.method_name == "split-step" or self.method_name == "split-step-cupy":
-            self.method.run(initial_wavefunction, total_time, dt, store_steps, non_linear_function,norm,g)
+            self.method.run(initial_wavefunction, total_time, dt, store_steps)
         else:
             self.method.run(initial_wavefunction, total_time, dt, store_steps)

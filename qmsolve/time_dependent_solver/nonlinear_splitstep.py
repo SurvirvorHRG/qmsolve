@@ -24,9 +24,19 @@ split-operator_method/split-operator_method.html
 https://en.wikipedia.org/wiki/Split-step_method
 """
 
-class SplitStepMethod:
+class NonlinearSplitStepMethod():
+
     """
-    Class for the split step method.
+    Split-Operator method for the non-linear Schrodinger equation.
+    
+    References:
+
+      Xavier Antoine, Weizhu Bao, Christophe Besse
+      Computational methods for the dynamics of 
+      the nonlinear Schrodinger/Gross-Pitaevskii equations.
+      Comput. Phys. Commun., Vol. 184, pp. 2621-2633, 2013.
+      https://arxiv.org/pdf/1305.1093
+
     """
 
     def __init__(self, potential: np.ndarray,
@@ -43,6 +53,7 @@ class SplitStepMethod:
         self._exp_kinetic = None
         self._norm = False
         self._dt = 0
+        self._nonlinear = lambda psi: psi
         #self.set_timestep(timestep)
 
     def set_timestep(self, timestep: Union[float, np.complex128]) -> None:
@@ -50,11 +61,11 @@ class SplitStepMethod:
         Set the timestep. It can be real or complex.
         """
         self._dt = timestep
-        self._exp_potential = np.exp(-0.25j*(self._dt/hbar)*self.V)
+        self._exp_potential = np.exp(-0.5j*(self._dt/hbar)*self.V)
         p = np.meshgrid(*[2.0*np.pi*hbar*np.fft.fftfreq(d)*d/
                           self._dim[i] for i, d in enumerate(self.V.shape)])
         self._kinetic = sum([p_i**2 for p_i in p])/(2.0*self.m)
-        self._exp_kinetic = np.exp(-0.5j*(self._dt/(2.0*self.m*hbar))
+        self._exp_kinetic = np.exp(-1j*(self._dt/(2.0*self.m*hbar))
                                    * sum([p_i**2 for p_i in p]))
 
     def set_potential(self, V: np.ndarray) -> None:
@@ -62,15 +73,17 @@ class SplitStepMethod:
         Change the potential
         """
         self.V = V
-        self._exp_potential = np.exp(-0.25j*(self._dt/hbar)*self.V)
+        self._exp_potential = np.exp(-0.5j*(self._dt/hbar)*self.V)
 
-    def __call__(self, psi: np.ndarray) -> np.ndarray:
+    def __call__(self,psi,t, particle: np.ndarray) -> np.ndarray:
         """
         Step the wavefunction in time.
         """
+        psi = self._nonlinear(psi,t,particle)
         psi_p = np.fft.fftn(psi*self._exp_potential)
         psi_p = psi_p*self._exp_kinetic
         psi = np.fft.ifftn(psi_p)*self._exp_potential
+        psi = self._nonlinear(psi,t,particle)
         if self._norm:
             psi = psi/np.sqrt(np.sum(psi*np.conj(psi)))
         return psi
@@ -91,45 +104,11 @@ class SplitStepMethod:
         """
         self._norm = norm
 
-
-
-
-class NonlinearSplitStepMethod(SplitStepMethod):
-
-    """
-    Split-Operator method for the non-linear Schrodinger equation.
-    
-    References:
-
-      Xavier Antoine, Weizhu Bao, Christophe Besse
-      Computational methods for the dynamics of 
-      the nonlinear Schrodinger/Gross-Pitaevskii equations.
-      Comput. Phys. Commun., Vol. 184, pp. 2621-2633, 2013.
-      https://arxiv.org/pdf/1305.1093
-
-    """
-    def __init__(self, potential, dimensions, timestep, m):
-        SplitStepMethod.__init__(self, potential, dimensions, timestep, m)
-        self._nonlinear = lambda psi: psi
-
-    def __call__(self,particle,t, psi: np.ndarray) -> np.ndarray:
-        """
-        Step the wavefunction in time.
-        """
-        psi = self._nonlinear(particle,t,psi)
-        psi_p = np.fft.fftn(psi*self._exp_potential)
-        psi_p = psi_p*self._exp_kinetic
-        psi = np.fft.ifftn(psi_p)*self._exp_potential
-        psi = self._nonlinear(particle,t,psi)
-        if self._norm:
-            psi = psi/np.sqrt(np.sum(psi*np.conj(psi)))
-        return psi
-    
     def set_nonlinear_term(self, nonlinear_func: Callable) -> None:
         """
         Set the nonlinear term.
         """
-        self._nonlinear = lambda particle,t,psi: psi*np.exp(-0.25j*nonlinear_func(particle,t,psi)*self._dt/hbar)
+        self._nonlinear = lambda psi,t,particle: psi*np.exp(-0.5j*nonlinear_func(psi,t,particle)*self._dt/hbar)
 
 
     
@@ -143,7 +122,14 @@ class NonlinearSplitStep(Method):
         self.simulation.Vmax = np.amax(self.H.Vgrid)
         #self.H.particle_system.compute_momentum_space(self.H)
         #self.p2 = self.H.particle_system.p2
-        self.split_step = NonlinearSplitStepMethod(self.H.potential(self.H.particle_system),(self.H.extent/2,),1e-5 * seconds,m = self.H.particle_system.m)
+        L = self.H.extent
+        Z = self.H.z_extent
+        if self.H.spatial_ndim == 1:
+            self.split_step = NonlinearSplitStepMethod(self.H.potential(self.H.particle_system),(L,),1e-5 * seconds,m = self.H.particle_system.m)
+        elif self.H.spatial_ndim == 2:
+            self.split_step = NonlinearSplitStepMethod(self.H.potential(self.H.particle_system),(L,L,),1e-5 * seconds,m = self.H.particle_system.m)
+        else:
+            self.split_step = NonlinearSplitStepMethod(self.H.potential(self.H.particle_system),(L,L,Z),1e-5 * seconds,m = self.H.particle_system.m)
 
 
     def run(self, initial_wavefunction, total_time, dt, store_steps = 1):
@@ -173,6 +159,10 @@ class NonlinearSplitStep(Method):
 
         Ψ[0] = np.array(initial_wavefunction(self.H.particle_system))
         
+        #steps_image=int(total_time/dt/store_steps)  # Number of computational steps between consecutive graphic outputs
+
+        # Main computational loop
+        #print("calculating", end="", flush=True)
         
         t0 = time.time()
         bar = progressbar.ProgressBar()
@@ -182,38 +172,32 @@ class NonlinearSplitStep(Method):
             for j in range(Nt_per_store_step):
                 t_count += 1
                 t = t_count * self.simulation.dt
-                tmp = self.split_step(self.simulation.H.particle_system,t,tmp)
+                tmp = self.split_step(tmp,t,self.simulation.H.particle_system)
             Ψ[i+1] = tmp
         print("Took", time.time() - t0)
         
         
-        """
-        m = self.H.particle_system.m
-
-
-        Ur = np.exp(-0.5j*(self.simulation.dt/hbar)*np.array(self.H.Vgrid))
-        Uk = np.exp(-0.5j*(self.simulation.dt/(m*hbar))*self.p2)
-
-        t0 = time.time()
-        bar = progressbar.ProgressBar()
-        for i in bar(range(store_steps)):
-            tmp = np.copy(Ψ[i])
-            for j in range(Nt_per_store_step):
-                c = np.fft.fftshift(np.fft.fftn(Ur*tmp))
-                tmp = Ur*np.fft.ifftn( np.fft.ifftshift(Uk*c))
-            Ψ[i+1] = tmp
-        print("Took", time.time() - t0)
-        """
         self.simulation.Ψ = Ψ
         self.simulation.Ψmax = np.amax(np.abs(Ψ))
 
+
+
 import cupy as cp
-class SplitStepMethodCupy:
-    """
-    Class for the split step method.
-    """
+class NonlinearSplitStepMethodCupy():
 
+    """
+    Split-Operator method for the non-linear Schrodinger equation.
+    
+    References:
 
+      Xavier Antoine, Weizhu Bao, Christophe Besse
+      Computational methods for the dynamics of 
+      the nonlinear Schrodinger/Gross-Pitaevskii equations.
+      Comput. Phys. Commun., Vol. 184, pp. 2621-2633, 2013.
+      https://arxiv.org/pdf/1305.1093
+
+    """
+    
     def __init__(self, potential: np.ndarray,
                  dimensions: Tuple[float, ...],
                  timestep: Union[float, np.complex128] = 1e-5 * seconds,
@@ -229,17 +213,18 @@ class SplitStepMethodCupy:
         self._norm = False
         self._dt = 0
         #self.set_timestep(timestep)
+        self._nonlinear = lambda psi: psi
 
     def set_timestep(self, timestep: Union[float, np.complex128]) -> None:
         """
         Set the timestep. It can be real or complex.
         """
         self._dt = timestep
-        self._exp_potential = cp.exp(-0.25j*(self._dt/hbar)*cp.array(self.V))
+        self._exp_potential = cp.exp(-0.5j*(self._dt/hbar)*cp.array(self.V))
         p = np.meshgrid(*[2.0*np.pi*hbar*cp.fft.fftfreq(d)*d/
                           self._dim[i] for i, d in enumerate(self.V.shape)])
         self._kinetic = sum([p_i**2 for p_i in p])/(2.0*self.m)
-        self._exp_kinetic = cp.exp(-0.5j*(self._dt/(2.0*self.m*hbar))
+        self._exp_kinetic = cp.exp(-1j*(self._dt/(2.0*self.m*hbar))
                                    * sum([p_i**2 for p_i in p]))
 
     def set_potential(self, V: np.ndarray) -> None:
@@ -247,17 +232,19 @@ class SplitStepMethodCupy:
         Change the potential
         """
         self.V = V
-        self._exp_potential = np.exp(-0.25j*(self._dt/hbar)*self.V)
+        self._exp_potential = np.exp(-0.5j*(self._dt/hbar)*self.V)
 
-    def __call__(self, psi: np.ndarray) -> np.ndarray:
+    def __call__(self,psi,t, particle: np.ndarray) -> np.ndarray:
         """
         Step the wavefunction in time.
-        """
-        psi_p = cp.fft.fftn(psi*self._exp_potential)
+        """ 
+        psi = cp.array(self._nonlinear(psi,t,particle))
+        psi_p = cp.fft.fftn(psi*cp.array(self._exp_potential))
         psi_p = psi_p*self._exp_kinetic
         psi = cp.fft.ifftn(psi_p)*self._exp_potential
+        psi = cp.array(self._nonlinear(psi,t,particle))
         if self._norm:
-            psi = psi/cp.sqrt(cp.sum(psi*np.conj(psi)))
+            psi = psi/cp.sqrt(np.sum(psi*np.conj(psi)))
         return psi
 
 
@@ -267,45 +254,12 @@ class SplitStepMethodCupy:
         """
         self._norm = norm
         
-        
-class NonlinearSplitStepMethodCupy(SplitStepMethodCupy):
 
-    """
-    Split-Operator method for the non-linear Schrodinger equation.
-    
-    References:
-
-      Xavier Antoine, Weizhu Bao, Christophe Besse
-      Computational methods for the dynamics of 
-      the nonlinear Schrodinger/Gross-Pitaevskii equations.
-      Comput. Phys. Commun., Vol. 184, pp. 2621-2633, 2013.
-      https://arxiv.org/pdf/1305.1093
-
-    """
-    def __init__(self, potential, dimensions, timestep, m):
-        SplitStepMethod.__init__(self, potential, dimensions, timestep, m)
-        self._nonlinear = lambda psi: psi
-        
-
-
-    def __call__(self,particle,t, psi: np.ndarray) -> np.ndarray:
-        """
-        Step the wavefunction in time.
-        """ 
-        psi = cp.array(self._nonlinear(particle,t,psi))
-        psi_p = cp.fft.fftn(psi*cp.array(self._exp_potential))
-        psi_p = psi_p*self._exp_kinetic
-        psi = cp.fft.ifftn(psi_p)*self._exp_potential
-        psi = self._nonlinear(particle,t,psi)
-        if self._norm:
-            psi = psi/cp.sqrt(np.sum(psi*np.conj(psi)))
-        return psi
-    
     def set_nonlinear_term(self, nonlinear_func: Callable) -> None:
         """
         Set the nonlinear term.
         """
-        self._nonlinear = lambda particle,t,psi: psi*np.exp(-0.25j*nonlinear_func(particle,t,psi)*self._dt/hbar)
+        self._nonlinear = lambda psi,t,particle: psi*np.exp(-0.5j*nonlinear_func(psi,t,particle)*self._dt/hbar)
 
 class NonlinearSplitStepCupy(Method):
     def __init__(self, simulation):
@@ -318,8 +272,14 @@ class NonlinearSplitStepCupy(Method):
         #self.H.particle_system.compute_momentum_space(self.H)
         #self.p2 = self.H.particle_system.p2
         #self.split_step = NonlinearSplitStepMethodCupy(self.H.potential(self.H.particle_system),(self.H.extent/2,),1e-5 * seconds,m = self.H.particle_system.m)
-        L = self.H.extent/2
-        self.split_step = NonlinearSplitStepMethodCupy(self.H.potential(self.H.particle_system),(L,L,L),1e-5 * seconds,m = self.H.particle_system.m)
+        L = self.H.extent
+        Z = self.H.z_extent
+        if self.H.spatial_ndim == 1:
+            self.split_step = NonlinearSplitStepMethodCupy(self.H.potential(self.H.particle_system),(L,),1e-5 * seconds,m = self.H.particle_system.m)
+        elif self.H.spatial_ndim == 2:
+            self.split_step = NonlinearSplitStepMethodCupy(self.H.potential(self.H.particle_system),(L,L,),1e-5 * seconds,m = self.H.particle_system.m)
+        else:
+            self.split_step = NonlinearSplitStepMethodCupy(self.H.potential(self.H.particle_system),(L,L,Z),1e-5 * seconds,m = self.H.particle_system.m)
         
 
 
@@ -352,7 +312,11 @@ class NonlinearSplitStepCupy(Method):
         
 
 
+        #tmp = cp.copy(Ψ[0])
+        
+        #steps_image=int(total_time/dt/store_steps)  # Number of computational steps between consecutive graphic outputs
 
+        # Main computational loop
         t0 = time.time()
         bar = progressbar.ProgressBar()
         t_count = 0
@@ -361,29 +325,9 @@ class NonlinearSplitStepCupy(Method):
             for j in range(Nt_per_store_step):
                 t_count += 1
                 t = t_count * self.simulation.dt
-                tmp = self.split_step(self.simulation.H.particle_system,t,tmp)
+                tmp = self.split_step(tmp,t,self.simulation.H.particle_system)
             Ψ[i+1] = tmp
         print("Took", time.time() - t0)
-        
-        """
-        
-        m = self.H.particle_system.m
-
-
-        Ur = cp.exp(-0.5j*(self.simulation.dt/hbar)*cp.array(self.H.Vgrid))
-        Uk = cp.exp(-0.5j*(self.simulation.dt/(m*hbar))*self.p2)
-
-        t0 = time.time()
-        bar = progressbar.ProgressBar()
-        for i in bar(range(store_steps)):
-            tmp = cp.copy(Ψ[i])
-            for j in range(Nt_per_store_step):
-                c = cp.fft.fftshift(cp.fft.fftn(Ur*tmp))
-                tmp = Ur*cp.fft.ifftn( cp.fft.ifftshift(Uk*c))
-            Ψ[i+1] = tmp
-        print("Took", time.time() - t0)
-"""
-
-
+    
         self.simulation.Ψ = Ψ.get()
         self.simulation.Ψmax = np.amax(np.abs(self.simulation.Ψ ))

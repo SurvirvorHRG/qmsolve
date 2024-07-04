@@ -31,16 +31,16 @@ a=5.2383     # s-wave scattering length - Rb 5.2383 , Cs 3.45 - (nm)
 # Potentiel
 
 
-l=1            # Radial index
-w0=0.7936514     # Laser waist (mm) !0.7936514 pour l=1 0.7865231 pour l=6
-w1=1.7746586     # Laser waist (mm) !1.7746586 pour l=1 0.0738672 pour l=6
-muc=173.3320     # Pot. chim. du condensat (nK) !173.3320 pour l=1 144.6547 pour l=6
+#l=1            # Radial index
+#w0=0.7936514     # Laser waist (mm) !0.7936514 pour l=1 0.7865231 pour l=6
+#w1=1.7746586     # Laser waist (mm) !1.7746586 pour l=1 0.0738672 pour l=6
+#muc=173.3320     # Pot. chim. du condensat (nK) !173.3320 pour l=1 144.6547 pour l=6
 
 
-#l=6            # Radial index
-#w0=0.7865231     # Laser waist (mm) !0.7936514 pour l=1 0.7865231 pour l=6
-#w1=0.0738672     # Laser waist (mm) !1.7746586 pour l=1 0.0738672 pour l=6
-#muc=144.6547     # Pot. chim. du condensat (nK) !173.3320 pour l=1 144.6547 pour l=6
+l=6            # Radial index
+w0=0.7865231     # Laser waist (mm) !0.7936514 pour l=1 0.7865231 pour l=6
+w1=0.0738672     # Laser waist (mm) !1.7746586 pour l=1 0.0738672 pour l=6
+muc=144.6547     # Pot. chim. du condensat (nK) !173.3320 pour l=1 144.6547 pour l=6
 
 
 Power=1.0       # Laser Power (W)
@@ -142,60 +142,41 @@ def gravity(particle):
 def LG_potential(particle):
     #rho = np.sqrt(particle.x**2+particle.y**2)
     x = particle.x 
-    y = particle.y 
-    z = particle.z 
-    
-   # V = (0.5**l)*omega_l*((rho/length_l)**(2*l))*np.exp(-2*(rho**2)/w0**2) + (0.5**l)*omega_l*((particle.z/length_l)**(2*l))*np.exp(-2*(particle.z**2)/w0**2) 
-                                                                                
-    Vtrap = (0.5**l)*omega_l*((np.sqrt((x)**2+(y)**2)/length_l)**((2*l)))*np.exp(-2*((x)**2+(y)**2)/(w0**2)) + (0.5**l)*omega_l*((z/length_l)**((2*l)))*np.exp(-2*((z)**2)/(w0**2))
-
+    y = 0 
+    z = 0                                                                              
+    Vtrap = (0.5**l)*omega_l*((np.sqrt((x)**2+(y)**2)/length_l)**((2*l)))*np.exp(-2*((x)**2+(y)**2)/(w0**2))
+    + (0.5**l)*omega_l*((z/length_l)**((2*l)))*np.exp(-2*((z)**2)/(w0**2))
     return Vtrap
 
 
 def non_linear_f(psi,t,particle):
-    return gint*((np.abs(psi))**2)
+    return gint*abs(psi)**2
 
 
 def non_linear_f2(psi,t,particle):
-    if t < 10 * milliseconds:
-        return 0*((np.abs(psi))**2)
+    if t < 3 * milliseconds:
+        return gint*((np.abs(psi))**2)
     else:
         return -gint*((np.abs(psi))**2)
 
 
-N = 128
-Nz = 512
-extent =  4 * xmax
-z_extent =   1/2 * zmax
+N = 2000
+extent =4 * xmax
 #build the Hamiltonian of the system
 H = Hamiltonian(particles=SingleParticle(m = mass),
-                potential=potential,
-                spatial_ndim=3, N=N,Nz = Nz,extent=extent,z_extent=z_extent)
+                potential=LG_potential,
+                spatial_ndim=1, N=N,extent=extent)
 
 
 
 def initial_wavefunction(particle):
     V = LG_potential(particle)
-    #rho = np.sqrt(particle.x**2+particle.y**2)
-    #psi = np.exp(-0.5*mass*(omega_l*rho**2 + omega_z*particle.z**2))
-    """
     psi = np.zeros(particle.x.shape, dtype = np.complex128)
     for i in range(N):
-        for j in range(N):
-            if muc > V[i,j]:
-                psi[i,j] = np.sqrt( (muc - V[i,j]) / gint)
-            else:
-                psi[i,j] = 0
-    return psi
-    """
-    psi = np.zeros(particle.x.shape, dtype = np.complex128)
-    for i in range(N):
-        for j in range(N):
-            for k in range(Nz):
-                if muc > V[i,j,k]:
-                    psi[i,j,k] = np.sqrt( (muc - V[i,j,k]) / gint)
-                else:
-                    psi[i,j,k] = 0
+        if muc > V[i]:
+            psi[i] = np.sqrt( (muc - V[i]) / gint)
+        else:
+            psi[i] = 0
     return psi
 
 
@@ -210,14 +191,12 @@ def initial_wavefunction_1(particle):
 #=========================================================================================================#
 
 
-total_time = 0.1 * seconds
-dt = 1e-4 * seconds
-#dt = total_time
-stored = 10
-#dt = min(dt/omega_l,dt/omega_z)
-sim = TimeSimulation(hamiltonian = H, method = "nonlinearsplit-step-cupy")
+total_time = 0.01 * seconds
+dt = 1e-7 * seconds
+stored = 100
+sim = TimeSimulation(hamiltonian = H, method = "nonlinear-split-step")
 sim.method.split_step.set_nonlinear_term(non_linear_f)
-sim.run(initial_wavefunction, total_time = total_time, dt = dt, store_steps = stored,non_linear_function=None)
+sim.run(initial_wavefunction, total_time = total_time, dt = dt, store_steps = stored)
 
 
 #=========================================================================================================#
@@ -225,12 +204,7 @@ sim.run(initial_wavefunction, total_time = total_time, dt = dt, store_steps = st
 #=========================================================================================================#
 
 visualization = init_visualization(sim)
-#visualization.plot(t = 0,L_norm = meters * 1e-3, Z_norm = meters * 1e-3)
-#visualization.plot3D(t = 0,L_norm = meters * 1e-3, Z_norm = meters * 1e-3)
-#visualization.plot(t = 0 * femtoseconds,xlim=[-15* Å,15* Å], ylim=[-15* Å,15* Å], potential_saturation = 0.5, wavefunction_saturation = 0.2)
-#visualization.plot2D(t = 0 ,unit = femtoseconds,contrast_vals=[0.9,1])
+visualization.final_plot()
+#visualization.animate(save_animation=True)
 for i in range(11):
-    visualization.plot3D(t = i * total_time/10, unit = milliseconds,L_norm = meters * 1e-3, Z_norm = meters * 1e-3)
-#visualization.animate(unit = femtoseconds,contrast_vals=[0.99,1])
-#visualization.plot_type = 'contour'
-#visualization.animate(xlim=[-50* Å,50* Å], ylim=[-50* Å,50* Å], potential_saturation = 0.5, wavefunction_saturation = 0.2, animation_duration = 10, save_animation = True)
+    visualization.plot1D(t = i * total_time/10)
