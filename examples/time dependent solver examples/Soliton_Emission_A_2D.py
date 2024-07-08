@@ -139,7 +139,7 @@ def non_linear_f2(psi,t,particle):
 
 H = Hamiltonian(particles=SingleParticle(m = m_e),
                 potential=V,
-                spatial_ndim=1, N=Nx,extent=xmax * 2)
+                spatial_ndim=2, N=Nx,extent=xmax * 2)
 
 #=========================================================================================================#
 # Set and run the simulation
@@ -148,9 +148,9 @@ H = Hamiltonian(particles=SingleParticle(m = m_e),
 #set the time dependent simulation
 ##sim = TimeSimulation(hamiltonian = H, method = "crank-nicolson")
 #sim = TimeSimulation(hamiltonian = H, method = "split-step")
-sim = TimeSimulation(hamiltonian = H, method = "nonlinear-split-step")
+sim = TimeSimulation(hamiltonian = H, method = "nonlinear-split-step-cupy")
 sim.method.split_step.set_nonlinear_term(non_linear_f2)
-sim.run(psi_0, total_time =tmax, dt = dt, store_steps = 10,non_linear_function=None,norm = False)
+sim.run(psi_0, total_time =tmax, dt = dt, store_steps = 1000,non_linear_function=None,norm = False)
 
 #=========================================================================================================#
 # Finally, we visualize the time dependent simulation

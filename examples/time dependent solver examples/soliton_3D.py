@@ -14,7 +14,7 @@ from qmsolve import Hamiltonian, SingleParticle, TimeSimulation,NonlinearSplitSt
 uaumass=1.66053873e-27
 # Define parameters
 mass=7.016004 * uaumass # Lithium
-
+#mass=86.909
 mass=mass*kg
 m = mass
 Ntot = 5e4
@@ -46,7 +46,7 @@ omega_mean = (omega_rho*omega_rho*omega_z)**(1/3)
 a_oh = np.sqrt(hbar / m / omega_mean)
 muq0 = 0.5 * (15 * Ntot * a_s / a_oh)**(2/5) * hbar * omega_mean
 
-zmax =  2* 2*100* r_t       # x-window size
+zmax = 2* 2*100* r_t       # x-window size
 xmax =     zmax /8
 #xmax = 2*0.3e-3 * meters
 
@@ -111,8 +111,11 @@ def mu_f(particle):
 
 total_time = 160e-3 * seconds
 DT = dt = ( 1e-5 * seconds)
-DT = dt = total_time
-stored = 1
+#DT = dt = total_time
+stored = 100
+
+
+# jjkkllmlmlmmmmmmmmmlj
 
 dt_0 = 0.0001
 def psi_1(particle):
@@ -133,7 +136,8 @@ def psi_1(particle):
                 else:
                     psi_0[i,j,k] = 0
     
-    #print(psi_0)
+    #  print(psi_0)
+    
     N_gi = 4 * np.pi * hbar**2 * a_s / m
     N_gi = N_gi  
     U = NonlinearSplitStepMethodCupy(Vuu, (H.extent, H.extent, H.z_extent), -1.0j*dt_0,mass)
@@ -153,6 +157,7 @@ def psi_1(particle):
     return psi_0
 
 
+# ThomasFermi wave-function 
 def psi_0(particle):
     Vuu = ground(particle.x,particle.y,particle.z)
     #muq = mu_f(particle)
@@ -166,65 +171,26 @@ def psi_0(particle):
                     psi_0[i,j,k] = np.sqrt((muq - Vuu[i,j,k]) / Ntot / N_g )
                 else:
                     psi_0[i,j,k] = 0
-                    
-    if np.all(psi_0 == 0 + 0j):
-        print("eeee")
-    
+                     
     return psi_0
+
+# Solitons creation by changing as 
     
 def interaction(psi,t,particle):
     
     a0=0;  # initial (vanishing) nonlinear coefficient    
-    a1=25;   # repulsive nonlinear coefficient for 3<t<8
-    a2=-35;   # attractive nonlinear coefficient for t>8
     
     
 
-    if t<8 * milliseconds:
+    if t<8e-3 * seconds:
        a0 = 1.5 * nm
     else:
        a0 = -0.2 * nm
     #import cupy as cp
     #g0 = cp.array(4*np.pi*a0/mass)
-    g0 = 4*np.pi*a0/mass
+    g0 = Ntot * 4*np.pi*a0/mass
     #return a0*abs(psi)**2
     return g0*abs(psi)**2
-
-def interaction2(psi,t,particle):
-    
-
-    g0 = 4*np.pi*a_s/mass
-    return Ntot*g0*abs(psi)**2
-
-def interaction4(psi,t,particle):
-    
-
-    g0 = 4*np.pi*a_s/mass
-    g0 = -100
-    return Ntot*g0*abs(psi)**2
-
-def interaction3(particle,t,psi):
-    a2 = -0.1e-9
-    a1 = 5e-9
-    a_z = a2 + (a1 -a2)*np.exp(-1*(particle.z/L)**2)
-    """
-    if t < 8 * milliseconds:
-        a_z = 1.5 * nm
-    else:
-        a_z = -0.2 * nm
-    """
-    import cupy as cp
-    g0 = cp.array(4*np.pi*a_s/mass)
-    return Ntot*g0*abs(psi)**2
-def zz(psi,t,particle):
-    import cupy as cp
-    a1 = 5e-9 * meters
-    a2 = -0.1e-9 * meters
-    g_z = a2 + (a1 - a2)*np.exp(- (particle.z/L)**2)
-    N_gn = 4 * np.pi * hbar**2 * cp.array(g_z) / m
-    N_gn = Ntot * N_gn
-    return N_gn*cp.abs(psi)**2
-
 
 
 
@@ -235,22 +201,24 @@ def zz(psi,t,particle):
 
 #set the time dependent simulation
 ##sim = TimeSimulation(hamiltonian = H, method = "crank-nicolson")
-sim = TimeSimulation(hamiltonian = H, method = "split-step-cupy")
-#sim = TimeSimulation(hamiltonian = H, method = "nonlinear-split-step-cupy")
-#sim.method.split_step.set_nonlinear_term(interaction3)
+#sim = TimeSimulation(hamiltonian = H, method = "split-step-cupy")
+sim = TimeSimulation(hamiltonian = H, method = "nonlinear-split-step-cupy")
+sim.method.split_step.set_nonlinear_term(interaction)
 
-sim.run(psi_0, total_time = total_time, dt = DT, store_steps = stored,non_linear_function=interaction)
+sim.run(psi_0, total_time = total_time, dt = DT, store_steps = stored,non_linear_function=None)
 
 #=========================================================================================================#
 # Finally, we visualize the time dependent simulation
 #=========================================================================================================#
 
 visualization = init_visualization(sim)
+# Plot 4D of the initial wave-function 
 visualization.plot(t = 0,L_norm = meters * 1e-3, Z_norm = meters * 1e-3)
+# Plot of the wavefunction  in the plane (z,t)
 visualization.final_plot(L_norm = meters * 1e-3, Z_norm = meters * 1e-3)
 #visualization.animate(xlim=[-xmax/2 * Å,xmax/2 * Å], animation_duration = 10, save_animation = True, fps = 30)
-#for i in range(101):
-    #visualization.plotSI( i * total_time / 100,L_norm = 1,Z_norm = 1)
+for i in range(11):
+    visualization.plot(t = i * total_time/10,L_norm = meters * 1e-3, Z_norm = meters * 1e-3)
 
 #for visualizing a single frame, use plot method instead of animate:
 #visualization.plot(t = 0 ,xlim=[-xmax* Å,xmax* Å])
