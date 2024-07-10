@@ -18,7 +18,6 @@ mass=7.016004 * uaumass # Lithium
 mass=mass*kg
 m = mass
 Ntot = 5e4
-
 omega_rho = 1.0e3*Hz # 1kHz
 #r_t = 3e-6*m   # 3 micro meters
 r_t = np.sqrt(hbar/mass/omega_rho) # 3e-6 meters
@@ -46,8 +45,8 @@ omega_mean = (omega_rho*omega_rho*omega_z)**(1/3)
 a_oh = np.sqrt(hbar / m / omega_mean)
 muq0 = 0.5 * (15 * Ntot * a_s / a_oh)**(2/5) * hbar * omega_mean
 
-zmax = 2* 2*100* r_t       # x-window size
-xmax =     zmax /8
+zmax =  100* r_t       # x-window size
+xmax =     zmax / 10
 #xmax = 2*0.3e-3 * meters
 
 
@@ -70,13 +69,8 @@ def pot(particle):
 def ground(x,y,z):
     rho = x**2 + y**2
     V_rho = 0.5 * m * omega_rho**2 * rho
-    V_z = 0
-    #V_z = 0.5 * m * omega_z**2 * z**2
-    #V_z = 0.5 * m * omega_rho**2 * z**2
-    #V_z = 0
+    V_z = 0.5 * m * omega_z**2 * z**2
     V_d = V0*(1 - np.exp(-(z/L)**2))
-    #V_d = 0
-    #V_d = 0
     return V_rho +V_d + V_z
     
     
@@ -86,12 +80,8 @@ def potential(particle):
     z = particle.z
     rho = x**2 + y**2
     V_rho = 0.5 * m * omega_rho**2 * rho
-    #V_z = 0.5 * m * omega_rho**2 * z**2
-    #V_z = 0.5 * m * omega_z**2 * z**2
-    V_z = 0
+    V_z = 0.5 * m * omega_z**2 * z**2
     V_d = V0*(1 - np.exp(-(z/L)**2))
-    #V_d = 0
-    #return np.zeros_like(x)
     return V_rho + V_z + V_d
     
 
@@ -101,7 +91,7 @@ Nz = 512
 #build the Hamiltonian of the system
 H = Hamiltonian(particles = SingleParticle(m = mass), 
                 potential = potential, 
-                spatial_ndim = 3, N = N,Nz = Nz, extent=xmax,z_extent=zmax)
+                spatial_ndim = 3, N = N,Nz = Nz, extent=2*xmax,z_extent=2*zmax)
 
 
 def mu_f(particle):
@@ -109,15 +99,15 @@ def mu_f(particle):
     mu = ((Ntot * N_g +  np.sum(V)) * H.dx * H.dx * H.dz ) / (H.extent * H.extent * H.z_extent)
     return mu
 
-total_time = 160e-3 * seconds
+total_time = 300e-3 * seconds
 DT = dt = ( 1e-5 * seconds)
 #DT = dt = total_time
-stored = 100
+stored = 200
 
 
-# jjkkllmlmlmmmmmmmmmlj
+#Imaginary time-evolution : ground-stae
 
-dt_0 = 0.0001
+dt_0 = 1e-8*seconds
 def psi_1(particle):
     import cupy as cp
     Vuu = ground(particle.x,particle.y,particle.z)
@@ -132,27 +122,26 @@ def psi_1(particle):
         for j in range(N):
             for k in range(Nz):
                 if muq > Vuu[i,j,k]:
-                    psi_0[i,j,k] = np.sqrt((muq - Vuu[i,j,k])  / N_g )
+                    psi_0[i,j,k] = np.sqrt((muq - Vuu[i,j,k])  / Ntot / N_g )
                 else:
                     psi_0[i,j,k] = 0
     
     #  print(psi_0)
     
     N_gi = 4 * np.pi * hbar**2 * a_s / m
-    N_gi = N_gi  
+    N_gi = Ntot * N_gi  
     U = NonlinearSplitStepMethodCupy(Vuu, (H.extent, H.extent, H.z_extent), -1.0j*dt_0,mass)
+    #U.normalize_at_each_step(True)
     U.set_timestep(-1.0j*dt_0)
-    U.set_nonlinear_term(lambda particle,t,psi:
-                         N_gi*np.abs(psi)**2)
-   # for i in range(20000):
-    #    psi_0 = U(particle,0,psi_0).get()
+    U.set_nonlinear_term(lambda psi,t,particle:N_gi*abs(psi)**2)
+
     import time
     import progressbar
-    store_steps = 100
+    store_steps = 1000
     t0 = time.time()
     bar = progressbar.ProgressBar()
     for i in bar(range(store_steps)):
-        psi_0 = U(0,0,psi_0).get()
+        psi_0 = U(psi_0,0,particle).get()
     print("Took", time.time() - t0)
     return psi_0
 
@@ -204,6 +193,7 @@ def interaction(psi,t,particle):
 #sim = TimeSimulation(hamiltonian = H, method = "split-step-cupy")
 sim = TimeSimulation(hamiltonian = H, method = "nonlinear-split-step-cupy")
 sim.method.split_step.set_nonlinear_term(interaction)
+#sim.method.split_step._norm = True
 
 sim.run(psi_0, total_time = total_time, dt = DT, store_steps = stored,non_linear_function=None)
 
@@ -217,8 +207,8 @@ visualization.plot(t = 0,L_norm = meters * 1e-3, Z_norm = meters * 1e-3)
 # Plot of the wavefunction  in the plane (z,t)
 visualization.final_plot(L_norm = meters * 1e-3, Z_norm = meters * 1e-3)
 #visualization.animate(xlim=[-xmax/2 * Å,xmax/2 * Å], animation_duration = 10, save_animation = True, fps = 30)
-for i in range(11):
-    visualization.plot(t = i * total_time/10,L_norm = meters * 1e-3, Z_norm = meters * 1e-3)
+#for i in range(11):
+    #visualization.plot(t = i * total_time/10,L_norm = meters * 1e-3, Z_norm = meters * 1e-3)
 
 #for visualizing a single frame, use plot method instead of animate:
 #visualization.plot(t = 0 ,xlim=[-xmax* Å,xmax* Å])

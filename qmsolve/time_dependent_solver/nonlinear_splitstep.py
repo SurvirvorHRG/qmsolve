@@ -1,16 +1,16 @@
 import numpy as np
 from .method import Method
 import time
-from ..util.constants import hbar, Å, femtoseconds, m_e, seconds
+#from ..util.constants import hbar, m_e, seconds
 from ..particle_system import SingleParticle, TwoParticles
 import progressbar
 from typing import Union, Callable, Tuple
 import scipy.constants as const
 
 # Constants and parameters
-#hbar = const.hbar
-#m_e = const.m_e
-#seconds = 1
+hbar = const.hbar
+m_e = const.m_e
+seconds = 1
 
 """
 Split-operator method for the Schrödinger equation.
@@ -232,7 +232,7 @@ class NonlinearSplitStepMethodCupy():
         Change the potential
         """
         self.V = V
-        self._exp_potential = np.exp(-0.5j*(self._dt/hbar)*self.V)
+        self._exp_potential = cp.exp(-0.5j*(self._dt/hbar)*self.V)
 
     def __call__(self,psi,t, particle: np.ndarray) -> np.ndarray:
         """
@@ -244,7 +244,8 @@ class NonlinearSplitStepMethodCupy():
         psi = cp.fft.ifftn(psi_p)*self._exp_potential
         psi = cp.array(self._nonlinear(psi,t,particle))
         if self._norm:
-            psi = psi/cp.sqrt(np.sum(psi*np.conj(psi)))
+            psi = psi / np.amax(np.abs(psi))
+            #psi = psi/cp.sqrt(cp.sum(psi*cp.conj(psi)))
         return psi
 
 

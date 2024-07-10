@@ -6,8 +6,7 @@ import math
 import scipy.special as sc
 import numpy as np
 
-#Dark-Soliton emissions with gaussian barier in 1D
-
+#Dark-Soliton emissions with gaussian barier in 2D
 
 # Define parameters
 
@@ -73,8 +72,8 @@ muq = 0.5 * (3/2)**(2/3) * g_s**(2/3)
 
 #muq = (9/8 * mass * omega_z**2 * Ntot**2 *g_s**2)**(1/3)
 def potential(x,y):
-    V_h = 0.5 * x**2
-    V_b = V0*np.exp(-(x/sigma)**2)
+    V_h = 0.5 * m *  x**2 + 
+    V_b = V0*np.exp(-(x/sigma)**2 -(y/sigma)**2)
     V = V_h + V_b
     return V
     
@@ -142,7 +141,7 @@ def non_linear_f2(psi,t,particle):
 
 H = Hamiltonian(particles=SingleParticle(m = m_e),
                 potential=V,
-                spatial_ndim=1, N=Nx,extent=xmax * 2)
+                spatial_ndim=2, N=Nx,extent=xmax * 2)
 
 #=========================================================================================================#
 # Set and run the simulation

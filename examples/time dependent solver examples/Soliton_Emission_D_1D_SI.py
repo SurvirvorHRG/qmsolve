@@ -1,12 +1,12 @@
 from tvtk.util import ctf
 import numpy as np
 from qmsolve import visualization
-from qmsolve import Hamiltonian, SingleParticle, TimeSimulation, init_visualization, milliseconds,seconds, meters,m_e
+from qmsolve import Hamiltonian, SingleParticle, TimeSimulation, init_visualization, m_e
 import math
 import scipy.special as sc
 import numpy as np
 
-#Dark-Soliton emissions with gaussian barier in 1D
+#Dark-Soliton emissions with gaussian barier in 1D in SI units
 
 
 # Define parameters
@@ -33,19 +33,17 @@ Ntot= 20e4
 omega_rho = 2*np.pi*160
 omega_z = 2*np.pi*6.8
 
-r_t = np.sqrt(hbar/mass/omega_rho) # 3e-6 meters
-z_t = np.sqrt(hbar/mass/omega_z) # 3e-6 meters
-print('r_t =', r_t)
+
 
 print('omega_rho =', omega_rho)
 
 print('omega_z =', omega_z)
 
 #V0 = 643.83 * hbar * omega_z
-V0 = 100
+V0 = 643.83 * hbar * omega_z
 L_r = np.sqrt(hbar/mass/omega_rho) 
 L_z = np.sqrt(hbar/mass/omega_z)
-sigma = 0.632
+sigma = 0.548 * np.sqrt(2) *L_z
 
 #dimension-less variables
 #omega_z = 0.01* omega_rho
@@ -54,13 +52,13 @@ a_s = 94.7*a_0
 #g_s = 2 * Ntot * omega_rho * a_s / omega_z  / L_z
 #g_s = 2 * Ntot * omega_rho * a_s / omega_z  / L_z
 #g_s = g_s * hbar
-g_s = 500
+g_s = 11435.9 * hbar * omega_z * L_z
 
 Nx = 1130                        # Grid points
 Ny = Nx
-tmax = 20                # End of propagation
-dt = 0.0001                # Evolution step
-xmax = 10                    # x-window size
+tmax = 20 / omega_z               # End of propagation
+dt = 0.0001 / omega_z               # Evolution step
+xmax =  100 * L_z                   # x-window size
 ymax = xmax                    # y-window size
 images = 400                # number of .png images
 absorb_coeff = 0        # 0 = periodic boundary
@@ -73,12 +71,17 @@ muq = 0.5 * (3/2)**(2/3) * g_s**(2/3)
 
 #muq = (9/8 * mass * omega_z**2 * Ntot**2 *g_s**2)**(1/3)
 def potential(x,y):
-    V_h = 0.5 * x**2
-    V_b = V0*np.exp(-(x/sigma)**2)
+    V_h = 0.5 * mass * omega_z**2 * x**2
+    V_b = V0*np.exp(-2*(x/sigma)**2)
     V = V_h + V_b
     return V
     
-    
+def potential_p(particle):
+    V_h = 0.5 * mass * omega_z**2 * particle.x**2
+    V = V_h
+    return V
+
+
 def psi_0(particle):
     V = potential(particle.x,0)
     psi = np.zeros_like(particle.x)
@@ -90,58 +93,23 @@ def psi_0(particle):
             
     return psi
 
-def V(particle):        
-    # The linear part of the potential is a shallow trap modeled by an inverted Gaussian
-    # The nonlinear part is a cubic term whose sign and strength change abruptly in time.
-    V_h = 0.5 * particle.x**2
-    V_b = V0*np.exp(-(particle.x/sigma)**2)
-    
-    V = V_h
-    
-    return V
 
-def non_linear_f(psi,t,particle):
-    # The linear part of the potential is a shallow trap modeled by an inverted Gaussian
-    # The nonlinear part is a cubic term whose sign and strength change abruptly in time.
-    #print(t)
-    V_h = particle.x**2/2
-    V_b = V0*np.exp(-(particle.x/sigma)**2)
-    
-    if t  < 3:
-        V = V_b + g_s*abs(psi)**2 
-    else:
-        V = g_s*abs(psi)**2 
-    
-    return V;
-
-def non_linear_cupy(psi,t,particle):
-    import cupy as cp
-    # The linear part of the potential is a shallow trap modeled by an inverted Gaussian
-    # The nonlinear part is a cubic term whose sign and strength change abruptly in time.
-    V_h = particle.x**2/2
-    V_b = cp.array(V0*np.exp(-(particle.x/sigma)**2))
-    
-    if t  < 3:
-        V = V_b + g_s*cp.abs(psi)**2 
-    else:
-        V = g_s*cp.abs(psi)**2 
-    
-    return V;
 
 def non_linear_f2(psi,t,particle):
     # The linear part of the potential is a shallow trap modeled by an inverted Gaussian
     # The nonlinear part is a cubic term whose sign and strength change abruptly in time.
-    V_b = V0*np.exp(-(particle.x/sigma)**2)
+    V_h = 0.5 * mass * omega_z**2 * particle.x**2
+    V_b = V0*np.exp(-2*(particle.x/sigma)**2)
     
-    if t  < 3:
+    if t  < (3 / omega_z):
         V = V_b + g_s*np.abs(psi)**2 
     else:
         V = g_s*np.abs(psi)**2 
     
     return V;
 
-H = Hamiltonian(particles=SingleParticle(m = m_e),
-                potential=V,
+H = Hamiltonian(particles=SingleParticle(m = mass),
+                potential=potential_p,
                 spatial_ndim=1, N=Nx,extent=xmax * 2)
 
 #=========================================================================================================#
