@@ -123,7 +123,7 @@ def psi_1(particle):
 #set the time dependent simulation
 sim = TimeSimulation(hamiltonian = H, method = "nonlinear-split-step")
 sim.method.split_step.set_nonlinear_term(interaction)
-sim.run(psi_1, total_time = total_time, dt = dt, store_steps = 100,non_linear_function=None)
+sim.run(psi_0, total_time = total_time, dt = dt, store_steps = 100,non_linear_function=None)
 
 #=========================================================================================================#
 # Finally, we visualize the time dependent simulation

@@ -1,16 +1,16 @@
 import numpy as np
 from .method import Method
 import time
-#from ..util.constants import hbar, m_e, seconds
+from ..util.constants import hbar, m_e, seconds
 from ..particle_system import SingleParticle, TwoParticles
 import progressbar
 from typing import Union, Callable, Tuple
 import scipy.constants as const
 
 # Constants and parameters
-hbar = const.hbar
-m_e = const.m_e
-seconds = 1
+#hbar = const.hbar
+#m_e = const.m_e
+#seconds = 1
 
 """
 Split-operator method for the Schrödinger equation.
