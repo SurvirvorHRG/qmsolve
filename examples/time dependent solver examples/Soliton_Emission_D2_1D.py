@@ -55,11 +55,11 @@ a_s = 94.7*a_0
 #g_s = 2 * Ntot * omega_rho * a_s / omega_z  / L_z
 #g_s = g_s * hbar
 g_s = 500
-
-Nx = 1130                        # Grid points
+l = 2
+Nx = 2000                        # Grid points
 Ny = Nx
 tmax = 20                # End of propagation
-dt = 0.0001                # Evolution step
+dt = 0.00001                # Evolution step
 xmax = 10                    # x-window size
 ymax = xmax                    # y-window size
 images = 400                # number of .png images
@@ -73,7 +73,7 @@ muq = 0.5 * (3/2)**(2/3) * g_s**(2/3)
 
 #muq = (9/8 * mass * omega_z**2 * Ntot**2 *g_s**2)**(1/3)
 def potential(x,y):
-    V_h = 0.5 * x**2
+    V_h = 0.5 * x**(2*l)
     V_b = V0*np.exp(-(x/sigma)**2)
     V = V_h + V_b
     return V
@@ -99,15 +99,15 @@ def psi_1(particle):
     
     
     U = NonlinearSplitStepMethod(Vuu, (H.extent,), -1.0j*dt_0)
-    U.normalize_at_each_step(True)
+    #U.normalize_at_each_step(True)
     U.set_timestep(-1.0j*dt_0)
-    g1 = g_s
+    g1 = 0
     U.set_nonlinear_term(lambda psi,t,particle: 
                          g1*np.abs(psi)**2)
 
     import time
     import progressbar
-    store_steps = 50000
+    store_steps = 20
     t0 = time.time()
     bar = progressbar.ProgressBar()
     for i in bar(range(store_steps)):
@@ -118,7 +118,7 @@ def psi_1(particle):
 def V(particle):        
     # The linear part of the potential is a shallow trap modeled by an inverted Gaussian
     # The nonlinear part is a cubic term whose sign and strength change abruptly in time.
-    V_h = 0.5 * particle.x**2
+    V_h = 0.5 * particle.x**(2*l)
     V_b = V0*np.exp(-(particle.x/sigma)**2)
     
     V = V_h
@@ -129,7 +129,7 @@ def non_linear_f(psi,t,particle):
     # The linear part of the potential is a shallow trap modeled by an inverted Gaussian
     # The nonlinear part is a cubic term whose sign and strength change abruptly in time.
     #print(t)
-    V_h = particle.x**2/2
+    #V_h = particle.x**2/2
     V_b = V0*np.exp(-(particle.x/sigma)**2)
     
     if t  < 3:
@@ -174,5 +174,5 @@ sim.run(psi_1, total_time =tmax, dt = dt, store_steps = images,non_linear_functi
 
 visualization = init_visualization(sim)
 visualization.plot1D(t = 0)
-#5visualization.animate(save_animation=True)
+visualization.animate(save_animation=True)
 visualization.final_plot(L_norm = 1,Z_norm = 1,unit = 1)

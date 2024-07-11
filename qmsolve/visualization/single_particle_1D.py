@@ -364,7 +364,7 @@ class TimeVisualizationSingleParticle1D(TimeVisualization):
         
         from mpl_toolkits.mplot3d import Axes3D
         from matplotlib import cm
-        
+        plt.style.use("classic")
 
         total_time = self.simulation.Nt_per_store_step*self.simulation.store_steps*self.simulation.dt
         tvec=np.linspace(0,self.simulation.Nt_per_store_step*self.simulation.store_steps*self.simulation.dt,self.simulation.store_steps + 1)
@@ -384,9 +384,9 @@ class TimeVisualizationSingleParticle1D(TimeVisualization):
         
         plt.contourf(xx/L_norm, tt/unit, toplot.T, 100, cmap=cm.jet, linewidth=0, antialiased=False)
         cbar=plt.colorbar()               # colorbar
-        plt.xlabel('$x$')                 # axes labels, title, plot and axes range
-        plt.ylabel('$t$')
-        cbar.set_label('$|\psi|^2$',fontsize=14)
+        plt.xlabel('$z\ (mm)$',fontsize=20)                 # axes labels, title, plot and axes range
+        plt.ylabel('$t\ (ms)$',fontsize=20)
+        cbar.set_label('$|\psi|^2$',fontsize=20)
         plt.show()      # Displays figure on scre
         
     def plotSI(self, t, xlim=None, figsize=(16/9 *5.804 * 0.9,5.804)):

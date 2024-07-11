@@ -14,6 +14,7 @@ kBoltzmann=1.3806503e-23
 conv_C12_au=uaumass/emass
 
 # Define parameters
+#mass=22.9 * uaumass # Sodium
 #mass=86.909 * uaumass # Lithium
 mass=7.016004 * uaumass # Lithium
 N= 5e4
@@ -34,11 +35,11 @@ L_tilde = L/r_t
 omega_z = 0.01* omega_rho
 a_s = L * V0_tilde * np.sqrt(np.pi) / 2 / N
 
-Nx = 2000                        # Grid points
+Nx = 4000                        # Grid points
 Ny = Nx
-tmax = 100                # End of propagation
-dt = tmax/5000                # Evolution step
-xmax =  2 *100                    # x-window size
+tmax = 160                # End of propagation
+dt = tmax/10000                # Evolution step
+xmax = 100                    # x-window size
 ymax = xmax                    # y-window size
 images = 100                # number of .png images
 
@@ -86,13 +87,13 @@ def interaction(psi,t,particle):
 #build the Hamiltonian of the system
 H = Hamiltonian(particles = SingleParticle(m = m_e), 
                 potential = V, 
-                spatial_ndim = 1, N = Nx, extent=xmax )
+                spatial_ndim = 1, N = Nx, extent=2*xmax )
 
 
 total_time = tmax
 DT = dt = total_time/10000
 
-dt_0 = 0.000001
+dt_0 =total_time/10000
 def psi_1(particle):
     Vuu = V(particle)
 
@@ -100,7 +101,7 @@ def psi_1(particle):
 
     
     
-    U = NonlinearSplitStepMethod(Vuu, (H.extent,), -1.0j*dt_0,1)
+    U = NonlinearSplitStepMethod(Vuu, (H.extent,), -1.0j*dt_0,m_e)
     #U.normalize_at_each_step(True)
     U.set_timestep(-1.0j*dt_0)
     g1 = 2* a_s / r_t
@@ -130,4 +131,4 @@ sim.run(psi_0, total_time = total_time, dt = dt, store_steps = 100,non_linear_fu
 #=========================================================================================================#
 
 visualization = init_visualization(sim)
-visualization.final_plot(L_norm = 1,unit = 1 )
+visualization.final_plot(L_norm = 1/r_t*1e-3,Z_norm = 1/r_t*1e-3,unit = omega_rho*1e-3 )

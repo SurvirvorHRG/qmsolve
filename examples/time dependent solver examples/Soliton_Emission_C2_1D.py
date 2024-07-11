@@ -1,7 +1,7 @@
 from tvtk.util import ctf
 import numpy as np
 from qmsolve import visualization
-from qmsolve import Hamiltonian, SingleParticle, TimeSimulation, init_visualization, milliseconds,seconds, meters,m_e
+from qmsolve import Hamiltonian, SingleParticle, TimeSimulation, init_visualization,m_e
 import math
 import scipy.special as sc
 import numpy as np
@@ -26,15 +26,14 @@ a_0 = 4 * np.pi * epsilon0 * hbar**2 / echarge / echarge / emass
 
 
 # Define parameters
-#mass=7.016004 * uaumass # Lithium
-mass=86.909  # Atoms mass Cs 132.905 , Rb 86.909 (united atomic unit of mass)
-mass  = mass * uaumass
-Ntot= 20e4
-omega_rho = 2*np.pi*160
-omega_z = 2*np.pi*6.8
+mass=7.016004 * uaumass # Lithium
+#mass=86.909  # Atoms mass Cs 132.905 , Rb 86.909 (united atomic unit of mass)
+Ntot= 5e4
+omega_rho = 1e3
+omega_z = 0.01 * omega_rho
 
 r_t = np.sqrt(hbar/mass/omega_rho) # 3e-6 meters
-z_t = np.sqrt(hbar/mass/omega_z) # 3e-6 meters
+z_t = np.sqrt(hbar/mass/omega_z)
 print('r_t =', r_t)
 
 print('omega_rho =', omega_rho)
@@ -42,39 +41,47 @@ print('omega_rho =', omega_rho)
 print('omega_z =', omega_z)
 
 #V0 = 643.83 * hbar * omega_z
-V0 = 100
+
 L_r = np.sqrt(hbar/mass/omega_rho) 
 L_z = np.sqrt(hbar/mass/omega_z)
-sigma = 0.632
-
+V0 = hbar * omega_z / 4
+L = 10 * L_z
+L_tilde = L/L_z/np.sqrt(2)
+V0_tilde = V0 / hbar / omega_z
+sigma = L / np.sqrt(2) / L_z
+V0_z = V0 / hbar / omega_z
 #dimension-less variables
 #omega_z = 0.01* omega_rho
-#a_s = L * V0_tilde * np.sqrt(np.pi) / 2 / N
-a_s = 94.7*a_0
-#g_s = 2 * Ntot * omega_rho * a_s / omega_z  / L_z
+a_s = L * V0_tilde * np.sqrt(np.pi) / 2 / Ntot
+#a_s = 94.7*a_0
+g_s = 2 * Ntot * omega_rho * a_s / omega_z  / L_z
 #g_s = 2 * Ntot * omega_rho * a_s / omega_z  / L_z
 #g_s = g_s * hbar
-g_s = 500
+#g_s = 500
 
-Nx = 1130                        # Grid points
+Nx = 2000                        # Grid points
 Ny = Nx
 tmax = 20                # End of propagation
 dt = 0.0001                # Evolution step
-xmax = 10                    # x-window size
+xmax = 20                    # x-window size
 ymax = xmax                    # y-window size
-images = 400                # number of .png images
+images = 500                # number of .png images
 absorb_coeff = 0        # 0 = periodic boundary
-output_choice = 1      # If 1, it plots on the screen but does not save the images
-                            # If 2, it saves the images but does not plot on the screen
-                            # If 3, it saves the images and plots on the screen
-fixmaximum= 0            # Fixes a maximum scale of |psi|**2 for the plots. If 0, it does not fix it.
+
+k = 1
 
 muq = 0.5 * (3/2)**(2/3) * g_s**(2/3)
 
 #muq = (9/8 * mass * omega_z**2 * Ntot**2 *g_s**2)**(1/3)
+
+def psi_1(particle):
+    return np.sqrt(Ntot) / np.pi**(1/4) / np.sqrt(L_tilde) * np.exp(-(particle.x/(np.sqrt(2)*L_tilde))**2)
+
+
 def potential(x,y):
-    V_h = 0.5 * x**2
-    V_b = V0*np.exp(-(x/sigma)**2)
+    V_h = k * x**2
+    V_b = V0_tilde*( 1 - np.exp(-(x/sigma)**2) )
+    #V_b = 0
     V = V_h + V_b
     return V
     
@@ -93,23 +100,28 @@ def psi_0(particle):
 def V(particle):        
     # The linear part of the potential is a shallow trap modeled by an inverted Gaussian
     # The nonlinear part is a cubic term whose sign and strength change abruptly in time.
-    V_h = 0.5 * particle.x**2
-    #V_b = V0*np.exp(-(particle.x/sigma)**2)
-    
-    V = V_h
+    V_h = k * particle.x**2
+    V_b = V0_tilde*( 1 - np.exp(-(particle.x/sigma)**2) )
+    #V_b = 0
+    V = V_h + V_b
     
     return V
+
 
 
 def non_linear_f(psi,t,particle):
     # The linear part of the potential is a shallow trap modeled by an inverted Gaussian
     # The nonlinear part is a cubic term whose sign and strength change abruptly in time.
-    V_b = V0*np.exp(-(particle.x/sigma)**2)
+    #V_b = V0*np.exp(-(particle.x/sigma)**2)
+    a1 = 1.5e-9
+    a2 = -0.2e-9
     
-    if t  < 3:
-        V = V_b + g_s*np.abs(psi)**2 
+    if t  < 2:
+        g1 = 2 * Ntot * omega_rho * a1 / omega_z  / L_z
+        V = g1*np.abs(psi)**2 
     else:
-        V = g_s*np.abs(psi)**2 
+        g2 = 2 * Ntot * omega_rho * a2 / omega_z  / L_z
+        V = g2*np.abs(psi)**2 
     
     return V;
 
@@ -125,6 +137,7 @@ H = Hamiltonian(particles=SingleParticle(m = m_e),
 ##sim = TimeSimulation(hamiltonian = H, method = "crank-nicolson")
 #sim = TimeSimulation(hamiltonian = H, method = "split-step")
 sim = TimeSimulation(hamiltonian = H, method = "nonlinear-split-step")
+#sim.method.split_step.normalize_at_each_step(True)
 sim.method.split_step.set_nonlinear_term(non_linear_f)
 sim.run(psi_0, total_time =tmax, dt = dt, store_steps = images,non_linear_function=None,norm = False)
 
@@ -133,6 +146,6 @@ sim.run(psi_0, total_time =tmax, dt = dt, store_steps = images,non_linear_functi
 #=========================================================================================================#
 
 visualization = init_visualization(sim)
-visualization.plot1D(t = 0)
+#visualization.plot1D(t = 0)
 #5visualization.animate(save_animation=True)
-visualization.final_plot(L_norm = 1,Z_norm = 1,unit = 1)
+visualization.final_plot(L_norm = 1/L_z * 1e-3,Z_norm = 1/L_z * 1e-3,unit = omega_z * 1e-3,fixmaximum = 0.1)
