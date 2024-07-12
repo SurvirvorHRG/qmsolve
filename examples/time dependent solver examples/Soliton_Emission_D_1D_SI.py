@@ -40,10 +40,10 @@ print('omega_rho =', omega_rho)
 print('omega_z =', omega_z)
 
 #V0 = 643.83 * hbar * omega_z
-V0 = 643.83 * hbar * omega_z
+V0 = 100 * hbar * omega_z
 L_r = np.sqrt(hbar/mass/omega_rho) 
 L_z = np.sqrt(hbar/mass/omega_z)
-sigma = 0.548 * np.sqrt(2) *L_z
+sigma = 0.632 * np.sqrt(2) *L_z
 
 #dimension-less variables
 #omega_z = 0.01* omega_rho
@@ -52,13 +52,13 @@ a_s = 94.7*a_0
 #g_s = 2 * Ntot * omega_rho * a_s / omega_z  / L_z
 #g_s = 2 * Ntot * omega_rho * a_s / omega_z  / L_z
 #g_s = g_s * hbar
-g_s = 11435.9 * hbar * omega_z * L_z
+g_s = 500 * hbar * omega_z * L_z
 
 Nx = 1130                        # Grid points
 Ny = Nx
 tmax = 20 / omega_z               # End of propagation
 dt = 0.0001 / omega_z               # Evolution step
-xmax =  100 * L_z                   # x-window size
+xmax =  15 * L_z                   # x-window size
 ymax = xmax                    # y-window size
 images = 400                # number of .png images
 absorb_coeff = 0        # 0 = periodic boundary
@@ -67,9 +67,9 @@ output_choice = 1      # If 1, it plots on the screen but does not save the imag
                             # If 3, it saves the images and plots on the screen
 fixmaximum= 0            # Fixes a maximum scale of |psi|**2 for the plots. If 0, it does not fix it.
 
-muq = 0.5 * (3/2)**(2/3) * g_s**(2/3)
+#◙muq = 0.5 * (3/2)**(2/3) * g_s**(2/3)
 
-#muq = (9/8 * mass * omega_z**2 * Ntot**2 *g_s**2)**(1/3)
+muq = (9/8 * mass * omega_z**2  *g_s**2)**(1/3)
 def potential(x,y):
     V_h = 0.5 * mass * omega_z**2 * x**2
     V_b = V0*np.exp(-2*(x/sigma)**2)
@@ -120,6 +120,7 @@ H = Hamiltonian(particles=SingleParticle(m = mass),
 ##sim = TimeSimulation(hamiltonian = H, method = "crank-nicolson")
 #sim = TimeSimulation(hamiltonian = H, method = "split-step")
 sim = TimeSimulation(hamiltonian = H, method = "nonlinear-split-step")
+sim.method.split_step._hbar = hbar
 sim.method.split_step.set_nonlinear_term(non_linear_f2)
 sim.run(psi_0, total_time =tmax, dt = dt, store_steps = images,non_linear_function=None,norm = False)
 
@@ -130,4 +131,4 @@ sim.run(psi_0, total_time =tmax, dt = dt, store_steps = images,non_linear_functi
 visualization = init_visualization(sim)
 visualization.plot1D(t = 0)
 #5visualization.animate(save_animation=True)
-visualization.final_plot(L_norm = 1,Z_norm = 1,unit = 1)
+visualization.final_plot(L_norm = 1e-3,Z_norm = 1e-3,unit = 1e-3)

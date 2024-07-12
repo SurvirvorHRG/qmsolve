@@ -364,7 +364,7 @@ class TimeVisualizationSingleParticle1D(TimeVisualization):
         
         from mpl_toolkits.mplot3d import Axes3D
         from matplotlib import cm
-        plt.style.use("classic")
+        plt.style.use("default")
 
         total_time = self.simulation.Nt_per_store_step*self.simulation.store_steps*self.simulation.dt
         tvec=np.linspace(0,self.simulation.Nt_per_store_step*self.simulation.store_steps*self.simulation.dt,self.simulation.store_steps + 1)

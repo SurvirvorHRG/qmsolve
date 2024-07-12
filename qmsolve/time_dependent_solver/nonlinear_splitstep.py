@@ -42,7 +42,7 @@ class NonlinearSplitStepMethod():
     def __init__(self, potential: np.ndarray,
                  dimensions: Tuple[float, ...],
                  timestep: Union[float, np.complex128] = 1e-5 * seconds,
-                 m: float = m_e):
+                 m: float = m_e, hbar: float = hbar):
         if len(potential.shape) != len(dimensions):
             raise Exception('Potential shape does not match dimensions')
         self.m = m
@@ -54,6 +54,7 @@ class NonlinearSplitStepMethod():
         self._norm = False
         self._dt = 0
         self._nonlinear = lambda psi: psi
+        self._hbar = hbar
         #self.set_timestep(timestep)
 
     def set_timestep(self, timestep: Union[float, np.complex128]) -> None:
@@ -61,11 +62,11 @@ class NonlinearSplitStepMethod():
         Set the timestep. It can be real or complex.
         """
         self._dt = timestep
-        self._exp_potential = np.exp(-0.5j*(self._dt/hbar)*self.V)
-        p = np.meshgrid(*[2.0*np.pi*hbar*np.fft.fftfreq(d)*d/
+        self._exp_potential = np.exp(-0.5j*(self._dt/self._hbar)*self.V)
+        p = np.meshgrid(*[2.0*np.pi*self._hbar*np.fft.fftfreq(d)*d/
                           self._dim[i] for i, d in enumerate(self.V.shape)])
         self._kinetic = sum([p_i**2 for p_i in p])/(2.0*self.m)
-        self._exp_kinetic = np.exp(-1j*(self._dt/(2.0*self.m*hbar))
+        self._exp_kinetic = np.exp(-1j*(self._dt/(2.0*self.m*self._hbar))
                                    * sum([p_i**2 for p_i in p]))
 
     def set_potential(self, V: np.ndarray) -> None:
@@ -73,7 +74,7 @@ class NonlinearSplitStepMethod():
         Change the potential
         """
         self.V = V
-        self._exp_potential = np.exp(-0.5j*(self._dt/hbar)*self.V)
+        self._exp_potential = np.exp(-0.5j*(self._dt/self._hbar)*self.V)
 
     def __call__(self,psi,t, particle: np.ndarray) -> np.ndarray:
         """
@@ -108,7 +109,7 @@ class NonlinearSplitStepMethod():
         """
         Set the nonlinear term.
         """
-        self._nonlinear = lambda psi,t,particle: psi*np.exp(-0.5j*nonlinear_func(psi,t,particle)*self._dt/hbar)
+        self._nonlinear = lambda psi,t,particle: psi*np.exp(-0.5j*nonlinear_func(psi,t,particle)*self._dt/self._hbar)
 
 
     
@@ -201,7 +202,7 @@ class NonlinearSplitStepMethodCupy():
     def __init__(self, potential: np.ndarray,
                  dimensions: Tuple[float, ...],
                  timestep: Union[float, np.complex128] = 1e-5 * seconds,
-                 m: float = m_e):
+                 m: float = m_e, hbar: float = hbar):
         if len(potential.shape) != len(dimensions):
             raise Exception('Potential shape does not match dimensions')
         self.m = m
@@ -212,6 +213,7 @@ class NonlinearSplitStepMethodCupy():
         self._exp_kinetic = None
         self._norm = False
         self._dt = 0
+        self._hbar = hbar
         #self.set_timestep(timestep)
         self._nonlinear = lambda psi: psi
 
@@ -220,11 +222,11 @@ class NonlinearSplitStepMethodCupy():
         Set the timestep. It can be real or complex.
         """
         self._dt = timestep
-        self._exp_potential = cp.exp(-0.5j*(self._dt/hbar)*cp.array(self.V))
-        p = np.meshgrid(*[2.0*np.pi*hbar*cp.fft.fftfreq(d)*d/
+        self._exp_potential = cp.exp(-0.5j*(self._dt/self._hbar)*cp.array(self.V))
+        p = np.meshgrid(*[2.0*np.pi*self._hbar*cp.fft.fftfreq(d)*d/
                           self._dim[i] for i, d in enumerate(self.V.shape)])
         self._kinetic = sum([p_i**2 for p_i in p])/(2.0*self.m)
-        self._exp_kinetic = cp.exp(-1j*(self._dt/(2.0*self.m*hbar))
+        self._exp_kinetic = cp.exp(-1j*(self._dt/(2.0*self.m*self._hbar))
                                    * sum([p_i**2 for p_i in p]))
 
     def set_potential(self, V: np.ndarray) -> None:
@@ -232,7 +234,7 @@ class NonlinearSplitStepMethodCupy():
         Change the potential
         """
         self.V = V
-        self._exp_potential = cp.exp(-0.5j*(self._dt/hbar)*self.V)
+        self._exp_potential = cp.exp(-0.5j*(self._dt/self._hbar)*self.V)
 
     def __call__(self,psi,t, particle: np.ndarray) -> np.ndarray:
         """
@@ -260,7 +262,7 @@ class NonlinearSplitStepMethodCupy():
         """
         Set the nonlinear term.
         """
-        self._nonlinear = lambda psi,t,particle: psi*np.exp(-0.5j*nonlinear_func(psi,t,particle)*self._dt/hbar)
+        self._nonlinear = lambda psi,t,particle: psi*np.exp(-0.5j*nonlinear_func(psi,t,particle)*self._dt/self._hbar)
 
 class NonlinearSplitStepCupy(Method):
     def __init__(self, simulation):

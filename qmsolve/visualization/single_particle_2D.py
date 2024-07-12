@@ -448,7 +448,7 @@ class TimeVisualizationSingleParticle2D(TimeVisualization):
 
 
         self.simulation.Ψ_plot = self.simulation.Ψ/self.simulation.Ψmax
-        plt.style.use("classic")
+        plt.style.use("default")
         
         #Two-dimensional countour map
         fig = plt.figure("Contour map")    # figure
@@ -456,19 +456,19 @@ class TimeVisualizationSingleParticle2D(TimeVisualization):
         fig.set_size_inches(8,6)
         plt.axes().set_aspect('equal')  # Axes aspect ratio
         
-        plt.xlabel("$x/w_o$",fontsize = 14)               # choose axes labels
-        plt.ylabel("$z/\lambda$",fontsize = 14)
+        plt.xlabel("$x$",fontsize = 14)               # choose axes labels
+        plt.ylabel("$y$",fontsize = 14)
     
         # Makes the contour plot:
         index = int((self.simulation.store_steps)/self.simulation.total_time*t)
         toplot=abs(self.simulation.Ψ_plot[index])     
         from matplotlib import cm
-        plt.contourf(self.simulation.H.particle_system.x/L_norm, self.simulation.H.particle_system.y/Z_norm, toplot, 100, cmap=cm.jet, linewidth=0, antialiased=False)
+        plt.contourf(self.simulation.H.particle_system.x/L_norm, self.simulation.H.particle_system.y/L_norm, toplot, 100, cmap=cm.jet, linewidth=0, antialiased=False)
         cbar=plt.colorbar()          # colorbar
     
         
         cbar.set_label('$|\psi|$',fontsize=14)
-        plt.title('$t= %.2f$ (ms) at $y/w_o= %.2f$' % (t , 0))    # Title of the plot
+        plt.title('$t= %.2f\ (ms)$' % (t))    # Title of the plot
         plt.show()
         
 
