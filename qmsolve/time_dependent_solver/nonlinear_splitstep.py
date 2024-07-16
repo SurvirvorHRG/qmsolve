@@ -151,14 +151,22 @@ class NonlinearSplitStep(Method):
 
         #time/dt and dt_store/dt must be integers. Otherwise dt is rounded to match that the Nt_per_store_stepdivisions are integers
         self.simulation.dt = dt_store/Nt_per_store_step
-
+        
+        Ψ = 0
         if isinstance(self.simulation.H.particle_system ,SingleParticle):
-            Ψ = np.zeros((store_steps + 1, *([self.H.N] *self.H.ndim )), dtype = np.complex128)
+            if self.H.ndim == 3:
+                Ψ = np.zeros((store_steps + 1, self.H.N,self.H.N, self.H.Nz), dtype = np.complex128)
+            else:
+                Ψ = np.zeros((store_steps + 1, *([self.H.N] *self.H.ndim )), dtype = np.complex128)
+           
 
         elif isinstance(self.simulation.H.particle_system,TwoParticles):
             Ψ = np.zeros((store_steps + 1, *([self.H.N] * 2)), dtype = np.complex128)
 
         Ψ[0] = np.array(initial_wavefunction(self.H.particle_system))
+        
+        
+
         
         #steps_image=int(total_time/dt/store_steps)  # Number of computational steps between consecutive graphic outputs
 

@@ -359,6 +359,29 @@ class TimeVisualizationSingleParticle1D(TimeVisualization):
     def __init__(self,simulation):
         self.simulation = simulation
         self.H = simulation.H
+  
+        
+    def final_plot2(self, ax, L_norm=meters, Z_norm=meters, unit=milliseconds, time="ms", fixmaximum=0):
+        from mpl_toolkits.mplot3d import Axes3D
+        from matplotlib import cm
+    
+        total_time = self.simulation.Nt_per_store_step * self.simulation.store_steps * self.simulation.dt
+        tvec = np.linspace(0, self.simulation.Nt_per_store_step * self.simulation.store_steps * self.simulation.dt, self.simulation.store_steps + 1)
+        x = self.simulation.H.particle_system.x
+        tt, xx = np.meshgrid(tvec, x)
+        self.simulation.Ψ_plot = self.simulation.Ψ / self.simulation.Ψmax
+    
+        toplot = np.abs(self.simulation.Ψ_plot) ** 2
+        if fixmaximum > 0:
+            toplot[toplot > fixmaximum] = fixmaximum
+    
+        cont = ax.contourf(xx / L_norm, tt / unit, toplot.T, 100, cmap=cm.jet, linewidth=0, antialiased=False)
+        cbar = plt.colorbar(cont, ax=ax)  # colorbar
+        ax.set_xlabel('$z\ (mm)$', fontsize=20)  # axes labels, title, plot and axes range
+        ax.set_ylabel('$t\ (ms)$', fontsize=20)
+        cbar.set_label('$|\psi|^2$', fontsize=20)
+
+        
         
     def final_plot(self,L_norm = meters, Z_norm = meters,unit = milliseconds,time="ms",fixmaximum = 0):
         
