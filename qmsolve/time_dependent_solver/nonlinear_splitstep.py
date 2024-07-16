@@ -126,11 +126,11 @@ class NonlinearSplitStep(Method):
         L = self.H.extent
         Z = self.H.z_extent
         if self.H.spatial_ndim == 1:
-            self.split_step = NonlinearSplitStepMethod(self.H.potential(self.H.particle_system),(L,),1e-5 * seconds,m = self.H.particle_system.m)
+            self.split_step = NonlinearSplitStepMethod(self.H.potential(self.H.particle_system,self.H._params),(L,),1e-5 * seconds,m = self.H.particle_system.m)
         elif self.H.spatial_ndim == 2:
-            self.split_step = NonlinearSplitStepMethod(self.H.potential(self.H.particle_system),(L,L,),1e-5 * seconds,m = self.H.particle_system.m)
+            self.split_step = NonlinearSplitStepMethod(self.H.potential(self.H.particle_system,self.H._params),(L,L,),1e-5 * seconds,m = self.H.particle_system.m)
         else:
-            self.split_step = NonlinearSplitStepMethod(self.H.potential(self.H.particle_system),(L,L,Z),1e-5 * seconds,m = self.H.particle_system.m)
+            self.split_step = NonlinearSplitStepMethod(self.H.potential(self.H.particle_system,self.H._params),(L,L,Z),1e-5 * seconds,m = self.H.particle_system.m)
 
 
     def run(self, initial_wavefunction, total_time, dt, store_steps = 1):
@@ -151,22 +151,14 @@ class NonlinearSplitStep(Method):
 
         #time/dt and dt_store/dt must be integers. Otherwise dt is rounded to match that the Nt_per_store_stepdivisions are integers
         self.simulation.dt = dt_store/Nt_per_store_step
-        
-        Ψ = 0
+
         if isinstance(self.simulation.H.particle_system ,SingleParticle):
-            if self.H.ndim == 3:
-                Ψ = np.zeros((store_steps + 1, self.H.N,self.H.N, self.H.Nz), dtype = np.complex128)
-            else:
-                Ψ = np.zeros((store_steps + 1, *([self.H.N] *self.H.ndim )), dtype = np.complex128)
-           
+            Ψ = np.zeros((store_steps + 1, *([self.H.N] *self.H.ndim )), dtype = np.complex128)
 
         elif isinstance(self.simulation.H.particle_system,TwoParticles):
             Ψ = np.zeros((store_steps + 1, *([self.H.N] * 2)), dtype = np.complex128)
 
-        Ψ[0] = np.array(initial_wavefunction(self.H.particle_system))
-        
-        
-
+        Ψ[0] = np.array(initial_wavefunction(self.H.particle_system,self.H._params))
         
         #steps_image=int(total_time/dt/store_steps)  # Number of computational steps between consecutive graphic outputs
 
@@ -286,11 +278,11 @@ class NonlinearSplitStepCupy(Method):
         L = self.H.extent
         Z = self.H.z_extent
         if self.H.spatial_ndim == 1:
-            self.split_step = NonlinearSplitStepMethodCupy(self.H.potential(self.H.particle_system),(L,),1e-5 * seconds,m = self.H.particle_system.m)
+            self.split_step = NonlinearSplitStepMethodCupy(self.H.potential(self.H.particle_system,self.H._params),(L,),1e-5 * seconds,m = self.H.particle_system.m)
         elif self.H.spatial_ndim == 2:
-            self.split_step = NonlinearSplitStepMethodCupy(self.H.potential(self.H.particle_system),(L,L,),1e-5 * seconds,m = self.H.particle_system.m)
+            self.split_step = NonlinearSplitStepMethodCupy(self.H.potential(self.H.particle_system,self.H._params),(L,L,),1e-5 * seconds,m = self.H.particle_system.m)
         else:
-            self.split_step = NonlinearSplitStepMethodCupy(self.H.potential(self.H.particle_system),(L,L,Z),1e-5 * seconds,m = self.H.particle_system.m)
+            self.split_step = NonlinearSplitStepMethodCupy(self.H.potential(self.H.particle_system,self.H._params),(L,L,Z),1e-5 * seconds,m = self.H.particle_system.m)
         
 
 
@@ -319,7 +311,7 @@ class NonlinearSplitStepCupy(Method):
             Ψ = cp.zeros((store_steps + 1, self.H.N,self.H.N, self.H.Nz), dtype = cp.complex128)
         else:
             Ψ = cp.zeros((store_steps + 1, *([self.H.N] *self.H.ndim )), dtype = cp.complex128)
-        Ψ[0] = cp.array(initial_wavefunction(self.H.particle_system))
+        Ψ[0] = cp.array(initial_wavefunction(self.H.particle_system,self.H._params))
         
 
 

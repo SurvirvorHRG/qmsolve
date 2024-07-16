@@ -65,22 +65,25 @@ absorb_coeff = 0        # 0 = periodic boundary
 
 
 #◙muq = 0.5 * (3/2)**(2/3) * g_s**(2/3)
+paramsk = 0.5
 
-muq = (9/8 * mass * omega_z**2  *g_s**2)**(1/3)
-def potential(x,y):
-    V_h = 0.5 * mass * omega_z**2 * x**2
+def potential(x,y,k):
+    V_h = k * mass * omega_z**2 * x**2
     V_b = V0*np.exp(-2*(x/sigma)**2)
     V = V_h + V_b
     return V
     
-def potential_p(particle):
-    V_h = 0.5 * mass * omega_z**2 * particle.x**2
+def potential_p(particle,params):
+    k = params[0]
+    V_h = k * mass * omega_z**2 * particle.x**2
     V = V_h
     return V
 
 
-def psi_0(particle):
-    V = potential(particle.x,0)
+def psi_0(particle,params):
+    k = params[0]
+    V = potential(particle.x,0,k)
+    muq = (9/4 * k * mass * omega_z**2  *g_s**2)**(1/3)
     psi = np.zeros_like(particle.x)
     for i in range(len(particle.x)):
         if muq > V[i]:
@@ -95,7 +98,7 @@ def psi_0(particle):
 def non_linear_f2(psi,t,particle):
     # The linear part of the potential is a shallow trap modeled by an inverted Gaussian
     # The nonlinear part is a cubic term whose sign and strength change abruptly in time.
-    V_h = 0.5 * mass * omega_z**2 * particle.x**2
+    #V_h = k * mass * omega_z**2 * particle.x**2
     V_b = V0*np.exp(-2*(particle.x/sigma)**2)
     
     if t  < (3 / omega_z):
@@ -107,7 +110,7 @@ def non_linear_f2(psi,t,particle):
 
 H = Hamiltonian(particles=SingleParticle(m = mass),
                 potential=potential_p,
-                spatial_ndim=1, N=Nx,extent=xmax * 2)
+                spatial_ndim=1, N=Nx,extent=xmax * 2,params = [1])
 
 #=========================================================================================================#
 # Set and run the simulation

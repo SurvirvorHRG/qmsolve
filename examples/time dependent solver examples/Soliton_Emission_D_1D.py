@@ -75,7 +75,7 @@ def potential(x,y):
     return V
     
     
-def psi_0(particle):
+def psi_0(particle,params):
     V = potential(particle.x,0)
     psi = np.zeros_like(particle.x)
     for i in range(len(particle.x)):
@@ -86,7 +86,7 @@ def psi_0(particle):
             
     return psi
 
-def V(particle):        
+def V(particle,params):        
     # The linear part of the potential is a shallow trap modeled by an inverted Gaussian
     # The nonlinear part is a cubic term whose sign and strength change abruptly in time.
     V_h = 0.5 * particle.x**2

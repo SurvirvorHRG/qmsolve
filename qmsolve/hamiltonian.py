@@ -4,7 +4,7 @@ import time
 
 
 class Hamiltonian:
-    def __init__(self, particles, potential, N, extent, spatial_ndim,Nz = 0,z_extent = 0, potential_type = "grid", E_min=0):
+    def __init__(self, particles, potential, N, extent, spatial_ndim,Nz = 0,z_extent = 0, potential_type = "grid", E_min=0, params = 0):
         """
         N: number of grid points
         extent: spacial extent, measured in bohr radius (length atomic unit)
@@ -25,6 +25,7 @@ class Hamiltonian:
         self.particle_system.H = self
         self.spatial_ndim = spatial_ndim
         self.ndim = 0  # total number of observables
+        self._params = params
 
         self.T = self.particle_system.get_kinetic_matrix(self)
 
@@ -39,6 +40,7 @@ class Hamiltonian:
             self.particle_system.build_matrix_operators(self)
 
         self.V = self.get_potential_matrix()
+        
 
     def get_potential_matrix(self):
 
@@ -49,7 +51,7 @@ class Hamiltonian:
                 V = 0.
                 return V
             else: 
-                V = self.potential(self.particle_system)
+                V = self.potential(self.particle_system,self._params)
                 self.Vgrid = V
                 self.E_min = np.amin(V)
                 #V = V.reshape(self.N ** (self.ndim ))
