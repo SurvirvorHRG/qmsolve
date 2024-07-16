@@ -88,7 +88,7 @@ def potential(x,y):
     return V
     
     
-def psi_0(particle):
+def psi_0(particle,params):
     V = potential(particle.x,0)
     psi = np.zeros_like(particle.x)
     for i in range(len(particle.x)):
@@ -99,7 +99,7 @@ def psi_0(particle):
             
     return psi
 
-def V(particle):        
+def V(particle,params):        
     # The linear part of the potential is a shallow trap modeled by an inverted Gaussian
     # The nonlinear part is a cubic term whose sign and strength change abruptly in time.
     V_h = k * particle.x**2
@@ -167,13 +167,13 @@ visualization = init_visualization(sim)
 import matplotlib.pyplot as plt
 import numpy as np
 
-
+font = 34
 
 # Create subplots
 fig, axs = plt.subplots(1, 4, figsize=(50, 15))
 # Plot on each subplot using the modified final_plot function
 visualization.final_plot2(axs[0],L_norm = 1/L_z * 1e-3,Z_norm = 1/L_z * 1e-3,unit = omega_z * 1e-3,fixmaximum = 0.1)
-axs[0].set_title('k = 0.25',fontsize = 20)
+axs[0].set_title('k = 0.25',fontsize = font)
 
 
 # K = 0.5
@@ -190,7 +190,7 @@ def potential2(x,y):
     return V
     
     
-def psi_2(particle):
+def psi_2(particle,params):
     V = potential2(particle.x,0)
     psi = np.zeros_like(particle.x)
     for i in range(len(particle.x)):
@@ -201,7 +201,7 @@ def psi_2(particle):
             
     return psi
 
-def V2(particle):        
+def V2(particle,params):        
     # The linear part of the potential is a shallow trap modeled by an inverted Gaussian
     # The nonlinear part is a cubic term whose sign and strength change abruptly in time.
     V_h = k * particle.x**2
@@ -230,7 +230,7 @@ sim.run(psi_2, total_time =tmax, dt = dt, store_steps = images,non_linear_functi
 
 visualization = init_visualization(sim)
 visualization.final_plot2(axs[1],L_norm = 1/L_z * 1e-3,Z_norm = 1/L_z * 1e-3,unit = omega_z * 1e-3,fixmaximum = 0.1)
-axs[1].set_title('k = 0.5',fontsize = 20)
+axs[1].set_title('k = 0.5',fontsize = font)
 
 # K = 0.75
 k = 0.75
@@ -246,7 +246,7 @@ def potential3(x,y):
     return V
     
     
-def psi_3(particle):
+def psi_3(particle,params):
     V = potential3(particle.x,0)
     psi = np.zeros_like(particle.x)
     for i in range(len(particle.x)):
@@ -257,7 +257,7 @@ def psi_3(particle):
             
     return psi
 
-def V3(particle):        
+def V3(particle,params):        
     # The linear part of the potential is a shallow trap modeled by an inverted Gaussian
     # The nonlinear part is a cubic term whose sign and strength change abruptly in time.
     V_h = k * particle.x**2
@@ -286,7 +286,7 @@ sim.run(psi_3, total_time =tmax, dt = dt, store_steps = images,non_linear_functi
 
 visualization = init_visualization(sim)
 visualization.final_plot2(axs[2],L_norm = 1/L_z * 1e-3,Z_norm = 1/L_z * 1e-3,unit = omega_z * 1e-3,fixmaximum = 0.1)
-axs[2].set_title('k = 0.75',fontsize = 20)
+axs[2].set_title('k = 0.75',fontsize = font)
 
 
 # K = 1
@@ -303,7 +303,7 @@ def potential4(x,y):
     return V
     
     
-def psi_4(particle):
+def psi_4(particle,params):
     V = potential4(particle.x,0)
     psi = np.zeros_like(particle.x)
     for i in range(len(particle.x)):
@@ -314,7 +314,7 @@ def psi_4(particle):
             
     return psi
 
-def V4(particle):        
+def V4(particle,params):        
     # The linear part of the potential is a shallow trap modeled by an inverted Gaussian
     # The nonlinear part is a cubic term whose sign and strength change abruptly in time.
     V_h = k * particle.x**2
@@ -342,8 +342,8 @@ sim.run(psi_4, total_time =tmax, dt = dt, store_steps = images,non_linear_functi
 
 
 visualization = init_visualization(sim)
-visualization.final_plot2(axs[3],L_norm = 1/L_z * 1e-3,Z_norm = 1/L_z * 1e-3,unit = omega_z * 1e-3,fixmaximum = 0.1)
-axs[3].set_title('k = 1',fontsize = 20)
+visualization.final_plot2(axs[3],L_norm = 1/L_z * 1e-3,Z_norm = 1/L_z * 1e-3,unit = omega_z * 1e-3,fixmaximum = 0.1,n=3)
+axs[3].set_title('k = 1',fontsize = font)
 # Adjust layout
 plt.tight_layout()
 

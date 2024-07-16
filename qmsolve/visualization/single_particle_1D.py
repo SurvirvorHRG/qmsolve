@@ -361,7 +361,7 @@ class TimeVisualizationSingleParticle1D(TimeVisualization):
         self.H = simulation.H
   
         
-    def final_plot2(self, ax, L_norm=meters, Z_norm=meters, unit=milliseconds, time="ms", fixmaximum=0):
+    def final_plot2(self, ax, L_norm=meters, Z_norm=meters, unit=milliseconds, time="ms", fixmaximum=0,n=0):
         from mpl_toolkits.mplot3d import Axes3D
         from matplotlib import cm
     
@@ -376,10 +376,15 @@ class TimeVisualizationSingleParticle1D(TimeVisualization):
             toplot[toplot > fixmaximum] = fixmaximum
     
         cont = ax.contourf(xx / L_norm, tt / unit, toplot.T, 100, cmap=cm.jet, linewidth=0, antialiased=False)
-        cbar = plt.colorbar(cont, ax=ax)  # colorbar
-        ax.set_xlabel('$z\ (mm)$', fontsize=20)  # axes labels, title, plot and axes range
-        ax.set_ylabel('$t\ (ms)$', fontsize=20)
-        cbar.set_label('$|\psi|^2$', fontsize=20)
+        if n == 3:
+            cbar = plt.colorbar(cont, ax=ax)  # colorbar
+        ax.set_xlabel('$z\ (mm)$', fontsize=34)  # axes labels, title, plot and axes range
+        ax.set_ylabel('$t\ (ms)$', fontsize=34)
+        if n == 3:
+            cbar.set_label('$|\psi|^2$', fontsize=34)
+        ax.tick_params(axis='both', which='major', labelsize=30)  # increase tick label size
+        if n == 3:
+            cbar.ax.tick_params(labelsize=30)  # increase colorbar tick label size
 
         
         
