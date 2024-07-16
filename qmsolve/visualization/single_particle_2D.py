@@ -468,7 +468,7 @@ class TimeVisualizationSingleParticle2D(TimeVisualization):
     
         
         cbar.set_label('$|\psi|$',fontsize=14)
-        plt.title('$t= %.2f\ (ms)$' % (t))    # Title of the plot
+        plt.title('$t= %.2f\ (s)$' % (t))    # Title of the plot
         plt.show()
         
 

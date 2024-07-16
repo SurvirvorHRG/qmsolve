@@ -62,10 +62,7 @@ xmax =  15 * L_z                   # x-window size
 ymax = xmax                    # y-window size
 images = 400                # number of .png images
 absorb_coeff = 0        # 0 = periodic boundary
-output_choice = 1      # If 1, it plots on the screen but does not save the images
-                            # If 2, it saves the images but does not plot on the screen
-                            # If 3, it saves the images and plots on the screen
-fixmaximum= 0            # Fixes a maximum scale of |psi|**2 for the plots. If 0, it does not fix it.
+
 
 #◙muq = 0.5 * (3/2)**(2/3) * g_s**(2/3)
 
