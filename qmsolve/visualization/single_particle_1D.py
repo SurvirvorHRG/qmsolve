@@ -415,7 +415,7 @@ class TimeVisualizationSingleParticle1D(TimeVisualization):
         plt.xlabel('$z\ (mm)$',fontsize=20)                 # axes labels, title, plot and axes range
         plt.ylabel('$t\ (ms)$',fontsize=20)
         cbar.set_label('$|\psi|^2$',fontsize=20)
-        plt.show()      # Displays figure on scre
+        plt.show()      # Displays figure on screen
         
     def plotSI(self, t, xlim=None, figsize=(16/9 *5.804 * 0.9,5.804)):
 
@@ -465,9 +465,9 @@ class TimeVisualizationSingleParticle1D(TimeVisualization):
         fig = plt.figure("1D plot")    # figure
         fig.set_size_inches(8,6)
         plt.plot(self.simulation.H.particle_system.x/L_norm, abs(self.simulation.Ψ_plot[index])**2)  # makes the plot
-        plt.xlabel('$x$')           # format LaTeX if installed (choose axes labels, 
+        plt.xlabel('$x (mm)$')           # format LaTeX if installed (choose axes labels, 
         plt.ylabel('$|\psi|^2$')    # title of the plot and axes range
-        plt.title('$t=$ %f'%(t/unit))    # title of the plot
+        plt.title('$t=$ %f (ms)'%(t/unit))    # title of the plot
     
         if fixmaximum>0:              # choose maximum |psi|^2 to be depicted in the vertical axis
             plt.axis([min(x),max(x),0,fixmaximum])

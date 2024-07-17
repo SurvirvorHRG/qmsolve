@@ -337,6 +337,39 @@ class TimeVisualizationSingleParticle2D(TimeVisualization):
         self.simulation = simulation
         self.H = simulation.H
         
+    def final_plot_xyt(self,L_norm = meters, Z_norm = meters,unit = milliseconds,time="ms",fixmaximum = 0):
+        
+        from mpl_toolkits.mplot3d import Axes3D
+        from matplotlib import cm
+        plt.style.use("default")
+        H = self.simulation.H
+        total_time = self.simulation.Nt_per_store_step*self.simulation.store_steps*self.simulation.dt
+        tvec=np.linspace(0,self.simulation.Nt_per_store_step*self.simulation.store_steps*self.simulation.dt,self.simulation.store_steps + 1)
+        x = np.linspace(-H.extent/2, H.extent/2, H.N)
+        y = np.linspace(-H.extent/2, H.extent/2, H.N)
+        tt,xx,yy=np.meshgrid(tvec,x,y)
+        self.simulation.Ψ_plot = self.simulation.Ψ/self.simulation.Ψmax
+        toplot = abs(self.simulation.Ψ_plot)
+        
+        #Three-dimensional countour map
+        fig = plt.figure(0,figsize=(9,9))
+        ax = fig.add_subplot(projection=Axes3D.name)
+        #threshold = 0  # Adjust the threshold as needed
+        #high_values_mask = toplot >= threshold
+        #toplot = toplot[high_values_mask]
+    
+        plot = ax.scatter3D(x, y,t, toplot, c=toplot,cmap=jet,antialiased=False)
+        cbar = fig.colorbar(plot, shrink=0.5, aspect=5)
+        ax.set_xlabel(r'X')
+        ax.set_ylabel(r'Y')
+        ax.set_zlabel(r'T')
+        
+        #cbar.set_label('$V$',fontsize=14)
+        #ax.set_title('$l=$ %d'%(l))    # Title of the plot 
+        
+        cbar.set_label('$|\psi|^2$',fontsize=14)
+        #ax.set_title('$t=$ %f'%(t))    # Title of the plot 
+        
     def final_plot(self,L_norm = 1, Z_norm = 1,unit = milliseconds, figsize=(15, 15),time="ms"):
         
         from mpl_toolkits.mplot3d import Axes3D
