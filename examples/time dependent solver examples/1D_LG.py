@@ -25,7 +25,7 @@ a_0 = 4 * np.pi * epsilon0 * hbar**2 / echarge / echarge / emass
 mass=86.909  # Atoms mass Cs 132.905 , Rb 86.909 (united atomic unit of mass)
 mass  = mass * uaumass
 l = 1
-Ntot= 20e4
+Ntot= 1e5
 omega_rho = 2*np.pi*160
 omega_z = 2*np.pi*6.8
 U0 = 0.5 * mass * omega_rho**2
@@ -113,8 +113,8 @@ sim.method.split_step._hbar = hbar
 sim.method.split_step.set_nonlinear_term(non_linear)
 
 total_t = 0.47
-dt_t = 1e-6
-stored = 400
+dt_t = 1e-5
+stored = 47000
 #dt_t = total_t
 
 sim.run(psi_0, total_time = total_t, dt = dt_t, store_steps = stored,non_linear_function=None,norm = False)

@@ -24,7 +24,7 @@ a_0 = 4 * np.pi * epsilon0 * hbar**2 / echarge / echarge / emass
 #mass=7.016004 * uaumass # Lithium
 mass=86.909  # Atoms mass Cs 132.905 , Rb 86.909 (united atomic unit of mass)
 mass  = mass * uaumass
-l = 1
+l = 3
 Ntot= 20e4
 omega_rho = 2*np.pi*160
 omega_z = 2*np.pi*6.8
@@ -55,9 +55,9 @@ images = 20                # number of .png images
 
 
 eta = 1/2 + 1/beta + 2/alpha
-muq = gamma(eta + 3/2)/gamma(1  + 2/alpha)/gamma(1 + 1/beta)*(g3d * U0**(2/alpha) * U1**(1/beta) / 4*np.pi )
+muq = gamma(eta + 3/2)/gamma(1  + 2/alpha)/gamma(1 + 1/beta)*(g3d * U0**(2/alpha) * U1**(1/beta) / 2*np.pi )
 muq = muq**(2/(2*eta + 1))
-print('muq =', muq)
+
 
 V0 = 500 * hbar * omega_z
 sigma = 5* np.sqrt(2) * a_z
@@ -114,7 +114,7 @@ sim.method.split_step._hbar = hbar
 sim.method.split_step.set_nonlinear_term(non_linear)
 
 total_t = 0.47
-dt_t = 1e-6
+dt_t = 1e-5
 stored = 400
 #stored = 1
 #dt_t = total_t

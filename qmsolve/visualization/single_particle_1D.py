@@ -360,11 +360,41 @@ class TimeVisualizationSingleParticle1D(TimeVisualization):
         self.simulation = simulation
         self.H = simulation.H
   
+    def save(self,filename):
+        self.simulation.Ψ_plot = self.simulation.Ψ / self.simulation.Ψmax
+        # Define some parameters
+        Nx = self.simulation.H.N
+        xmax = self.simulation.H.extent
+        total_time = self.simulation.Nt_per_store_step * self.simulation.store_steps * self.simulation.dt
+        store_steps = self.simulation.store_steps
+        
+        # Save arrays and parameters to a text file
+        with open(filename, 'w') as f:
+            # Save parameters
+            f.write(f"Nx: {Nx}\n")
+            f.write(f"xmax: {xmax}\n")
+            f.write(f"total_time: {total_time}\n")
+            f.write(f"store_steps: {store_steps}\n")
+            
+            # Save psi
+            f.write("psi_norm:\n")
+            np.savetxt(f, self.simulation.Ψ_plot, delimiter=',')
+            
+            # Save array2
+            #f.write("array2:\n")
+            #np.savetxt(f, array2, delimiter=',')
+        
+        
+    def read(self,filename):
+        # Load the array from the text file
+        self.simulation.Ψ = self.simulation.Ψ_plot = np.loadtxt(filename, delimiter=',')
+        self.simulation.Ψmax = 1.0
+        
         
     def final_plot2(self, ax, L_norm=meters, Z_norm=meters, unit=milliseconds, time="ms", fixmaximum=0,n=0):
         from mpl_toolkits.mplot3d import Axes3D
         from matplotlib import cm
-    
+        plt.style.use("default")
         total_time = self.simulation.Nt_per_store_step * self.simulation.store_steps * self.simulation.dt
         tvec = np.linspace(0, self.simulation.Nt_per_store_step * self.simulation.store_steps * self.simulation.dt, self.simulation.store_steps + 1)
         x = self.simulation.H.particle_system.x

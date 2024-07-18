@@ -59,16 +59,16 @@ g_s = 2 * Ntot * omega_rho * a_s / omega_z  / L_z
 #g_s = g_s * hbar
 #g_s = 500
 
-Nx = 2000                        # Grid points
+Nx = 4000                        # Grid points
 Ny = Nx
-tmax = 20                # End of propagation
-dt = 0.0001                # Evolution step
-xmax = 15                    # x-window size
+tmax = 5                # End of propagation
+dt = 0.00001                # Evolution step
+xmax = 2                   # x-window size
 ymax = xmax                    # y-window size
 images = 500                # number of .png images
 absorb_coeff = 0        # 0 = periodic boundary
-
-k = 0.25
+l = 6
+k = 0.5
 
 #muq = 0.5 * (3/2)**(2/3) * g_s**(2/3)
 
@@ -81,7 +81,7 @@ def psi_1(particle):
 
 
 def potential(x,y):
-    V_h = k * x**2
+    V_h = k * x**(2*l)
     V_b = V0_tilde*( 1 - np.exp(-(x/sigma)**2) )
     #V_b = 0
     V = V_h + V_b
@@ -102,7 +102,7 @@ def psi_0(particle,params):
 def V(particle,params):        
     # The linear part of the potential is a shallow trap modeled by an inverted Gaussian
     # The nonlinear part is a cubic term whose sign and strength change abruptly in time.
-    V_h = k * particle.x**2
+    V_h = k * particle.x**(2*l)
     V_b = V0_tilde*( 1 - np.exp(-(particle.x/sigma)**2) )
     #V_b = 0
     V = V_h + V_b
@@ -150,7 +150,7 @@ sim.run(psi_0, total_time =tmax, dt = dt, store_steps = images,non_linear_functi
 visualization = init_visualization(sim)
 #visualization.plot1D(t = 0)
 #5visualization.animate(save_animation=True)
-#visualization.final_plot(L_norm = 1/L_z * 1e-3,Z_norm = 1/L_z * 1e-3,unit = omega_z * 1e-3,fixmaximum = 0.1)
+visualization.final_plot(L_norm = 1/L_z * 1e-3,Z_norm = 1/L_z * 1e-3,unit = omega_z * 1e-3,fixmaximum = 0.1)
 
 
 
@@ -159,7 +159,7 @@ visualization = init_visualization(sim)
 
 
 
-
+"""
 
 ###################################################################################
 #Subplots
@@ -349,4 +349,4 @@ plt.tight_layout()
 
 # Display the plot
 plt.show()
-
+"""

@@ -31,16 +31,16 @@ a=5.2383     # s-wave scattering length - Rb 5.2383 , Cs 3.45 - (nm)
 # Potentiel
 
 
-#l=1            # Radial index
-#w0=0.7936514     # Laser waist (mm) !0.7936514 pour l=1 0.7865231 pour l=6
-#w1=1.7746586     # Laser waist (mm) !1.7746586 pour l=1 0.0738672 pour l=6
-#muc=173.3320     # Pot. chim. du condensat (nK) !173.3320 pour l=1 144.6547 pour l=6
+l=1            # Radial index
+w0=0.7936514     # Laser waist (mm) !0.7936514 pour l=1 0.7865231 pour l=6
+w1=1.7746586     # Laser waist (mm) !1.7746586 pour l=1 0.0738672 pour l=6
+muc=173.3320     # Pot. chim. du condensat (nK) !173.3320 pour l=1 144.6547 pour l=6
 
 
-l=6            # Radial index
-w0=0.7865231     # Laser waist (mm) !0.7936514 pour l=1 0.7865231 pour l=6
-w1=0.0738672     # Laser waist (mm) !1.7746586 pour l=1 0.0738672 pour l=6
-muc=144.6547     # Pot. chim. du condensat (nK) !173.3320 pour l=1 144.6547 pour l=6
+#l=6            # Radial index
+#w0=0.7865231     # Laser waist (mm) !0.7936514 pour l=1 0.7865231 pour l=6
+#w1=0.0738672     # Laser waist (mm) !1.7746586 pour l=1 0.0738672 pour l=6
+#muc=144.6547     # Pot. chim. du condensat (nK) !173.3320 pour l=1 144.6547 pour l=6
 
 
 Power=1.0       # Laser Power (W)
@@ -130,7 +130,7 @@ ymax=ymax*R0
 zmin=zmin*R0
 zmax=zmax*R0
 #interaction potential
-
+V0 = 100 * omega_l
 def potential(particle):
     V = np.zeros_like(particle.x)
     return V
@@ -139,18 +139,25 @@ g = 9.8065 * (meters / seconds / seconds)
 def gravity(particle):
     return N * g * mass * particle.z
     
-def LG_potential(particle):
+def LG_potential(particle,params):
     #rho = np.sqrt(particle.x**2+particle.y**2)
     x = particle.x 
     y = 0 
     z = 0                                                                              
     Vtrap = (0.5**l)*omega_l*((np.sqrt((x)**2+(y)**2)/length_l)**((2*l)))*np.exp(-2*((x)**2+(y)**2)/(w0**2))
     + (0.5**l)*omega_l*((z/length_l)**((2*l)))*np.exp(-2*((z)**2)/(w0**2))
-    return Vtrap
+    
+    V_b = V0*np.exp(-(x/length_l)**2)
+    return Vtrap + V_b
 
 
 def non_linear_f(psi,t,particle):
-    return gint*abs(psi)**2
+    V = 0
+    if t < 0.07 * seconds:
+        V = V0*np.exp(-(particle.x/length_l)**2)
+    else:
+        V = 0
+    return V + gint*abs(psi)**2
 
 
 def non_linear_f2(psi,t,particle):
@@ -160,7 +167,7 @@ def non_linear_f2(psi,t,particle):
         return -gint*((np.abs(psi))**2)
 
 
-N = 2000
+N = 1130
 extent =4 * xmax
 #build the Hamiltonian of the system
 H = Hamiltonian(particles=SingleParticle(m = mass),
@@ -169,8 +176,8 @@ H = Hamiltonian(particles=SingleParticle(m = mass),
 
 
 
-def initial_wavefunction(particle):
-    V = LG_potential(particle)
+def initial_wavefunction(particle,params):
+    V = LG_potential(particle,params)
     psi = np.zeros(particle.x.shape, dtype = np.complex128)
     for i in range(N):
         if muc > V[i]:
@@ -191,9 +198,10 @@ def initial_wavefunction_1(particle):
 #=========================================================================================================#
 
 
-total_time = 0.01 * seconds
-dt = 1e-7 * seconds
-stored = 100
+total_time = 0.47 * seconds
+dt = 1e-5 * seconds
+#dt = total_time
+stored = 400
 sim = TimeSimulation(hamiltonian = H, method = "nonlinear-split-step")
 sim.method.split_step.set_nonlinear_term(non_linear_f)
 sim.run(initial_wavefunction, total_time = total_time, dt = dt, store_steps = stored)
@@ -204,7 +212,8 @@ sim.run(initial_wavefunction, total_time = total_time, dt = dt, store_steps = st
 #=========================================================================================================#
 
 visualization = init_visualization(sim)
+visualization.plot1D(t = 0)
 visualization.final_plot()
 #visualization.animate(save_animation=True)
-for i in range(11):
-    visualization.plot1D(t = i * total_time/10)
+#for i in range(11):
+    #visualization.plot1D(t = i * total_time/10)
