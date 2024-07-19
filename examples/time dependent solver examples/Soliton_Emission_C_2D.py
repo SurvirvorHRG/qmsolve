@@ -44,13 +44,13 @@ images = 100                # number of .png images
 
 
 
-def psi_0(particle):
+def psi_0(particle,params):
     return np.sqrt(N) / np.pi**(1/4) / np.sqrt(L_tilde) * np.exp(-(particle.x/(np.sqrt(2)*L_tilde))**2)
 
 
 
 
-def V(particle):        
+def V(particle,params):        
 
     # The linear part of the potential is a shallow trap modeled by an inverted Gaussian
     # The nonlinear part is a cubic term whose sign and strength change abruptly in time.
@@ -123,7 +123,7 @@ def psi_1(particle):
 #set the time dependent simulation
 sim = TimeSimulation(hamiltonian = H, method = "nonlinear-split-step")
 sim.method.split_step.set_nonlinear_term(interaction)
-sim.run(psi_1, total_time = total_time, dt = dt, store_steps = 100,non_linear_function=None)
+sim.run(psi_0, total_time = total_time, dt = dt, store_steps = 100,non_linear_function=None)
 
 #=========================================================================================================#
 # Finally, we visualize the time dependent simulation

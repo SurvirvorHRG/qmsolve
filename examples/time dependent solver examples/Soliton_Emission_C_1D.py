@@ -37,7 +37,7 @@ a_s = L * V0_tilde * np.sqrt(np.pi) / 2 / N
 
 Nx = 4000                        # Grid points
 Ny = Nx
-tmax = 160                # End of propagation
+tmax = 80                # End of propagation
 dt = tmax/10000                # Evolution step
 xmax = 100                    # x-window size
 ymax = xmax                    # y-window size
@@ -45,13 +45,13 @@ images = 100                # number of .png images
 
 
 
-def psi_0(particle):
+def psi_0(particle,params):
     return np.sqrt(N) / np.pi**(1/4) / np.sqrt(L_tilde) * np.exp(-(particle.x/(np.sqrt(2)*L_tilde))**2)
 
 
 
 
-def V(particle):        
+def V(particle,params):        
 
     # The linear part of the potential is a shallow trap modeled by an inverted Gaussian
     # The nonlinear part is a cubic term whose sign and strength change abruptly in time.
@@ -132,3 +132,4 @@ sim.run(psi_0, total_time = total_time, dt = dt, store_steps = 100,non_linear_fu
 
 visualization = init_visualization(sim)
 visualization.final_plot(L_norm = 1/r_t*1e-3,Z_norm = 1/r_t*1e-3,unit = omega_rho*1e-3 )
+visualization.save('lithium.txt')

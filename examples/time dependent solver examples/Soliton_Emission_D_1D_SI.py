@@ -32,7 +32,7 @@ mass  = mass * uaumass
 Ntot= 20e4
 omega_rho = 2*np.pi*160
 omega_z = 2*np.pi*6.8
-
+l = 3
 
 
 print('omega_rho =', omega_rho)
@@ -58,24 +58,24 @@ Nx = 2048                        # Grid points
 Ny = Nx
 tmax = 20 / omega_z               # End of propagation
 dt = 0.0001 / omega_z               # Evolution step
-xmax =  15 * L_z                   # x-window size
+xmax =  100 * L_z                   # x-window size
 ymax = xmax                    # y-window size
 images = 400                # number of .png images
 absorb_coeff = 0        # 0 = periodic boundary
 
 
 #◙muq = 0.5 * (3/2)**(2/3) * g_s**(2/3)
-paramsk = 0.25
+paramsk = 0.5
 
 def potential(x,y,k):
-    V_h = k * mass * omega_z**2 * x**2
+    V_h = k * mass * omega_z**2 * x**(2*l)
     V_b = V0*np.exp(-2*(x/sigma)**2)
     V = V_h + V_b
     return V
     
 def potential_p(particle,params):
     k = params[0]
-    V_h = k * mass * omega_z**2 * particle.x**2
+    V_h = k * mass * omega_z**2 * particle.x**(2*l)
     V = V_h
     return V
 
@@ -110,7 +110,7 @@ def non_linear_f2(psi,t,particle):
 
 H = Hamiltonian(particles=SingleParticle(m = mass),
                 potential=potential_p,
-                spatial_ndim=1, N=Nx,extent=xmax * 2,params = [0.25])
+                spatial_ndim=1, N=Nx,extent=xmax * 2,params = [0.5])
 
 #=========================================================================================================#
 # Set and run the simulation
@@ -132,7 +132,7 @@ visualization = init_visualization(sim)
 visualization.plot1D(t = 0)
 #5visualization.animate(save_animation=True)
 visualization.final_plot(L_norm = 1e-3,Z_norm = 1e-3,unit = 1e-3)
-#visualization.save('test.txt')
+visualization.save('test.txt')
 
 """
 ###################################################################################
@@ -147,7 +147,7 @@ font = 34
 fig, axs = plt.subplots(1, 4, figsize=(50, 15))
 # Plot on each subplot using the modified final_plot function
 visualization.final_plot2(axs[0],L_norm = 1e-3,Z_norm =  1e-3,unit = 1e-3)
-axs[0].set_title('$k = 0.25$',fontsize = font)
+axs[0].set_title('$K = 0.25$',fontsize = font)
 
 
 # K = 0.5
@@ -167,7 +167,7 @@ sim.run(psi_0, total_time =tmax, dt = dt, store_steps = images,non_linear_functi
 
 visualization = init_visualization(sim)
 visualization.final_plot2(axs[1],L_norm =  1e-3,Z_norm =  1e-3,unit = 1e-3)
-axs[1].set_title('$k = 0.5$',fontsize = font)
+axs[1].set_title('$K = 0.5$',fontsize = font)
 
 # K = 0.75
 k = 0.75
@@ -189,7 +189,7 @@ sim.run(psi_0, total_time =tmax, dt = dt, store_steps = images,non_linear_functi
 
 visualization = init_visualization(sim)
 visualization.final_plot2(axs[2],L_norm =  1e-3,Z_norm =  1e-3,unit = 1e-3)
-axs[2].set_title('$k = 0.75$',fontsize = font)
+axs[2].set_title('$K = 0.75$',fontsize = font)
 
 # K = 1
 k = 1
@@ -209,7 +209,7 @@ sim.run(psi_0, total_time =tmax, dt = dt, store_steps = images,non_linear_functi
 
 visualization = init_visualization(sim)
 visualization.final_plot2(axs[3],L_norm =  1e-3,Z_norm =  1e-3,unit = 1e-3,n=3)
-axs[3].set_title('$k = 1$',fontsize = font)
+axs[3].set_title('$K = 1$',fontsize = font)
 
 
 # Adjust layout

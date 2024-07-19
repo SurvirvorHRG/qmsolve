@@ -358,7 +358,6 @@ from .visualization import TimeVisualization
 class TimeVisualizationSingleParticle1D(TimeVisualization):
     def __init__(self,simulation):
         self.simulation = simulation
-        self.H = simulation.H
   
     def save(self,filename):
         self.simulation.Ψ_plot = self.simulation.Ψ / self.simulation.Ψmax
@@ -378,18 +377,11 @@ class TimeVisualizationSingleParticle1D(TimeVisualization):
             
             # Save psi
             f.write("psi_norm:\n")
-            np.savetxt(f, self.simulation.Ψ_plot, delimiter=',')
+            np.savetxt(f, np.abs(self.simulation.Ψ_plot), delimiter=',')
             
             # Save array2
             #f.write("array2:\n")
             #np.savetxt(f, array2, delimiter=',')
-        
-        
-    def read(self,filename):
-        # Load the array from the text file
-        self.simulation.Ψ = self.simulation.Ψ_plot = np.loadtxt(filename, delimiter=',')
-        self.simulation.Ψmax = 1.0
-        
         
     def final_plot2(self, ax, L_norm=meters, Z_norm=meters, unit=milliseconds, time="ms", fixmaximum=0,n=0):
         from mpl_toolkits.mplot3d import Axes3D
@@ -406,15 +398,10 @@ class TimeVisualizationSingleParticle1D(TimeVisualization):
             toplot[toplot > fixmaximum] = fixmaximum
     
         cont = ax.contourf(xx / L_norm, tt / unit, toplot.T, 100, cmap=cm.jet, linewidth=0, antialiased=False)
-        if n == 3:
-            cbar = plt.colorbar(cont, ax=ax)  # colorbar
-        ax.set_xlabel('$z\ (mm)$', fontsize=34)  # axes labels, title, plot and axes range
-        ax.set_ylabel('$t\ (ms)$', fontsize=34)
-        if n == 3:
-            cbar.set_label('$|\psi|^2$', fontsize=34)
-        ax.tick_params(axis='both', which='major', labelsize=30)  # increase tick label size
-        if n == 3:
-            cbar.ax.tick_params(labelsize=30)  # increase colorbar tick label size
+        ax.set_xlabel('$z\ (mm)$', fontsize=44)  # axes labels, title, plot and axes range
+        ax.set_ylabel('$t\ (ms)$', fontsize=44)
+        ax.tick_params(axis='both', which='major', labelsize=40)  # increase tick label size
+        return cont
 
         
         

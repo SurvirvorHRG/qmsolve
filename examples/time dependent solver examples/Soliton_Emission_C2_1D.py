@@ -59,7 +59,7 @@ g_s = 2 * Ntot * omega_rho * a_s / omega_z  / L_z
 #g_s = g_s * hbar
 #g_s = 500
 
-Nx = 4000                        # Grid points
+Nx = 2000                        # Grid points
 Ny = Nx
 tmax = 5                # End of propagation
 dt = 0.00001                # Evolution step
@@ -150,7 +150,7 @@ sim.run(psi_0, total_time =tmax, dt = dt, store_steps = images,non_linear_functi
 visualization = init_visualization(sim)
 #visualization.plot1D(t = 0)
 #5visualization.animate(save_animation=True)
-visualization.final_plot(L_norm = 1/L_z * 1e-3,Z_norm = 1/L_z * 1e-3,unit = omega_z * 1e-3,fixmaximum = 0.1)
+#visualization.final_plot(L_norm = 1/L_z * 1e-3,Z_norm = 1/L_z * 1e-3,unit = omega_z * 1e-3,fixmaximum = 0.1)
 
 
 
@@ -159,7 +159,7 @@ visualization.final_plot(L_norm = 1/L_z * 1e-3,Z_norm = 1/L_z * 1e-3,unit = omeg
 
 
 
-"""
+
 
 ###################################################################################
 #Subplots
@@ -167,13 +167,13 @@ visualization.final_plot(L_norm = 1/L_z * 1e-3,Z_norm = 1/L_z * 1e-3,unit = omeg
 import matplotlib.pyplot as plt
 import numpy as np
 
-font = 34
+font = 44
 
 # Create subplots
 fig, axs = plt.subplots(1, 4, figsize=(50, 15))
 # Plot on each subplot using the modified final_plot function
 visualization.final_plot2(axs[0],L_norm = 1/L_z * 1e-3,Z_norm = 1/L_z * 1e-3,unit = omega_z * 1e-3,fixmaximum = 0.1)
-axs[0].set_title('k = 0.25',fontsize = font)
+axs[0].set_title('$a)\ K = 0.25$',fontsize = font)
 
 
 # K = 0.5
@@ -230,7 +230,7 @@ sim.run(psi_2, total_time =tmax, dt = dt, store_steps = images,non_linear_functi
 
 visualization = init_visualization(sim)
 visualization.final_plot2(axs[1],L_norm = 1/L_z * 1e-3,Z_norm = 1/L_z * 1e-3,unit = omega_z * 1e-3,fixmaximum = 0.1)
-axs[1].set_title('k = 0.5',fontsize = font)
+axs[1].set_title('$b)\ K = 0.5$',fontsize = font)
 
 # K = 0.75
 k = 0.75
@@ -286,7 +286,7 @@ sim.run(psi_3, total_time =tmax, dt = dt, store_steps = images,non_linear_functi
 
 visualization = init_visualization(sim)
 visualization.final_plot2(axs[2],L_norm = 1/L_z * 1e-3,Z_norm = 1/L_z * 1e-3,unit = omega_z * 1e-3,fixmaximum = 0.1)
-axs[2].set_title('k = 0.75',fontsize = font)
+axs[2].set_title('$c)\ K = 0.75$',fontsize = font)
 
 
 # K = 1
@@ -342,11 +342,17 @@ sim.run(psi_4, total_time =tmax, dt = dt, store_steps = images,non_linear_functi
 
 
 visualization = init_visualization(sim)
-visualization.final_plot2(axs[3],L_norm = 1/L_z * 1e-3,Z_norm = 1/L_z * 1e-3,unit = omega_z * 1e-3,fixmaximum = 0.1,n=3)
-axs[3].set_title('k = 1',fontsize = font)
+cont_rubidium = visualization.final_plot2(axs[3],L_norm = 1/L_z * 1e-3,Z_norm = 1/L_z * 1e-3,unit = omega_z * 1e-3,fixmaximum = 0.1)
+axs[3].set_title('$d)\ K = 1$',fontsize = font)
+
+# Add a single colorbar for all subplots
+cbar = fig.colorbar(cont_rubidium, ax=axs, orientation='vertical', fraction=0.02, pad=0.01)
+cbar.set_label('$|\psi|^2$', fontsize=44)
+cbar.ax.tick_params(labelsize=40)  # Increase colorbar tick label size
+
 # Adjust layout
 plt.tight_layout()
 
 # Display the plot
 plt.show()
-"""
+

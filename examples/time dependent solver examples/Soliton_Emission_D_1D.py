@@ -59,17 +59,17 @@ g_s = 500
 Nx = 1130                        # Grid points
 Ny = Nx
 tmax = 20                # End of propagation
-dt = 0.0001                # Evolution step
-xmax = 10                    # x-window size
+dt = 0.00001                # Evolution step
+xmax = 5                    # x-window size
 ymax = xmax                    # y-window size
 images = 400                # number of .png images
 
-
+l=6
 muq = 0.5 * (3/2)**(2/3) * g_s**(2/3)
 
 #muq = (9/8 * mass * omega_z**2 * Ntot**2 *g_s**2)**(1/3)
 def potential(x,y):
-    V_h = 0.5 * x**2
+    V_h = 0.5 * x**(2*l)
     V_b = V0*np.exp(-(x/sigma)**2)
     V = V_h + V_b
     return V
@@ -89,7 +89,7 @@ def psi_0(particle,params):
 def V(particle,params):        
     # The linear part of the potential is a shallow trap modeled by an inverted Gaussian
     # The nonlinear part is a cubic term whose sign and strength change abruptly in time.
-    V_h = 0.5 * particle.x**2
+    V_h = 0.5 * particle.x**(2*l)
     #V_b = V0*np.exp(-(particle.x/sigma)**2)
     
     V = V_h
