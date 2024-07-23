@@ -47,43 +47,40 @@ class readFile:
 
 hbar = 1.054571596e-34
 uaumass = 1.66053873e-27
-omega_rho = 1.0e3  # 1kHz
+mass=86.909  # Atoms mass Cs 132.905 , Rb 86.909 (united atomic unit of mass)
+mass  = mass * uaumass
+Ntot= 20e4
+omega_rho = 2*np.pi*160
+omega_z = 2*np.pi*6.8
+z_t = np.sqrt(hbar/mass/omega_z) # 3e-6 meters
 
 plt.style.use("default")
 font = 44
 
 # Create subplots
-mass_lithium = 7.016004 * uaumass  # Lithium
-r_t_lithium = np.sqrt(hbar / mass_lithium / omega_rho)  # 3e-6 meters
 
-fig, axs = plt.subplots(1, 3, figsize=(50, 15))
+fig, axs = plt.subplots(1, 2, figsize=(30, 15))
 
 # Lithium
-rd_lithium = readFile('lithium.txt')
-cont_lithium = rd_lithium.final_plot2(axs[0], L_norm=1/r_t_lithium*1e-3, Z_norm=1/r_t_lithium*1e-3, unit=omega_rho*1e-3)
-axs[0].set_title('$(a)\ ^{7}Li$', fontsize=font)
+rd_lithium = readFile('l=3.txt')
+cont_lithium = rd_lithium.final_plot2(axs[0], L_norm = 1/z_t * 1e-3,Z_norm = 1/z_t * 1e-3,unit = omega_z*1e-3)
+axs[0].set_title('$(a)\ \ell = 3$', fontsize=font)
 
 # Sodium
 mass_sodium = 22.9 * uaumass  # Sodium
 r_t_sodium = np.sqrt(hbar / mass_sodium / omega_rho)  # 3e-6 meters
 
-rd_sodium = readFile('sodium.txt')
-cont_sodium = rd_sodium.final_plot2(axs[1], L_norm=1/r_t_sodium*1e-3, Z_norm=1/r_t_sodium*1e-3, unit=omega_rho*1e-3)
-axs[1].set_title('$(b)\ ^{23}Na$', fontsize=font)
+rd_sodium = readFile('l=6.txt')
+cont_sodium = rd_sodium.final_plot2(axs[1], L_norm = 1/z_t * 1e-3,Z_norm = 1/z_t * 1e-3,unit = omega_z*1e-3)
+axs[1].set_title('$(b)\ \ell = 6$', fontsize=font)
 
-# Rubidium
-mass_rubidium = 86.909 * uaumass  # Rubidium
-r_t_rubidium = np.sqrt(hbar / mass_rubidium / omega_rho)  # 3e-6 meters
 
-rd_rubidium = readFile('rubidium.txt')
-cont_rubidium = rd_rubidium.final_plot2(axs[2], L_norm=1/r_t_rubidium*1e-3, Z_norm=1/r_t_rubidium*1e-3, unit=omega_rho*1e-3)
-axs[2].set_title('$(c)\ ^{87}Rb$', fontsize=font)
 
 # Adjust layout
 plt.tight_layout()
 
 # Add a single colorbar for all subplots
-cbar = fig.colorbar(cont_rubidium, ax=axs, orientation='vertical', fraction=0.02, pad=0.01)
+cbar = fig.colorbar(cont_sodium, ax=axs, orientation='vertical', fraction=0.05, pad=0.01)
 cbar.set_label('$|\psi|^2$', fontsize=44)
 cbar.ax.tick_params(labelsize=40)  # Increase colorbar tick label size
 

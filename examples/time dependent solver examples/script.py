@@ -2,6 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
+font = 124
+subfont = 120
 
 class readFile:
     def __init__(self, filename):
@@ -39,9 +41,9 @@ class readFile:
             toplot[toplot > fixmaximum] = fixmaximum
     
         cont = ax.contourf(xx / L_norm, tt / unit, toplot.T, 100, cmap=cm.jet, linewidth=0, antialiased=False)
-        ax.set_xlabel('$z\ (mm)$', fontsize=44)  # axes labels, title, plot and axes range
-        ax.set_ylabel('$t\ (ms)$', fontsize=44)
-        ax.tick_params(axis='both', which='major', labelsize=40)  # Increase tick label size
+        ax.set_xlabel('$z\ (mm)$', fontsize=font)  # axes labels, title, plot and axes range
+        ax.set_ylabel('$t\ (ms)$', fontsize=font)
+        ax.tick_params(axis='both', which='major', labelsize=subfont)  # Increase tick label size
         return cont
 
 
@@ -50,18 +52,17 @@ uaumass = 1.66053873e-27
 omega_rho = 1.0e3  # 1kHz
 
 plt.style.use("default")
-font = 44
 
 # Create subplots
 mass_lithium = 7.016004 * uaumass  # Lithium
 r_t_lithium = np.sqrt(hbar / mass_lithium / omega_rho)  # 3e-6 meters
 
-fig, axs = plt.subplots(1, 3, figsize=(50, 15))
+fig, axs = plt.subplots(1, 3, figsize=(90, 50))
 
 # Lithium
 rd_lithium = readFile('lithium.txt')
 cont_lithium = rd_lithium.final_plot2(axs[0], L_norm=1/r_t_lithium*1e-3, Z_norm=1/r_t_lithium*1e-3, unit=omega_rho*1e-3)
-axs[0].set_title('$a)\ ^{7}Li$', fontsize=font)
+axs[0].set_title('$(a)\ ^{7}Li$', fontsize=font)
 
 # Sodium
 mass_sodium = 22.9 * uaumass  # Sodium
@@ -69,7 +70,7 @@ r_t_sodium = np.sqrt(hbar / mass_sodium / omega_rho)  # 3e-6 meters
 
 rd_sodium = readFile('sodium.txt')
 cont_sodium = rd_sodium.final_plot2(axs[1], L_norm=1/r_t_sodium*1e-3, Z_norm=1/r_t_sodium*1e-3, unit=omega_rho*1e-3)
-axs[1].set_title('$b)\ ^{23}Na$', fontsize=font)
+axs[1].set_title('$(b)\ ^{23}Na$', fontsize=font)
 
 # Rubidium
 mass_rubidium = 86.909 * uaumass  # Rubidium
@@ -77,15 +78,15 @@ r_t_rubidium = np.sqrt(hbar / mass_rubidium / omega_rho)  # 3e-6 meters
 
 rd_rubidium = readFile('rubidium.txt')
 cont_rubidium = rd_rubidium.final_plot2(axs[2], L_norm=1/r_t_rubidium*1e-3, Z_norm=1/r_t_rubidium*1e-3, unit=omega_rho*1e-3)
-axs[2].set_title('$c)\ ^{87}Rb$', fontsize=font)
+axs[2].set_title('$(c)\ ^{87}Rb$', fontsize=font)
 
 # Adjust layout
 plt.tight_layout()
 
 # Add a single colorbar for all subplots
-cbar = fig.colorbar(cont_rubidium, ax=axs, orientation='vertical', fraction=0.02, pad=0.01)
-cbar.set_label('$|\psi|^2$', fontsize=44)
-cbar.ax.tick_params(labelsize=40)  # Increase colorbar tick label size
+cbar = fig.colorbar(cont_rubidium, ax=axs, orientation='vertical', fraction=0.04, pad=0.01)
+cbar.set_label('$|\psi|^2$', fontsize=font)
+cbar.ax.tick_params(labelsize=subfont)  # Increase colorbar tick label size
 
 # Display the plot
 plt.show()
