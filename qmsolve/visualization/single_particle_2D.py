@@ -337,6 +337,102 @@ class TimeVisualizationSingleParticle2D(TimeVisualization):
         self.simulation = simulation
         self.H = simulation.H
         
+        
+    def ax_plot(self, ax, t = 0, L_norm=1, Z_norm=1, unit=1, time="ms", fixmaximum=0):
+        plt.style.use("default")
+        x = np.linspace(-self.xmax/2, self.xmax/2, self.Nx)
+        y = np.linspace(-self.xmax/2, self.xmax/2, self.Nx)
+        x,y = np.meshgrid(x,y)
+
+    
+        # Makes the contour plot:
+        index = int((self.store_steps)/self.total_time*t)
+        toplot=self.psi_norm[index]    
+        from matplotlib import cm
+        cont = ax.contourf(x/L_norm, y/L_norm, toplot, 100, cmap=cm.jet, linewidth=0, antialiased=False)
+        ax.set_xlabel("$x\ (mm)$",fontsize = 44)               # choose axes labels
+        ax.set_ylabel("$y\ (mm)$",fontsize = 44)
+        cbar.set_label('$|\psi|^2$',fontsize = 44)
+        ax.tick_params(axis='both', which='major', labelsize=40)  # Increase tick label size
+        cbar.ax.tick_params(labelsize=40)
+        
+    def save(self,filename):
+        self.simulation.Ψ_plot = self.simulation.Ψ / self.simulation.Ψmax
+        # Define some parameters
+        Nx = self.simulation.H.N
+        xmax = self.simulation.H.extent
+        total_time = self.simulation.Nt_per_store_step * self.simulation.store_steps * self.simulation.dt
+        store_steps = self.simulation.store_steps
+        toplot = np.abs(self.simulation.Ψ_plot)
+        # Save arrays and parameters to a text file
+        with open(filename, 'w') as f:
+            # Save parameters
+            f.write(f"Nx: {Nx}\n")
+            f.write(f"xmax: {xmax}\n")
+            f.write(f"total_time: {total_time}\n")
+            f.write(f"store_steps: {store_steps}\n")
+            # Save shape of the 3D array
+            f.write(f"psi_shape: {toplot.shape}\n")
+            
+            # Save psi
+            f.write("psi_norm:\n")
+            np.savetxt(f, toplot.reshape(-1, toplot.shape[-1]), delimiter=',')
+            
+            # Save array2
+            #f.write("array2:\n")
+            #np.savetxt(f, array2, delimiter=',')
+            
+            
+    def save2(self,filename):
+        self.simulation.Ψ_plot = self.simulation.Ψ / self.simulation.Ψmax
+        # Define some parameters
+        Nx = self.simulation.H.N
+        xmax = self.simulation.H.extent
+        total_time = self.simulation.Nt_per_store_step * self.simulation.store_steps * self.simulation.dt
+        store_steps = self.simulation.store_steps
+        toplot = np.abs(self.simulation.Ψ_plot)
+        # Save arrays and parameters to a text file
+        with open(filename, 'w') as f:
+            # Save parameters
+            f.write(f"Nx: {Nx}\n")
+            f.write(f"xmax: {xmax}\n")
+            f.write(f"total_time: {total_time}\n")
+            f.write(f"store_steps: {store_steps}\n")
+            
+            # Save psi
+            f.write("psi_norm:\n")
+            np.savez(filename, array1=toplot,param1=Nx, param2=xmax,param3=total_time,param4=store_steps)
+            
+            # Save array2
+            #f.write("array2:\n")
+            #np.savetxt(f, array2, delimiter=',')        
+            
+    
+        
+    def final_plot_rho_t(self,L_norm = meters, Z_norm = meters,unit = milliseconds,time="ms",fixmaximum = 0):
+        
+        from mpl_toolkits.mplot3d import Axes3D
+        from matplotlib import cm
+        plt.style.use("default")
+        H = self.simulation.H
+        total_time = self.simulation.Nt_per_store_step*self.simulation.store_steps*self.simulation.dt
+        tvec=np.linspace(0,self.simulation.Nt_per_store_step*self.simulation.store_steps*self.simulation.dt,self.simulation.store_steps + 1)
+        x = self.simulation.H.particle_system.x
+        y = self.simulation.H.particle_system.y
+        rho = np.sqrt(x**2 + y**2)
+        tt,xx = np.meshgrid(tvec,rho)
+        self.simulation.Ψ_plot = self.simulation.Ψ/self.simulation.Ψmax
+        toplot = abs(self.simulation.Ψ_plot).T
+        from matplotlib import cm
+        plt.contourf(xx/Z_norm, tt/unit, toplot, 100, cmap=cm.jet, linewidth=0, antialiased=False)
+
+        cbar=plt.colorbar()               # colorbar
+        
+        plt.xlabel('$rho$')               # choose axes labels, title of the plot and axes range
+        plt.ylabel('$t\ (ms)$')
+        cbar.set_label('$|\psi|^2$',fontsize=14)
+        plt.show()      # Displays figure on screen
+        
     def final_plot_xyt(self,L_norm = meters, Z_norm = meters,unit = milliseconds,time="ms",fixmaximum = 0):
         
         from mpl_toolkits.mplot3d import Axes3D
@@ -347,9 +443,9 @@ class TimeVisualizationSingleParticle2D(TimeVisualization):
         tvec=np.linspace(0,self.simulation.Nt_per_store_step*self.simulation.store_steps*self.simulation.dt,self.simulation.store_steps + 1)
         x = np.linspace(-H.extent/2, H.extent/2, H.N)
         y = np.linspace(-H.extent/2, H.extent/2, H.N)
-        tt,xx,yy=np.meshgrid(tvec,x,y)
+        xx,yy,tt=np.meshgrid(x,y,tvec)
         self.simulation.Ψ_plot = self.simulation.Ψ/self.simulation.Ψmax
-        toplot = abs(self.simulation.Ψ_plot)
+        toplot = abs(self.simulation.Ψ_plot).T
         
         #Three-dimensional countour map
         fig = plt.figure(0,figsize=(9,9))
@@ -358,7 +454,7 @@ class TimeVisualizationSingleParticle2D(TimeVisualization):
         #high_values_mask = toplot >= threshold
         #toplot = toplot[high_values_mask]
     
-        plot = ax.scatter3D(x, y,t, toplot, c=toplot,cmap=jet,antialiased=False)
+        plot = ax.scatter3D(xx, yy,tt, toplot, c=toplot,cmap=cm.jet,antialiased=False)
         cbar = fig.colorbar(plot, shrink=0.5, aspect=5)
         ax.set_xlabel(r'X')
         ax.set_ylabel(r'Y')
@@ -370,7 +466,120 @@ class TimeVisualizationSingleParticle2D(TimeVisualization):
         cbar.set_label('$|\psi|^2$',fontsize=14)
         #ax.set_title('$t=$ %f'%(t))    # Title of the plot 
         
-    def final_plot(self,L_norm = 1, Z_norm = 1,unit = milliseconds, figsize=(15, 15),time="ms"):
+    def final_plot_xyt3(self,L_norm = 1, Z_norm = 1,unit = 1, contrast_vals= [0.1, 0.25]):
+
+        mlab.figure(1,bgcolor=(0,0,0), size=(700, 700))
+        self.simulation.Ψ_plot = self.simulation.Ψ/self.simulation.Ψmax
+        #index = int((self.simulation.store_steps)/self.simulation.total_time*t)   
+
+            
+        psi = self.simulation.Ψ_plot
+        total_time = self.simulation.Nt_per_store_step*self.simulation.store_steps*self.simulation.dt
+         
+    
+        L = self.simulation.H.extent/2/L_norm
+        Z = self.simulation.H.z_extent/2/Z_norm
+        N = self.simulation.H.N
+        Nz = self.simulation.H.Nz
+    
+        vol = mlab.pipeline.volume(mlab.pipeline.scalar_field(np.abs(psi).T), vmin= contrast_vals[0], vmax= contrast_vals[1])          
+         
+        mlab.outline()
+         
+         
+     
+        #mlab.axes(xlabel=x_latex, ylabel=y_latex, zlabel=z_latex,nb_labels=6 , ranges = (-L,L,-L,L,-Z,Z) )
+        ax = mlab.axes(xlabel='$y\ (mm)$', ylabel='$x\ (mm)$', zlabel='$t\ (ms)$',nb_labels=3 , ranges = (-L,L,-L,L,0,total_time) )
+        ax.axes.font_factor = 1.3
+        ax.label_text_property.font_family = 'times'
+        ax.title_text_property.font_family = 'times'
+        ax.axes.label_format = '%-#6.1g'
+        
+        colorbar = mlab.colorbar(nb_labels=6,orientation = 'vertical')
+        colorbar.scalar_bar_representation.position = [0.85, 0.1]
+        colorbar_label = colorbar.scalar_bar.label_text_property
+        colorbar_label.font_family = 'times'
+        colorbar.scalar_bar.label_format = '%.2f'
+        colorbar.scalar_bar.unconstrained_font_size = True
+        colorbar_label.font_size = 10
+        mlab.view(azimuth=60,elevation=60,distance=(N + N + Nz)/3 * 4)
+        colorbar = mlab.colorbar(orientation = 'vertical')
+        colorbar.scalar_bar_representation.position = [0.85, 0.1]
+        #colorbar.data_range = (0, 1)
+        #file = str(t) + '.png'
+        #mlab.savefig(file)
+        mlab.show()
+        
+        
+    def final_plot_xyt2(self,L_norm = 1, Z_norm = 1,unit = 1,time="ms",fixmaximum = 0):
+        plt.style.use("default")
+        H = self.simulation.H
+        total_time = self.simulation.Nt_per_store_step*self.simulation.store_steps*self.simulation.dt
+        tvec=np.linspace(0,total_time,self.simulation.store_steps + 1)
+        x = np.linspace(-H.extent/2, H.extent/2, H.N)
+        y = np.linspace(-H.extent/2, H.extent/2, H.N)
+        xx,yy,tt=np.meshgrid(x,y,tvec)
+        print(tt.shape)
+        self.simulation.Ψ_plot = self.simulation.Ψ/self.simulation.Ψmax
+        toplot = abs(self.simulation.Ψ_plot).T
+        
+
+    
+        
+        mlab.figure(bgcolor=(0,0,0), size=(1400, 1400))
+        L = self.simulation.H.extent/2/L_norm
+        Z = self.simulation.H.z_extent/2/Z_norm
+        N = self.simulation.H.N
+        
+        contour = mlab.contour3d(yy,xx,tt,toplot,colormap='jet')
+              
+        mlab.outline()
+         
+        x_latex = 'y'
+        y_latex = 'x'
+        z_latex = 't'
+        
+         
+         
+        mlab.axes(xlabel=x_latex, ylabel=y_latex, zlabel=z_latex,nb_labels=3 , ranges = (-L,L,-L,L,0,total_time) )
+        #mlab.axes(xlabel='x [Å]', ylabel='y [Å]',nb_labels=6 , ranges = (-L,L,-L,L,-Z,Z) )
+        #colorbar = mlab.colorbar(orientation = 'vertical')
+        #colorbar.scalar_bar_representation.position = [0.85, 0.1]
+        colorbar = mlab.colorbar(contour, orientation='vertical', title='Intensity', label_fmt='%.1f')
+        colorbar.scalar_bar_representation.position = [0.85, 0.1]
+        mlab.show()
+        
+        
+    def final_plot_x(self,L_norm = 1, Z_norm = 1,unit = 1, figsize=(15, 15),time="ms"):
+        
+        from mpl_toolkits.mplot3d import Axes3D
+        
+        z = self.simulation.H.particle_system.x[0,:]
+        tvec=np.linspace(0,self.simulation.Nt_per_store_step*self.simulation.store_steps*self.simulation.dt,self.simulation.store_steps+1)
+        tt,zz=np.meshgrid(tvec,z)
+        plt.figure("Evolution of 1D cut at y=0")              # figure
+        plt.clf()                       # clears the figure
+        
+        # Generates the plot
+        
+        self.simulation.Ψ_plot = self.simulation.Ψ/self.simulation.Ψmax
+        mid = int(self.simulation.H.N / 2) - 1
+        toplot= np.abs(self.simulation.Ψ_plot[:,mid,:])
+        toplot = toplot.T
+        
+        from matplotlib import cm
+        plt.contourf(zz/Z_norm, tt/unit, toplot, 100, cmap=cm.jet, linewidth=0, antialiased=False)
+        L = self.simulation.H.extent/2/L_norm
+        Z = self.simulation.H.z_extent/2/Z_norm
+
+        cbar=plt.colorbar()               # colorbar
+        
+        plt.xlabel('$x$')               # choose axes labels, title of the plot and axes range
+        plt.ylabel('$t\ (s)$')
+        cbar.set_label('$|\psi|^2$',fontsize=14)
+        plt.show()      # Displays figure on screen
+        
+    def final_plot_y(self,L_norm = 1, Z_norm = 1,unit = 1, figsize=(15, 15),time="ms"):
         
         from mpl_toolkits.mplot3d import Axes3D
         
@@ -384,7 +593,7 @@ class TimeVisualizationSingleParticle2D(TimeVisualization):
         
         self.simulation.Ψ_plot = self.simulation.Ψ/self.simulation.Ψmax
         mid = int(self.simulation.H.N / 2) - 1
-        toplot= np.abs(self.simulation.Ψ_plot[:,:,0])
+        toplot= np.abs(self.simulation.Ψ_plot[:,:,mid])
         toplot = toplot.T
         
         from matplotlib import cm
@@ -394,8 +603,8 @@ class TimeVisualizationSingleParticle2D(TimeVisualization):
 
         cbar=plt.colorbar()               # colorbar
         
-        plt.xlabel('$z$')               # choose axes labels, title of the plot and axes range
-        plt.ylabel('$t\ (ms)$')
+        plt.xlabel('$y$')               # choose axes labels, title of the plot and axes range
+        plt.ylabel('$t\ (s)$')
         cbar.set_label('$|\psi|^2$',fontsize=14)
         plt.show()      # Displays figure on screen
 
@@ -601,7 +810,7 @@ class TimeVisualizationSingleParticle2D(TimeVisualization):
             
             
         
-    def plot3D_SI(self, t, L_norm = 1, Z_norm = 1,unit = milliseconds, contrast_vals= [0.1, 0.25]):
+    def plot3D_SI(self, t, L_norm = 1, Z_norm = 1,unit = 1, contrast_vals= [0.1, 0.25]):
 
         mlab.figure(bgcolor=(0,0,0), size=(700, 700))
         self.simulation.Ψ_plot = self.simulation.Ψ/self.simulation.Ψmax
@@ -611,8 +820,8 @@ class TimeVisualizationSingleParticle2D(TimeVisualization):
         psi = np.abs(psi)
 
 
-        L = self.simulation.H.extent/2/Å/L_norm/1e7
-        Z = self.simulation.H.z_extent/2/Å/Z_norm/1e7
+        L = self.simulation.H.extent/2/L_norm
+        Z = self.simulation.H.z_extent/2/Z_norm
         N = self.simulation.H.N
 
         #surf = mlab.mesh(self.simulation.H.particle_system.x,self.simulation.H.particle_system.y, psi, colormap='jet')
@@ -624,8 +833,8 @@ class TimeVisualizationSingleParticle2D(TimeVisualization):
         
         time_label.text = 't = {:.2f} (ms)'.format(t/unit)
         
-        if np.amax(np.abs(self.simulation.Ψ_plot)) == np.amax(np.abs(self.simulation.Ψ_plot[index])):
-            time_label.text = 't-peak = {:.2f} (ms)'.format(t/unit)
+        #if np.amax(np.abs(self.simulation.Ψ_plot)) == np.amax(np.abs(self.simulation.Ψ_plot[index])):
+            #time_label.text = 't-peak = {:.2f} (ms)'.format(t/unit)
 
         mlab.outline()
 

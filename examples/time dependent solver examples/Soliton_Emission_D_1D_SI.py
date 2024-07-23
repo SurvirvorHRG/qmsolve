@@ -32,7 +32,7 @@ mass  = mass * uaumass
 Ntot= 20e4
 omega_rho = 2*np.pi*160
 omega_z = 2*np.pi*6.8
-l = 3
+l = 1
 
 
 print('omega_rho =', omega_rho)
@@ -58,14 +58,15 @@ Nx = 2048                        # Grid points
 Ny = Nx
 tmax = 20 / omega_z               # End of propagation
 dt = 0.0001 / omega_z               # Evolution step
-xmax =  100 * L_z                   # x-window size
+xmax =  15 * L_z                   # x-window size
 ymax = xmax                    # y-window size
 images = 400                # number of .png images
 absorb_coeff = 0        # 0 = periodic boundary
 
 
 #◙muq = 0.5 * (3/2)**(2/3) * g_s**(2/3)
-paramsk = 0.5
+paramsk = 0.53
+
 
 def potential(x,y,k):
     V_h = k * mass * omega_z**2 * x**(2*l)
@@ -132,7 +133,7 @@ visualization = init_visualization(sim)
 visualization.plot1D(t = 0)
 #5visualization.animate(save_animation=True)
 visualization.final_plot(L_norm = 1e-3,Z_norm = 1e-3,unit = 1e-3)
-visualization.save('test.txt')
+#visualization.save('test.txt')
 
 """
 ###################################################################################
@@ -141,13 +142,13 @@ visualization.save('test.txt')
 import matplotlib.pyplot as plt
 import numpy as np
 plt.style.use("default")
-font = 34
+font = 44
 
 # Create subplots
 fig, axs = plt.subplots(1, 4, figsize=(50, 15))
 # Plot on each subplot using the modified final_plot function
 visualization.final_plot2(axs[0],L_norm = 1e-3,Z_norm =  1e-3,unit = 1e-3)
-axs[0].set_title('$K = 0.25$',fontsize = font)
+axs[0].set_title('$(a)\ K = 0.25$',fontsize = font)
 
 
 # K = 0.5
@@ -167,7 +168,7 @@ sim.run(psi_0, total_time =tmax, dt = dt, store_steps = images,non_linear_functi
 
 visualization = init_visualization(sim)
 visualization.final_plot2(axs[1],L_norm =  1e-3,Z_norm =  1e-3,unit = 1e-3)
-axs[1].set_title('$K = 0.5$',fontsize = font)
+axs[1].set_title('$(b)\ K = 0.5$',fontsize = font)
 
 # K = 0.75
 k = 0.75
@@ -189,7 +190,7 @@ sim.run(psi_0, total_time =tmax, dt = dt, store_steps = images,non_linear_functi
 
 visualization = init_visualization(sim)
 visualization.final_plot2(axs[2],L_norm =  1e-3,Z_norm =  1e-3,unit = 1e-3)
-axs[2].set_title('$K = 0.75$',fontsize = font)
+axs[2].set_title('$(c)\ K = 0.75$',fontsize = font)
 
 # K = 1
 k = 1
@@ -208,12 +209,16 @@ sim.run(psi_0, total_time =tmax, dt = dt, store_steps = images,non_linear_functi
 
 
 visualization = init_visualization(sim)
-visualization.final_plot2(axs[3],L_norm =  1e-3,Z_norm =  1e-3,unit = 1e-3,n=3)
-axs[3].set_title('$K = 1$',fontsize = font)
-
+cont = visualization.final_plot2(axs[3],L_norm =  1e-3,Z_norm =  1e-3,unit = 1e-3)
+axs[3].set_title('$(d)\ K = 1$',fontsize = font)
 
 # Adjust layout
 plt.tight_layout()
+
+cbar = fig.colorbar(cont, ax=axs, orientation='vertical', fraction=0.02, pad=0.01)
+cbar.set_label('$|\psi|^2$', fontsize=44)
+cbar.ax.tick_params(labelsize=40)  # Increase colorbar tick label size
+
 
 # Display the plot
 plt.show()

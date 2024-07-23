@@ -48,7 +48,7 @@ g_s = 4*Ntot*np.pi*hbar**2*a_s / mass
 #g_s = 2 * N * omega_rho * a_s / omega_z  / L_z
 #g_s = 500
 
-Nx = 128                        # Grid points
+Nx = 32                        # Grid points
 Ny = Nx
 Nz = 512
 tmax = 20                # End of propagation
@@ -75,7 +75,7 @@ def potential(x,y,z):
     return V
     
 
-def psi_0(particle):
+def psi_0(particle,params):
     V = potential(particle.x,particle.y,particle.z)
     psi = np.zeros_like(particle.x)
     
@@ -98,7 +98,7 @@ def psi_1D(particle):
             
     return psi
 
-def V(particle):        
+def V(particle,params):        
     # The linear part of the potential is a shallow trap modeled by an inverted Gaussian
     # The nonlinear part is a cubic term whose sign and strength change abruptly in time.
     V_rho = 0.5 * mass * omega_rho**2 * (particle.x**2 + particle.y**2)
@@ -155,7 +155,7 @@ sim.method.split_step.set_nonlinear_term(non_linear_cupy)
 total_t = tmax / omega_z
 dt_t = dt / omega_z
 #dt_t = 0.01 *seconds
-sim.run(psi_0, total_time = total_t, dt = dt_t, store_steps = 20,non_linear_function=None,norm = False)
+sim.run(psi_0, total_time = total_t, dt = dt_t, store_steps = 100,non_linear_function=None,norm = False)
 
 #=========================================================================================================#
 # Finally, we visualize the time dependent simulation

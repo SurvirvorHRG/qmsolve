@@ -40,15 +40,15 @@ print('U1 =', U1)
 a_p = np.sqrt(hbar/mass/omega_rho)
 a_z = np.sqrt(hbar/mass/omega_z)
 a_s = 94.7*a_0
-g3d = 4*Ntot*np.pi*hbar**2*a_s / mass /16
+g3d = 4*Ntot*np.pi*hbar**2*a_s / mass
 
 
-Nx = 1130                        # Grid points
+Nx = 8000                        # Grid points
 Ny = Nx
 Nz = 512
 tmax = 20                # End of propagation
 dt = 0.0001                # Evolution step
-xmax = 10 * a_z   * 1e2               # x-window size
+xmax =2*1e2 * a_z                # x-window size
 ymax = xmax                    # y-window size
 zmax = 40 * a_z                     # x-window size
 images = 20                # number of .png images
@@ -58,9 +58,11 @@ eta = 1/2 + 1/beta + 2/alpha
 muq = gamma(eta + 3/2)/gamma(1  + 2/alpha)/gamma(1 + 1/beta)*(g3d * U0**(2/alpha) * U1**(1/beta) / 2*np.pi )
 muq = muq**(2/(2*eta + 1))
 
+muq = ((beta + 1)*g3d/2/beta)**(beta/(1+beta)) *U1**(1/(beta+1))
 
-V0 = 500 * hbar * omega_z
-sigma = 5* np.sqrt(2) * a_z
+
+V0 = 100 * hbar * omega_z
+sigma = 0.632* np.sqrt(2) * a_z
 
 def potential(x,y,z):
     U_z = U1 *z**(beta)

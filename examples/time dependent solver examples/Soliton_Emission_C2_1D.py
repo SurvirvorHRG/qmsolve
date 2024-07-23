@@ -59,16 +59,16 @@ g_s = 2 * Ntot * omega_rho * a_s / omega_z  / L_z
 #g_s = g_s * hbar
 #g_s = 500
 
-Nx = 2000                        # Grid points
+Nx = 3000                        # Grid points
 Ny = Nx
-tmax = 5                # End of propagation
-dt = 0.00001                # Evolution step
-xmax = 2                   # x-window size
+tmax = 20                # End of propagation
+dt = 0.0001                # Evolution step
+xmax = 20                   # x-window size
 ymax = xmax                    # y-window size
 images = 500                # number of .png images
 absorb_coeff = 0        # 0 = periodic boundary
-l = 6
-k = 0.5
+l = 1
+k = 0.25
 
 #muq = 0.5 * (3/2)**(2/3) * g_s**(2/3)
 
@@ -150,7 +150,7 @@ sim.run(psi_0, total_time =tmax, dt = dt, store_steps = images,non_linear_functi
 visualization = init_visualization(sim)
 #visualization.plot1D(t = 0)
 #5visualization.animate(save_animation=True)
-#visualization.final_plot(L_norm = 1/L_z * 1e-3,Z_norm = 1/L_z * 1e-3,unit = omega_z * 1e-3,fixmaximum = 0.1)
+visualization.final_plot(L_norm = 1/L_z * 1e-3,Z_norm = 1/L_z * 1e-3,unit = omega_z * 1e-3,fixmaximum = 0.1)
 
 
 
@@ -160,7 +160,7 @@ visualization = init_visualization(sim)
 
 
 
-
+"""
 ###################################################################################
 #Subplots
 
@@ -345,14 +345,16 @@ visualization = init_visualization(sim)
 cont_rubidium = visualization.final_plot2(axs[3],L_norm = 1/L_z * 1e-3,Z_norm = 1/L_z * 1e-3,unit = omega_z * 1e-3,fixmaximum = 0.1)
 axs[3].set_title('$d)\ K = 1$',fontsize = font)
 
+# Adjust layout
+plt.tight_layout()
+
+
 # Add a single colorbar for all subplots
 cbar = fig.colorbar(cont_rubidium, ax=axs, orientation='vertical', fraction=0.02, pad=0.01)
 cbar.set_label('$|\psi|^2$', fontsize=44)
 cbar.ax.tick_params(labelsize=40)  # Increase colorbar tick label size
 
-# Adjust layout
-plt.tight_layout()
 
 # Display the plot
 plt.show()
-
+"""
