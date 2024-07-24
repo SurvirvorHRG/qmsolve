@@ -62,11 +62,11 @@ tmax = 20                # End of propagation
 dt = 0.0001                # Evolution step
 xmax = 10                    # x-window size
 ymax = xmax                    # y-window size
-images = 400                # number of .png images
+images = 200                # number of .png images
 
 #dt = tmax
 #images = 1
-U1 = 1e-3
+U1 = 1e-4
 l=3
 #muq = 0.5 * (3/2)**(2/3) * g_s**(2/3)
 beta = 2*l

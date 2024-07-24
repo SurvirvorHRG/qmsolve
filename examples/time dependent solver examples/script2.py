@@ -39,7 +39,7 @@ class readFile:
             toplot[toplot > fixmaximum] = fixmaximum
     
         cont = ax.contourf(xx / L_norm, tt / unit, toplot.T, 100, cmap=cm.jet, linewidth=0, antialiased=False)
-        ax.set_xlabel('$z\ (mm)$', fontsize=44)  # axes labels, title, plot and axes range
+        ax.set_xlabel('$z\ (\mu m)$', fontsize=44)  # axes labels, title, plot and axes range
         ax.set_ylabel('$t\ (ms)$', fontsize=44)
         ax.tick_params(axis='both', which='major', labelsize=40)  # Increase tick label size
         return cont
@@ -63,7 +63,7 @@ fig, axs = plt.subplots(1, 2, figsize=(30, 15))
 
 # Lithium
 rd_lithium = readFile('l=3.txt')
-cont_lithium = rd_lithium.final_plot2(axs[0], L_norm = 1/z_t * 1e-3,Z_norm = 1/z_t * 1e-3,unit = omega_z*1e-3)
+cont_lithium = rd_lithium.final_plot2(axs[0],  1e-6,Z_norm =1e-6,unit = omega_z*1e-3)
 axs[0].set_title('$(a)\ \ell = 3$', fontsize=font)
 
 # Sodium
@@ -71,7 +71,7 @@ mass_sodium = 22.9 * uaumass  # Sodium
 r_t_sodium = np.sqrt(hbar / mass_sodium / omega_rho)  # 3e-6 meters
 
 rd_sodium = readFile('l=6.txt')
-cont_sodium = rd_sodium.final_plot2(axs[1], L_norm = 1/z_t * 1e-3,Z_norm = 1/z_t * 1e-3,unit = omega_z*1e-3)
+cont_sodium = rd_sodium.final_plot2(axs[1],  1e-6,Z_norm =  1e-6,unit = omega_z*1e-3)
 axs[1].set_title('$(b)\ \ell = 6$', fontsize=font)
 
 

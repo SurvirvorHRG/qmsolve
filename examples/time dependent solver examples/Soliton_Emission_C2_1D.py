@@ -150,7 +150,7 @@ sim.run(psi_0, total_time =tmax, dt = dt, store_steps = images,non_linear_functi
 visualization = init_visualization(sim)
 #visualization.plot1D(t = 0)
 #5visualization.animate(save_animation=True)
-visualization.final_plot(L_norm = 1/L_z * 1e-3,Z_norm = 1/L_z * 1e-3,unit = omega_z * 1e-3,fixmaximum = 0.1)
+visualization.final_plot(L_norm = 1/L_z * 1e-6,Z_norm = 1/L_z * 1e-6,unit = omega_z * 1e-3,fixmaximum = 0.1)
 
 
 
@@ -158,9 +158,6 @@ visualization.final_plot(L_norm = 1/L_z * 1e-3,Z_norm = 1/L_z * 1e-3,unit = omeg
 
 
 
-
-
-"""
 ###################################################################################
 #Subplots
 
@@ -172,8 +169,8 @@ font = 44
 # Create subplots
 fig, axs = plt.subplots(1, 4, figsize=(50, 15))
 # Plot on each subplot using the modified final_plot function
-visualization.final_plot2(axs[0],L_norm = 1/L_z * 1e-3,Z_norm = 1/L_z * 1e-3,unit = omega_z * 1e-3,fixmaximum = 0.1)
-axs[0].set_title('$a)\ K = 0.25$',fontsize = font)
+visualization.final_plot2(axs[0],L_norm = 1/L_z * 1e-6,Z_norm = 1/L_z * 1e-6,unit = omega_z * 1e-3,fixmaximum = 0.1)
+axs[0].set_title('$(a)\ K = 0.25$',fontsize = font)
 
 
 # K = 0.5
@@ -229,8 +226,8 @@ sim.run(psi_2, total_time =tmax, dt = dt, store_steps = images,non_linear_functi
 
 
 visualization = init_visualization(sim)
-visualization.final_plot2(axs[1],L_norm = 1/L_z * 1e-3,Z_norm = 1/L_z * 1e-3,unit = omega_z * 1e-3,fixmaximum = 0.1)
-axs[1].set_title('$b)\ K = 0.5$',fontsize = font)
+visualization.final_plot2(axs[1],L_norm = 1/L_z * 1e-6,Z_norm = 1/L_z * 1e-6,unit = omega_z * 1e-3,fixmaximum = 0.1)
+axs[1].set_title('$(b)\ K = 0.5$',fontsize = font)
 
 # K = 0.75
 k = 0.75
@@ -285,8 +282,8 @@ sim.run(psi_3, total_time =tmax, dt = dt, store_steps = images,non_linear_functi
 
 
 visualization = init_visualization(sim)
-visualization.final_plot2(axs[2],L_norm = 1/L_z * 1e-3,Z_norm = 1/L_z * 1e-3,unit = omega_z * 1e-3,fixmaximum = 0.1)
-axs[2].set_title('$c)\ K = 0.75$',fontsize = font)
+visualization.final_plot2(axs[2],L_norm = 1/L_z * 1e-6,Z_norm = 1/L_z * 1e-6,unit = omega_z * 1e-3,fixmaximum = 0.1)
+axs[2].set_title('$(c)\ K = 0.75$',fontsize = font)
 
 
 # K = 1
@@ -342,8 +339,8 @@ sim.run(psi_4, total_time =tmax, dt = dt, store_steps = images,non_linear_functi
 
 
 visualization = init_visualization(sim)
-cont_rubidium = visualization.final_plot2(axs[3],L_norm = 1/L_z * 1e-3,Z_norm = 1/L_z * 1e-3,unit = omega_z * 1e-3,fixmaximum = 0.1)
-axs[3].set_title('$d)\ K = 1$',fontsize = font)
+cont_rubidium = visualization.final_plot2(axs[3],L_norm = 1/L_z * 1e-6,Z_norm = 1/L_z * 1e-6,unit = omega_z * 1e-3,fixmaximum = 0.1)
+axs[3].set_title('$(d)\ K = 1$',fontsize = font)
 
 # Adjust layout
 plt.tight_layout()
@@ -357,4 +354,4 @@ cbar.ax.tick_params(labelsize=40)  # Increase colorbar tick label size
 
 # Display the plot
 plt.show()
-"""
+

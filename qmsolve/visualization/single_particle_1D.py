@@ -398,7 +398,7 @@ class TimeVisualizationSingleParticle1D(TimeVisualization):
             toplot[toplot > fixmaximum] = fixmaximum
     
         cont = ax.contourf(xx / L_norm, tt / unit, toplot.T, 100, cmap=cm.jet, linewidth=0, antialiased=False)
-        ax.set_xlabel('$z\ (mm)$', fontsize=44)  # axes labels, title, plot and axes range
+        ax.set_xlabel('$z\ (\mu m)$', fontsize=44)  # axes labels, title, plot and axes range
         ax.set_ylabel('$t\ (ms)$', fontsize=44)
         ax.tick_params(axis='both', which='major', labelsize=40)  # increase tick label size
         return cont
