@@ -30,7 +30,7 @@ omega_rho = 2*np.pi*160
 omega_z = 2*np.pi*6.8
 alpha = 2*l
 beta = 2*l
-K = 0.5**(beta)
+K = 0.5e8
 U0 = K * mass * omega_rho**2
 U1 = K * mass * omega_z**2
 print('omega_rho =', omega_rho)
@@ -40,15 +40,15 @@ print('U1 =', U1)
 a_p = np.sqrt(hbar/mass/omega_rho)
 a_z = np.sqrt(hbar/mass/omega_z)
 a_s = 94.7*a_0
-g3d = 4*Ntot*np.pi*hbar**2*a_s / mass
+#g3d = 4*Ntot*np.pi*hbar**2*a_s / mass/100
+g3d = 500 * hbar * omega_rho * a_p * 2*np.pi*(a_z**2)
 
-
-Nx = 8000                        # Grid points
+Nx = 1064                        # Grid points
 Ny = Nx
 Nz = 512
 tmax = 20                # End of propagation
 dt = 0.0001                # Evolution step
-xmax =2*1e2 * a_z                # x-window size
+xmax =40* a_z                # x-window size
 ymax = xmax                    # y-window size
 zmax = 40 * a_z                     # x-window size
 images = 20                # number of .png images
@@ -132,5 +132,5 @@ visualization.plot1D(t = 0)
 #5visualization.animate(save_animation=True)
 visualization.final_plot(L_norm = 1e-3,Z_norm = 1e-3,unit = 1e-3)
 
-for i in range(101):
-    visualization.plot1D(i * total_t / 100,L_norm = 1e-3,Z_norm = 1e-3,unit = 1e-3)
+#for i in range(101):
+    #visualization.plot1D(i * total_t / 100,L_norm = 1e-3,Z_norm = 1e-3,unit = 1e-3)

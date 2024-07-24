@@ -44,7 +44,7 @@ a_s = 94.7*a_0
 g3d = 100 * hbar * omega_rho * a_p * 2*np.pi*(a_z**2)
 
 
-Nx = 1064                        # Grid points
+Nx = 512                       # Grid points
 Ny = Nx
 Nz = 512
 tmax = 20                # End of propagation
@@ -60,15 +60,16 @@ eta = 1/2 + 1/beta + 2/alpha
 muq = gamma(eta + 3/2)/gamma(1  + 2/alpha)/gamma(1 + 1/beta)*(g3d * U0**(2/alpha) * U1**(1/beta) / 2*np.pi )
 muq = muq**(2/(2*eta + 1))
 
+#muq = ((alpha + 1)*g3d/2/alpha)**(alpha/(1+alpha)) *U0**(1/(alpha+1))
 
-V0 = 500 * hbar * omega_rho
-sigma = 0.5*0.632 * np.sqrt(2) * a_p
+V0 = 100 * hbar * omega_rho
+sigma = 0.632 * np.sqrt(2) * a_p
 #sigma =5 * np.sqrt(2) * a_p
 
 def potential(x,y,z):
     rho = np.sqrt(x**2 + y**2)
     U_rho = U0 *rho**(alpha)
-    V_rho = V0 * np.exp(-2*(rho/sigma)**2)
+    V_rho = V0 * np.exp(-2*(rho/sigma)**2) 
     return U_rho + V_rho
     
 
@@ -100,6 +101,7 @@ def non_linear(psi,t,particle):
     rho = np.sqrt(particle.x**2 + particle.y**2)
     if t < 0.07:
         V = V0 * np.exp(-2*(rho/sigma)**2)
+        #V = V0 * np.exp(-2*(particle.x/sigma)**2)
     else:
         V = 0
         
@@ -127,7 +129,7 @@ stored = 400
 #stored = 1
 #dt_t = total_t
 
-sim.run(psi_0, total_time = total_t, dt = dt_t, store_steps = stored,non_linear_function=None,norm = False)
+sim.run(psi_0, total_time = total_t, dt = dt_t, store_steps = stored,non_linear_function=None,norm = False,absorb_coeff=20)
 
 #=========================================================================================================#
 # Finally, we visualize the time dependent simulation
@@ -136,10 +138,10 @@ sim.run(psi_0, total_time = total_t, dt = dt_t, store_steps = stored,non_linear_
 visualization = init_visualization(sim)
 visualization.plotSI(t = 0)
 
-for i in range(201):
-    visualization.plotSI(i * total_t/200)
+#for i in range(201):
+    #visualization.plotSI(i * total_t/200)
 #5visualization.animate(save_animation=True)
-#visualization.final_plot(L_norm = 1,Z_norm = 1,unit = 1)
+visualization.final_plot_x(L_norm = 1,Z_norm = 1,unit = 1)
 """
 import matplotlib.pyplot as plt
 plt.style.use("default")

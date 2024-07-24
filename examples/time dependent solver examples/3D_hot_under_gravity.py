@@ -99,7 +99,7 @@ def pot(particle):
     V = np.zeros_like(particle.x)
     return V
 
-def gravity_potential(particle):
+def gravity_potential(particle,params):
     V = g*mass*particle.z
     return V
 
@@ -108,7 +108,7 @@ def gravity_potential(particle):
 #build the Hamiltonian of the system
 H = Hamiltonian(particles=SingleParticle(m = mass),
                 potential=gravity_potential,
-                spatial_ndim=3, N=128,Nz = 512,extent=40*w_o,z_extent = 100*lambda_)
+                spatial_ndim=3, N=128,Nz = 512,extent=10*w_o,z_extent = 10*lambda_)
 
 
 def initial_wavefunction(particle):

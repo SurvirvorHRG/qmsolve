@@ -104,7 +104,13 @@ class SplitStepCupy(Method):
         self.simulation.dt = dt_store/Nt_per_store_step
 
 
-        Ψ = cp.zeros((store_steps + 1, *([self.H.N] *self.H.ndim )), dtype = cp.complex128)
+        #Ψ = cp.zeros((store_steps + 1, *([self.H.N] *self.H.ndim )), dtype = cp.complex128)
+       # Ψ[0] = cp.array(initial_wavefunction(self.H.particle_system))
+        Ψ = 0
+        if self.H.ndim == 3:
+            Ψ = cp.zeros((store_steps + 1, self.H.N,self.H.N, self.H.Nz), dtype = cp.complex128)
+        else:
+            Ψ = cp.zeros((store_steps + 1, *([self.H.N] *self.H.ndim )), dtype = cp.complex128)
         Ψ[0] = cp.array(initial_wavefunction(self.H.particle_system))
 
 

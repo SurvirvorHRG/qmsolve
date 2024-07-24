@@ -152,7 +152,9 @@ class readFile:
         
 #################################################################################################
 #Plotting
-rd_file = readFile('2D_l=1.txt')
+#rd_file = readFile('2D_l=1.txt')
+
+rd_file = readFile('l=1_1064.txt')
         
 
 from matplotlib.ticker import FuncFormatter

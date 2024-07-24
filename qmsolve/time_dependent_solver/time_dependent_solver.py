@@ -76,10 +76,12 @@ class TimeSimulation:
 
 
 
-    def run(self, initial_wavefunction, total_time, dt, store_steps = 1, non_linear_function = None,norm = False, g = 1):
+    def run(self, initial_wavefunction, total_time, dt, store_steps = 1, non_linear_function = None,norm = False, g = 1,absorb_coeff = 0):
         """
         """
         if self.method_name == "split-step" or self.method_name == "split-step-cupy":
             self.method.run(initial_wavefunction, total_time, dt, store_steps)
+        elif self.method_name == "nonlinear-split-step" or self.method_name == "nonlinear-split-step-cupy":
+            self.method.run(initial_wavefunction, total_time, dt, store_steps,absorb_coeff)
         else:
             self.method.run(initial_wavefunction, total_time, dt, store_steps)

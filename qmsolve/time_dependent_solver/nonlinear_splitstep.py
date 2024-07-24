@@ -51,11 +51,22 @@ class NonlinearSplitStepMethod():
         self._exp_potential = None
         self._kinetic = None
         self._exp_kinetic = None
+        self._exp_border = None
         self._norm = False
         self._dt = 0
         self._nonlinear = lambda psi: psi
         self._hbar = hbar
         #self.set_timestep(timestep)
+    
+    # Introduces an absorbing shell at the border of the computational window
+    def set_absorb1D(self,x,y,xmax,ymax,dt,absorb_coeff):
+    	wx = xmax/20
+    	self._exp_border = np.exp(-absorb_coeff*(2-np.tanh((x+xmax)/wx)+np.tanh((x-xmax)/wx))*dt);
+        
+    def set_absorb2D(self,x,y,xmax,ymax,dt,absorb_coeff):
+        wx = xmax/40
+        wy = ymax/40
+        self._exp_border = np.exp(-absorb_coeff*(4-np.tanh((x+xmax)/wx)+np.tanh((x-xmax)/wx)-np.tanh((y+ymax)/wy)+np.tanh((y-ymax)/wy))*dt);
 
     def set_timestep(self, timestep: Union[float, np.complex128]) -> None:
         """
@@ -84,7 +95,7 @@ class NonlinearSplitStepMethod():
         psi_p = np.fft.fftn(psi*self._exp_potential)
         psi_p = psi_p*self._exp_kinetic
         psi = np.fft.ifftn(psi_p)*self._exp_potential
-        psi = self._nonlinear(psi,t,particle)
+        psi = self._exp_border*self._nonlinear(psi,t,particle)
         if self._norm:
             psi = psi/np.sqrt(np.sum(psi*np.conj(psi)))
         return psi
@@ -133,7 +144,7 @@ class NonlinearSplitStep(Method):
             self.split_step = NonlinearSplitStepMethod(self.H.potential(self.H.particle_system,self.H._params),(L,L,Z),1e-5 * seconds,m = self.H.particle_system.m)
 
 
-    def run(self, initial_wavefunction, total_time, dt, store_steps = 1):
+    def run(self, initial_wavefunction, total_time, dt, store_steps = 1,absorb_coeff = 0):
         import numpy as np
         import matplotlib.pyplot as plt
         import matplotlib.animation as animation
@@ -141,6 +152,12 @@ class NonlinearSplitStep(Method):
         
         #print(dt)
         self.split_step.set_timestep(dt)
+        
+        if self.H.spatial_ndim == 1:
+            self.split_step.set_absorb1D(self.H.particle_system.x,0,self.H.extent,self.H.extent,dt,absorb_coeff)
+        elif self.H.spatial_ndim == 2:
+            self.split_step.set_absorb2D(self.H.particle_system.x,self.H.particle_system.y,self.H.extent,self.H.extent,dt,absorb_coeff)
+            
         self.simulation.store_steps = store_steps
         dt_store = total_time/store_steps
         self.simulation.total_time = total_time
@@ -211,11 +228,20 @@ class NonlinearSplitStepMethodCupy():
         self._exp_potential = None
         self._kinetic = None
         self._exp_kinetic = None
+        self._exp_border = None
         self._norm = False
         self._dt = 0
         self._hbar = hbar
         #self.set_timestep(timestep)
         self._nonlinear = lambda psi: psi
+        
+        
+    def set_absorb2D(self,x,y,xmax,ymax,dt,absorb_coeff):
+        x = cp.array(x)
+        y = cp.array(y)
+        wx = xmax/40
+        wy = ymax/40
+        self._exp_border = cp.exp(-absorb_coeff*(4-cp.tanh((x+xmax)/wx)+cp.tanh((x-xmax)/wx)-cp.tanh((y+ymax)/wy)+cp.tanh((y-ymax)/wy))*dt);
 
     def set_timestep(self, timestep: Union[float, np.complex128]) -> None:
         """
@@ -244,7 +270,7 @@ class NonlinearSplitStepMethodCupy():
         psi_p = cp.fft.fftn(psi*cp.array(self._exp_potential))
         psi_p = psi_p*self._exp_kinetic
         psi = cp.fft.ifftn(psi_p)*self._exp_potential
-        psi = cp.array(self._nonlinear(psi,t,particle))
+        psi = self._exp_border*cp.array(self._nonlinear(psi,t,particle))
         if self._norm:
             psi = psi / np.amax(np.abs(psi))
             #psi = psi/cp.sqrt(cp.sum(psi*cp.conj(psi)))
@@ -287,11 +313,15 @@ class NonlinearSplitStepCupy(Method):
 
 
 
-    def run(self, initial_wavefunction, total_time, dt, store_steps = 1):
+    def run(self, initial_wavefunction, total_time, dt, store_steps = 1,absorb_coeff = 0):
 
         import cupy as cp 
         #self.p2 = cp.array(self.p2)
         self.split_step.set_timestep(dt)
+        
+        if self.H.spatial_ndim == 2:
+            self.split_step.set_absorb2D(self.H.particle_system.x,self.H.particle_system.y,self.H.extent,self.H.extent,dt,absorb_coeff)
+            
         self.simulation.store_steps = store_steps
         dt_store = total_time/store_steps
         self.simulation.total_time = total_time
