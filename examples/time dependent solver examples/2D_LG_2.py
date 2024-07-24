@@ -28,20 +28,19 @@ l = 1
 Ntot= 20e4
 omega_rho = 2*np.pi*6.8
 omega_z = 2*np.pi*160
-U0 = 0.5 * mass * omega_rho**2
-U1 = 0.5 * mass * omega_z**2
+
 alpha = 2*l
 beta = 2*l
 print('omega_rho =', omega_rho)
 print('omega_z =', omega_z)
-print('U0 =', U0)
-print('U1 =', U1)
+
 a_p = np.sqrt(hbar/mass/omega_rho)
 a_z = np.sqrt(hbar/mass/omega_z)
 a_s = 94.7*a_0
-#g3d = 4*Ntot*np.pi*hbar**2*a_s / mass /16
+g3d = 4*Ntot*np.pi*hbar**2*a_s / mass 
 
-g3d = 100 * hbar * omega_rho * a_p * 2*np.pi*(a_z**2)
+#g3d = 500 * hbar * omega_rho * a_p * 2*np.pi*(a_z**2)
+g2d = g3d/np.sqrt(2*np.pi)/a_z
 
 
 Nx = 512                       # Grid points
@@ -49,20 +48,24 @@ Ny = Nx
 Nz = 512
 tmax = 20                # End of propagation
 dt = 0.0001                # Evolution step
-xmax = 10 * a_p                   # x-window size
+xmax = 20 * a_p                   # x-window size
 #xmax = 2* 1e3 * a_p
 ymax = xmax                    # y-window size
 zmax = 40 * a_z                     # x-window size
 images = 20                # number of .png images
 
-
+k = 0.5
+U0 = k * mass * omega_rho**2
+U1 = k * mass * omega_z**2
+print('U0 =', U0)
+print('U1 =', U1)
 eta = 1/2 + 1/beta + 2/alpha
 muq = gamma(eta + 3/2)/gamma(1  + 2/alpha)/gamma(1 + 1/beta)*(g3d * U0**(2/alpha) * U1**(1/beta) / 2*np.pi )
 muq = muq**(2/(2*eta + 1))
 
-#muq = ((alpha + 1)*g3d/2/alpha)**(alpha/(1+alpha)) *U0**(1/(alpha+1))
+muq = ((alpha + 1)*g2d/2/alpha)**(alpha/(1+alpha)) *U0**(1/(alpha+1))
 
-V0 = 500 * hbar * omega_rho
+V0 = 100 * hbar * omega_rho
 sigma = 0.632 * np.sqrt(2) * a_p
 #sigma =5 * np.sqrt(2) * a_p
 
@@ -126,8 +129,8 @@ sim.method.split_step.set_nonlinear_term(non_linear)
 total_t = 0.47
 dt_t = 1e-5
 stored = 400
-#stored = 1
-#dt_t = total_t
+stored = 1
+dt_t = total_t
 
 sim.run(psi_0, total_time = total_t, dt = dt_t, store_steps = stored,non_linear_function=None,norm = False,absorb_coeff=20)
 

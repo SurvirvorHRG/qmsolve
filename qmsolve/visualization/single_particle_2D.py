@@ -550,7 +550,7 @@ class TimeVisualizationSingleParticle2D(TimeVisualization):
         mlab.show()
         
         
-    def final_plot_x(self,L_norm = 1, Z_norm = 1,unit = 1, figsize=(15, 15),time="ms"):
+    def final_plot_x(self,L_norm = 1, Z_norm = 1,unit = 1, figsize=(15, 15),time="ms",fixmaximum = 0,fixminimum=0):
         
         from mpl_toolkits.mplot3d import Axes3D
         
@@ -567,6 +567,9 @@ class TimeVisualizationSingleParticle2D(TimeVisualization):
         toplot= np.abs(self.simulation.Ψ_plot[:,mid,:])
         toplot = toplot.T
         
+        if fixminimum>0:
+            toplot[toplot<fixminimum]=0
+        
         from matplotlib import cm
         plt.contourf(zz/Z_norm, tt/unit, toplot, 100, cmap=cm.jet, linewidth=0, antialiased=False)
         L = self.simulation.H.extent/2/L_norm
@@ -579,7 +582,7 @@ class TimeVisualizationSingleParticle2D(TimeVisualization):
         cbar.set_label('$|\psi|^2$',fontsize=14)
         plt.show()      # Displays figure on screen
         
-    def final_plot_y(self,L_norm = 1, Z_norm = 1,unit = 1, figsize=(15, 15),time="ms"):
+    def final_plot_y(self,L_norm = 1, Z_norm = 1,unit = 1, figsize=(15, 15),time="ms",fixmaximum = 0,fixminimum=0):
         
         from mpl_toolkits.mplot3d import Axes3D
         
@@ -595,6 +598,9 @@ class TimeVisualizationSingleParticle2D(TimeVisualization):
         mid = int(self.simulation.H.N / 2) - 1
         toplot= np.abs(self.simulation.Ψ_plot[:,:,mid])
         toplot = toplot.T
+        
+        if fixminimum>0:
+            toplot[toplot<fixminimum]=0
         
         from matplotlib import cm
         plt.contourf(zz/Z_norm, tt/unit, toplot, 100, cmap=cm.jet, linewidth=0, antialiased=False)

@@ -51,7 +51,7 @@ a_s = 94.7*a_0
 #g_s = 2 * Ntot * omega_rho * a_s / omega_z  / L_z
 #g_s = 2 * Ntot * omega_rho * a_s / omega_z  / L_z
 #g_s = g_s * hbar
-g_s = 300 * hbar * omega_z * L_z
+g_s = 500 * hbar * omega_z * L_z
 
 Nx = 4096                        # Grid points
 Ny = Nx

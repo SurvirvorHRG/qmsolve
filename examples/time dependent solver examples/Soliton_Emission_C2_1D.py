@@ -157,7 +157,7 @@ visualization.final_plot(L_norm = 1/L_z * 1e-6,Z_norm = 1/L_z * 1e-6,unit = omeg
 
 
 
-
+"""
 ###################################################################################
 #Subplots
 
@@ -355,3 +355,4 @@ cbar.ax.tick_params(labelsize=40)  # Increase colorbar tick label size
 # Display the plot
 plt.show()
 
+"""
