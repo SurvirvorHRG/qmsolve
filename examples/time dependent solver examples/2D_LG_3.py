@@ -24,36 +24,41 @@ a_0 = 4 * np.pi * epsilon0 * hbar**2 / echarge / echarge / emass
 #mass=7.016004 * uaumass # Lithium
 mass=86.909  # Atoms mass Cs 132.905 , Rb 86.909 (united atomic unit of mass)
 mass  = mass * uaumass
-l = 1
+
 Ntot= 20e4
 omega_rho = 2*np.pi*6.8
 omega_z = 2*np.pi*160
-U0 = 0.5 * mass * omega_rho**2
-U1 = 0.5 * mass * omega_z**2
-alpha = 2*l
-beta = 2*l
+
+
 print('omega_rho =', omega_rho)
 print('omega_z =', omega_z)
-print('U0 =', U0)
-print('U1 =', U1)
+
 a_p = np.sqrt(hbar/mass/omega_rho)
 a_z = np.sqrt(hbar/mass/omega_z)
 a_s = 94.7*a_0
-#g3d = 4*Ntot*np.pi*hbar**2*a_s / mass /16
+g3d = 4*Ntot*np.pi*hbar**2*a_s / mass
+#g3d = 500 * hbar * omega_rho * a_p * 2*np.pi*(a_z**2)
 
-g3d = 100 * hbar * omega_rho * a_p * 2*np.pi*(a_z**2)
 
-
-Nx = 1064                        # Grid points
+Nx = 512                     # Grid points
 Ny = Nx
-Nz = 512
 tmax = 20                # End of propagation
 dt = 0.0001                # Evolution step
-xmax = 10 * a_p                   # x-window size
+xmax = 20 * a_p                  # x-window size
 #xmax = 2* 1e3 * a_p
-ymax = xmax                    # y-window size
-zmax = 40 * a_z                     # x-window size
-images = 20                # number of .png images
+
+l = 6
+alpha = 2*l
+beta = 2*l
+k = 0.5e44
+# l = 3 : k = 0.5e18
+
+#k=0.5e17
+#♠k=0.5
+U0 = k * mass * omega_rho**2
+U1 = k * mass * omega_z**2
+print('U0 =', U0)
+print('U1 =', U1)
 
 
 eta = 1/2 + 1/beta + 2/alpha
@@ -61,14 +66,20 @@ muq = gamma(eta + 3/2)/gamma(1  + 2/alpha)/gamma(1 + 1/beta)*(g3d * U0**(2/alpha
 muq = muq**(2/(2*eta + 1))
 
 
-V0 = 500 * hbar * omega_rho
+
+#muq = (g3d * U0**(3/alpha) * (l+1)*(alpha+2) / 2 / np.pi / l)**(alpha/(alpha + 3))
+
+
+V0 = 1000 * hbar * omega_rho
 sigma = 0.632 * np.sqrt(2) * a_p
 #sigma =5 * np.sqrt(2) * a_p
 
 def potential(x,y,z):
     rho = np.sqrt(x**2 + y**2)
     U_rho = U0 *rho**(alpha)
-    V_rho = V0 * np.exp(-2*(rho/sigma)**2)
+    V_rho = V0 * np.exp(-2*(rho/sigma)**2) 
+    #V_rho = V0 * np.exp(-2*(x/sigma)**2) + V0 * np.exp(-2*(y/sigma)**2) 
+    #V_rho = V0 * np.exp(-2*(x/sigma)**2) 
     return U_rho + V_rho
     
 
@@ -91,15 +102,16 @@ def V(particle,params):
     return U_rho
 
 
-def interaction(psi,t,particle):
-    return g3d*abs(psi)*2
 
 def non_linear(psi,t,particle):
     import cupy as cp
     V = 0
     rho = np.sqrt(particle.x**2 + particle.y**2)
-    if t < 0.07:
+    if t < 0.02:
         V = V0 * np.exp(-2*(rho/sigma)**2)
+        #V = V0 * np.exp(-2*(particle.x/sigma)**2) + V0 * np.exp(-2*(particle.y/sigma)**2) 
+        #V = V0 * np.exp(-2*(particle.x/sigma)**2
+        #V = V0 * np.exp(-2*(particle.x/sigma)**2)
     else:
         V = 0
         
@@ -121,9 +133,9 @@ sim = TimeSimulation(hamiltonian = H, method = "nonlinear-split-step-cupy")
 sim.method.split_step._hbar = hbar
 sim.method.split_step.set_nonlinear_term(non_linear)
 
-total_t = 0.47
-dt_t = 1e-5
-stored = 400
+total_t = 0.20
+dt_t = 1e-5 
+stored = 200
 #stored = 1
 #dt_t = total_t
 
@@ -136,7 +148,11 @@ sim.run(psi_0, total_time = total_t, dt = dt_t, store_steps = stored,non_linear_
 visualization = init_visualization(sim)
 visualization.plotSI(t = 0)
 
-for i in range(201):
-    visualization.plotSI(i * total_t/200)
+#for i in range(201):
+    #visualization.plotSI(i * total_t/200)
 #5visualization.animate(save_animation=True)
-#visualization.final_plot(L_norm = 1,Z_norm = 1,unit = 1)
+visualization.final_plot_x(L_norm = 1,Z_norm = 1,unit = 1)
+
+
+#for i in range(21):
+    #visualization.plot3D(i * total_t/20)

@@ -113,41 +113,7 @@ class readFile:
         #mlab.savefig(file)
         mlab.show()
         
-        
-    def final_plot_xyt2(self,L_norm = 1, Z_norm = 1,unit = 1,time="ms",fixmaximum = 0):
-        plt.style.use("default")
-        total_time = self.total_time
-        tvec=np.linspace(0,total_time,self.store_steps + 1)
-        x = np.linspace(-self.xmax/2, self.xmax/2, self.Nx)
-        y = np.linspace(-self.xmax/2, self.xmax/2, self.Nx)
-        xx,yy,tt=np.meshgrid(x,y,tvec)
-        toplot = self.psi_norm
-        toplot = toplot.T
-        
-
     
-        
-        mlab.figure(bgcolor=(0,0,0), size=(1400, 1400))
-        L = self.xmax/2/L_norm
-        N = self.Nx
-        
-        contour = mlab.contour3d(yy,xx,tt,toplot,colormap='jet')
-              
-        #mlab.outline()
-         
-        x_latex = 'y'
-        y_latex = 'x'
-        z_latex = 't'
-        
-         
-         
-        mlab.axes(xlabel=x_latex, ylabel=y_latex, zlabel=z_latex,nb_labels=3 , ranges = (-L,L,-L,L,0,total_time) )
-        #mlab.axes(xlabel='x [Å]', ylabel='y [Å]',nb_labels=6 , ranges = (-L,L,-L,L,-Z,Z) )
-        #colorbar = mlab.colorbar(orientation = 'vertical')
-        #colorbar.scalar_bar_representation.position = [0.85, 0.1]
-        colorbar = mlab.colorbar(contour, orientation='vertical', title='Intensity', label_fmt='%.1f')
-        colorbar.scalar_bar_representation.position = [0.85, 0.1]
-        mlab.show()
         
         
 #################################################################################################
@@ -157,10 +123,12 @@ class readFile:
 rd_file = readFile('2D_l=3.txt')
         
 
+
+
 from matplotlib.ticker import FuncFormatter
-font = 74
-subfont = 70
-def plot(rd, ax, t = 0, L_norm=1, Z_norm=1, unit=1, time="ms", fixmaximum=0):
+font = 54
+subfont = 50
+def plot(rd, ax, t = 0, L_norm=1, Z_norm=1, unit=1, time="ms", fixmaximum=0,n=0):
     plt.style.use("default")
     x = np.linspace(-rd.xmax/2, rd.xmax/2, rd.Nx)
     y = np.linspace(-rd.xmax/2, rd.xmax/2, rd.Nx)
@@ -173,14 +141,15 @@ def plot(rd, ax, t = 0, L_norm=1, Z_norm=1, unit=1, time="ms", fixmaximum=0):
     from matplotlib import cm
     cont = ax.contourf(x/L_norm, y/L_norm, toplot, 100, cmap=cm.jet, linewidth=0, antialiased=False)
     cbar = plt.colorbar(cont,ax=ax)
-    ax.set_xlabel("$x\ (mm)$",fontsize = font)               # choose axes labels
-    ax.set_ylabel("$y\ (mm)$",fontsize = font)
-    cbar.set_label('$|\psi|^2$',fontsize = font)
+    #ax.set_xlabel("$x\ (mm)$",fontsize = font)               # choose axes labels
+    #ax.set_ylabel("$y\ (mm)$",fontsize = font)
+    if n == 1 or n==3:
+        cbar.set_label('$|\psi|^2$',fontsize = font)
     ax.tick_params(axis='both', which='major', labelsize=subfont)  # Increase tick label size
     cbar.ax.tick_params(labelsize=subfont)
         # Define a function to format the colorbar ticks
     def format_func(value, tick_number):
-        return f'{value:.2f}'  # Adjust the number of decimal places here
+        return f'{value:.1f}'  # Adjust the number of decimal places here
     
     formatter = FuncFormatter(format_func)
     cbar.ax.yaxis.set_major_formatter(formatter)
@@ -245,44 +214,9 @@ def final_plot_xyt3(rd,L_norm = 1, Z_norm = 1,unit = 1, contrast_vals= [0.1, 0.2
     #mlab.savefig(file)
     mlab.show()
     
-    
-def final_plot_xyt2(rd,L_norm = 1, Z_norm = 1,unit = 1,time="ms",fixmaximum = 0):
-    plt.style.use("default")
-    total_time = rd.total_time
-    tvec=np.linspace(0,total_time,rd.store_steps + 1)
-    x = np.linspace(-rd.xmax/2, rd.xmax/2, rd.Nx)
-    y = np.linspace(-rd.xmax/2, rd.xmax/2, rd.Nx)
-    xx,yy,tt=np.meshgrid(x,y,tvec)
-    toplot = rd.psi_norm
-    toplot = toplot.T
-    
 
 
-    
-    mlab.figure(bgcolor=(0,0,0), size=(1400, 1400))
-    L = rd.xmax/2/L_norm
-    N = rd.Nx
-    
-    contour = mlab.contour3d(yy,xx,tt,toplot,colormap='jet')
-          
-    mlab.outline()
-     
-    x_latex = 'y'
-    y_latex = 'x'
-    z_latex = 't'
-    
-     
-     
-    mlab.axes(xlabel=x_latex, ylabel=y_latex, zlabel=z_latex,nb_labels=3 , ranges = (-L,L,-L,L,0,total_time) )
-    #mlab.axes(xlabel='x [Å]', ylabel='y [Å]',nb_labels=6 , ranges = (-L,L,-L,L,-Z,Z) )
-    #colorbar = mlab.colorbar(orientation = 'vertical')
-    #colorbar.scalar_bar_representation.position = [0.85, 0.1]
-    colorbar = mlab.colorbar(contour, orientation='vertical', title='Intensity', label_fmt='%.1f')
-    colorbar.scalar_bar_representation.position = [0.85, 0.1]
-    mlab.show()
-
-
-def final_plot_x(rd,L_norm = 1, Z_norm = 1,unit = 1, figsize=(15, 15),time="ms"):
+def final_plot_x(rd,L_norm = 1, Z_norm = 1,unit = 1, figsize=(15, 15),time="ms",fixmaximum = 0):
     
     from mpl_toolkits.mplot3d import Axes3D
     
@@ -300,6 +234,9 @@ def final_plot_x(rd,L_norm = 1, Z_norm = 1,unit = 1, figsize=(15, 15),time="ms")
     mid = int(rd.Nx / 2) - 1
     toplot= rd.psi_norm[:,mid,:]
     toplot = toplot.T
+
+    if fixmaximum>0:
+        toplot[toplot>fixmaximum]=fixmaximum
     
     from matplotlib import cm
     plt.contourf(zz/Z_norm, tt/unit, toplot, 100, cmap=cm.jet, linewidth=0, antialiased=False)
@@ -308,95 +245,10 @@ def final_plot_x(rd,L_norm = 1, Z_norm = 1,unit = 1, figsize=(15, 15),time="ms")
 
     cbar=plt.colorbar()               # colorbar
     
-    plt.xlabel('$x\ (mm)$')               # choose axes labels, title of the plot and axes range
+    plt.xlabel('$x\ (\mu m)$')               # choose axes labels, title of the plot and axes range
     plt.ylabel('$t\ (ms)$')
     cbar.set_label('$|\psi(x,y=0,t)|^2$',fontsize=14)
     plt.show()      # Displays figure on screen
-    
-    
-def final_plot_3D_x(rd,L_norm = 1, Z_norm = 1,unit = 1, figsize=(15, 15),time="ms"):
-    
-    from mpl_toolkits.mplot3d import Axes3D
-    x = np.linspace(-rd.xmax/2, rd.xmax/2, rd.Nx)
-    y = np.linspace(-rd.xmax/2, rd.xmax/2, rd.Nx)
-    xx,yy=np.meshgrid(x,y)
-    z = xx[0,:]
-    total_time = rd.total_time
-    tvec=np.linspace(0,total_time,rd.store_steps+1)
-    tt,zz=np.meshgrid(tvec,z)
-
-    
-    # Generates the plot
-    mid = int(rd.Nx / 2) - 1
-    toplot= rd.psi_norm[:,mid,:]
-    toplot = toplot.T
-    
-    mlab.figure(fgcolor=(0.1,0.1,0.1),bgcolor=(1,1,1),size=(700, 700))
-    L = rd.xmax/2/L_norm
-    N = rd.Nx
-    
-    #surf = mlab.mesh(zz/Z_norm/Å,tt/unit,toplot,colormap='jet')
-    surf = mlab.surf(toplot,warp_scale="auto",colormap='jet')
-    #surf.module_manager.scalar_lut_manager.reverse_lut = True
-    #surf = mlab.surf(toplot,warp_scale="auto",colormap='jet')
-    
-    #surf = mlab.surf(psi[:,:,49],colormap='jet')
-    #mlab.colorbar(surf,title='psi',orientation='vertical')  
-          
-
-    #mlab.axes(xlabel=x_latex, ylabel=y_latex, zlabel=z_latex,nb_labels=3 , ranges = (-L,L,0,total_time/unit,np.min(toplot),np.max(toplot)) )
-    ax = mlab.axes(xlabel='$z\ (mm)$', ylabel='$t\ (s)$', zlabel='',nb_labels=3 , ranges = (-L,L,0,total_time/unit,np.min(toplot),np.max(toplot)) )
-    #ax.axes.y_axis_visibility = False
-    ax.axes.font_factor = 1.3
-    ax.label_text_property.font_family = 'times'
-    ax.title_text_property.font_family = 'times'
-    ax.axes.label_format = '%-#6.1g'
-    #colorbar = mlab.colorbar(orientation = 'vertical')
-    #colorbar.scalar_b
-    
-def final_plot3D(self,L_norm = 1, Z_norm = 1,unit = 1):
-    
-    from mpl_toolkits.mplot3d import Axes3D
-    from matplotlib import cm
-
-    
-    total_time = self.total_time
-    tvec = np.linspace(0, total_time, self.store_steps + 1)
-    x = np.linspace(-self.xmax / 2, self.xmax / 2, self.Nx)
-    tt, xx = np.meshgrid(tvec, x)
-    toplot = np.abs(self.psi_norm) ** 2
-
-    toplot = toplot.T
-    """
-    max_val = np.max(toplot)
-    min_val = np.min(toplot)
-    
-    # Reverse the values
-    toplot = max_val - (toplot - min_val)
-    """
-    mlab.figure(fgcolor=(0.1,0.1,0.1),bgcolor=(1,1,1),size=(700, 700))
-    L = self.xmax/2/L_norm
-    N = self.Nx
-    
-    #surf = mlab.mesh(zz/Z_norm/Å,tt/unit,toplot,colormap='jet')
-    surf = mlab.surf(toplot,warp_scale="auto",colormap='jet')
-    #surf.module_manager.scalar_lut_manager.reverse_lut = True
-    #surf = mlab.surf(toplot,warp_scale="auto",colormap='jet')
-    
-    #surf = mlab.surf(psi[:,:,49],colormap='jet')
-    #mlab.colorbar(surf,title='psi',orientation='vertical')  
-          
-
-    #mlab.axes(xlabel=x_latex, ylabel=y_latex, zlabel=z_latex,nb_labels=3 , ranges = (-L,L,0,total_time/unit,np.min(toplot),np.max(toplot)) )
-    ax = mlab.axes(xlabel='$z\ (mm)$', ylabel='$t\ (s)$', zlabel='',nb_labels=3 , ranges = (-L,L,0,total_time/unit,np.min(toplot),np.max(toplot)) )
-    #ax.axes.y_axis_visibility = False
-    ax.axes.font_factor = 1.3
-    ax.label_text_property.font_family = 'times'
-    ax.title_text_property.font_family = 'times'
-    ax.axes.label_format = '%-#6.1g'
-    #colorbar = mlab.colorbar(orientation = 'vertical')
-    #colorbar.scalar_bar_representation.position = [0.85, 0.1]
-    mlab.show()
 
 hbar = 1.054571596e-34
 uaumass = 1.66053873e-27
@@ -413,37 +265,56 @@ plt.style.use("default")
 
 
 fig, axs = plt.subplots(2, 2, figsize=(45, 30))
-
+unit_conv =1e-6
+t_unit = 1e-3
 # 
 t = 0 
-cont_lithium = plot(rd_file,axs[0,0],t=t, L_norm=1e-3, Z_norm=1e-3, unit=1e-3)
-axs[0,0].set_title('$(a)\ t= %.2f\ (ms)$' % (t*1e3), fontsize=font)
+cont_lithium = plot(rd_file,axs[0,0],t=t, L_norm=unit_conv, Z_norm=unit_conv, unit=t_unit)
+axs[0,0].set_title('$(a)\ t= %.2f\ (ms)$' % (t/t_unit), fontsize=font)
+
+# ca
+
+
+t = 0.03 
+cont_sodium = plot(rd_file,axs[0,1],t=t, L_norm=unit_conv, Z_norm=unit_conv, unit=t_unit,n=1)
+axs[0,1].set_title('$(b)\ t= %.2f\ (ms)$' % (t/t_unit), fontsize=font)
 
 # 
 
 
-t = 0.09 
-cont_sodium = plot(rd_file,axs[0,1],t=t, L_norm=1e-3, Z_norm=1e-3, unit=1e-3)
-axs[0,1].set_title('$(b)\ t= %.2f\ (ms)$' % (t*1e3), fontsize=font)
-
-# 
-
-
-t = 0.28 
-cont_rubidium = plot(rd_file,axs[1,0],t=t,L_norm= 1e-3, Z_norm=1e-3, unit=1e-3)
-axs[1,0].set_title('$(c)\ t= %.2f\ (ms)$' % (t*1e3), fontsize=font)
+t = 0.12
+cont_rubidium = plot(rd_file,axs[1,0],t=t,L_norm= unit_conv, Z_norm=unit_conv, unit=t_unit)
+axs[1,0].set_title('$(c)\ t= %.2f\ (ms)$' % (t/t_unit), fontsize=font)
 
 
 # 
 
-t = 0.47 
-cont_rubidium = plot(rd_file,axs[1,1], t = t,L_norm=1e-3, Z_norm=1e-3, unit=1e-3)
-axs[1,1].set_title('$(d)\ t= %.2f\ (ms)$' % (t*1e3), fontsize=font)
+t = 0.20 
+cont_rubidium = plot(rd_file,axs[1,1], t = t,L_norm=unit_conv, Z_norm=unit_conv, unit=t_unit,n=3)
+axs[1,1].set_title('$(d)\ t= %.2f\ (ms)$' % (t/t_unit), fontsize=font)
+
+# Add colorbars with title for one row
+
+#cbar2 = fig.colorbar(cont_sodium, ax=axs[0, 1])
+#cbar2.set_label('$|\psi|^2$',fontsize = font)
+
+#cbar4 = fig.colorbar(cont_rubidium, ax=axs[1, 1])
+#cbar4.set_label('$|\psi|^2$',fontsize = font)
+
+# Set individual axes labels for the second subplot in the first row
+axs[0, 0].set_xlabel('$x\ (\mu m)$',fontsize = font)
+axs[0, 0].set_ylabel('$y\ (\mu m)$',fontsize = font)
+axs[1, 0].set_xlabel('$x\ (\mu m)$',fontsize = font)
+axs[1, 0].set_ylabel('$y\ (\mu m)$',fontsize = font)
+
+# Hide x labels and y labels for the other subplots in the first row
+for ax in axs[0, :]:
+    ax.label_outer()
 
 # Adjust layout
 plt.tight_layout()
 
-plt.subplots_adjust(hspace=0.4,wspace=0.4)
+plt.subplots_adjust(hspace=0.2,wspace=0.05)
 
 
 # Add a single colorbar for all subplots
@@ -454,5 +325,4 @@ plt.subplots_adjust(hspace=0.4,wspace=0.4)
 
 # Display the plot
 plt.show()
-final_plot_x(rd_file,L_norm=1e-3, Z_norm=1e-3, unit=1e-3)
-final_plot_3D_x(rd_file,L_norm=1e-3, Z_norm=1e-3, unit=1e-3)
+final_plot_x(rd_file,L_norm=unit_conv, Z_norm=unit_conv, unit=t_unit)
