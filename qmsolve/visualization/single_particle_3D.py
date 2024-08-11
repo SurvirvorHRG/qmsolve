@@ -557,7 +557,7 @@ class TimeVisualizationSingleParticle3D(TimeVisualization):
         
     
         
-    def final_plot3D_hot(self,L_norm = 1, Z_norm = 1,unit = milliseconds, figsize=(15, 15),time="ms"):
+    def final_plot3D_hot(self,L_norm = 1, Z_norm = 1,unit = 1, figsize=(15, 15),time="ms",g=0,tmax = 0):
         
         from mpl_toolkits.mplot3d import Axes3D
         from matplotlib import cm
@@ -596,7 +596,8 @@ class TimeVisualizationSingleParticle3D(TimeVisualization):
         
         mlab.figure(fgcolor=(0,0,0),bgcolor=(0.9,0.9,0.9),size=(700, 700))
         L = self.simulation.H.extent/2/L_norm
-        Z = self.simulation.H.z_extent/2/Z_norm
+        Z = self.simulation.H.z_extent + 0.5*g*tmax**2
+        Z = Z/2/Z_norm
         N = self.simulation.H.N
         
         surf = mlab.surf(zz/Z_norm,tt/unit,toplot,warp_scale="auto",colormap='jet')
@@ -682,7 +683,7 @@ class TimeVisualizationSingleParticle3D(TimeVisualization):
 
         # Generates the plot
         # Plot the surface
-        surf = ax.plot_surface(zz/Z_norm/Å, tt/unit, toplot, cmap=cm.jet, linewidth=0, antialiased=False)
+        surf = ax.plot_surface(zz/Z_norm, tt/unit, toplot, cmap=cm.jet, linewidth=0, antialiased=False)
         
         # Add colorbar and labels
         cbar = fig.colorbar(surf, shrink=0.5, aspect=5)
@@ -756,7 +757,7 @@ class TimeVisualizationSingleParticle3D(TimeVisualization):
         cbar.set_label('$|\psi|^2$',fontsize=14)
         plt.show()      # Displays figure on screen
 
-    def plot2D_hot(self, t, L_norm = 1, Z_norm = 1,unit = femtoseconds, figsize=(15, 15)):
+    def plot2D_hot_xz(self, t, L_norm = 1, Z_norm = 1,unit = 1, figsize=(15, 15)):
 
 
         self.simulation.Ψ_plot = self.simulation.Ψ/self.simulation.Ψmax
@@ -766,7 +767,7 @@ class TimeVisualizationSingleParticle3D(TimeVisualization):
         fig = plt.figure("Contour map")    # figure
         plt.clf()                       # clears the figure
         fig.set_size_inches(8,6)
-        plt.axes().set_aspect('equal')  # Axes aspect ratio
+       # plt.axes().set_aspect('equal')  # Axes aspect ratio
         
         plt.xlabel("$x/w_o$",fontsize = 14)               # choose axes labels
         plt.ylabel("$z/\lambda$",fontsize = 14)
@@ -781,35 +782,35 @@ class TimeVisualizationSingleParticle3D(TimeVisualization):
     
         
         cbar.set_label('$|\psi|$',fontsize=14)
-        plt.title('$t= %.2f$ (ps) at $y/w_o= %.2f$' % (t * 1e12, self.simulation.H.particle_system.y[0, mid, 0]/L_norm))    # Title of the plot
+        plt.title('$t= %.2f\ (ms)$' % (t/unit))    # Title of the plot
         plt.show()
 
-    def plot2D_xz(self, t, L_norm = 1, Z_norm = 1,unit = femtoseconds, figsize=(15, 15)):
+    def plot2D_xz(self, t, L_norm = 1, Z_norm = 1,unit = 1, figsize=(15, 15)):
 
 
         self.simulation.Ψ_plot = self.simulation.Ψ/self.simulation.Ψmax
-        plt.style.use("classic")
+        plt.style.use("default")
         
         #Two-dimensional countour map
         fig = plt.figure("Contour map")    # figure
         plt.clf()                       # clears the figure
         fig.set_size_inches(8,6)
-        plt.axes().set_aspect('equal')  # Axes aspect ratio
+        #plt.axes().set_aspect('equal')  # Axes aspect ratio
         
-        plt.xlabel("$x\ (mm)$",fontsize = 14)               # choose axes labels
-        plt.ylabel("$z\ (mm)$",fontsize = 14)
+        plt.xlabel("$x\$",fontsize = 14)               # choose axes labels
+        plt.ylabel("$z\$",fontsize = 14)
     
         # Makes the contour plot:
         index = int((self.simulation.store_steps)/self.simulation.total_time*t)
         mid = int(self.simulation.H.N / 2) - 1
         toplot=abs(self.simulation.Ψ_plot[index][:,mid,:])      
         from matplotlib import cm
-        plt.contourf(self.simulation.H.particle_system.x[:,0,0]/L_norm/Å/1e7, self.simulation.H.particle_system.z[0,0,:]/Z_norm/Å/1e7, toplot, 100, cmap=cm.jet, linewidth=0, antialiased=False)
+        plt.contourf(self.simulation.H.particle_system.x[:,0,0]/L_norm, self.simulation.H.particle_system.z[0,0,:]/Z_norm, toplot, 100, cmap=cm.jet, linewidth=0, antialiased=False)
         cbar=plt.colorbar()          # colorbar
     
         
         cbar.set_label('$|\psi|$',fontsize=14)
-        plt.title('$t= %.2f$ at $y= %.2f\ (mm)$' % (t/unit, self.simulation.H.particle_system.y[0, mid, 0]/L_norm/Å/1e7))    # Title of the plot
+        plt.title('$t= %.2f$ at $y= %.2f\ (mm)$' % (t/unit, self.simulation.H.particle_system.y[0, mid, 0]/L_norm))    # Title of the plot
         plt.show()
         
     def plot2D_xy(self, t, L_norm = 1, Z_norm = 1,unit = milliseconds, figsize=(15, 15)):
@@ -996,7 +997,7 @@ class TimeVisualizationSingleParticle3D(TimeVisualization):
         
         
 
-    def plot_hot(self, t, L_norm = 1, Z_norm = 1,figsize=(7, 7),unit = milliseconds, contrast_vals= [0.1, 0.25]):
+    def plot_hot(self, t, L_norm = 1, Z_norm = 1,figsize=(7, 7),unit = 1,g=0,dis = 4, contrast_vals= [0.1, 0.25]):
 
         mlab.figure(fgcolor=(0.1,0.1,0.1),bgcolor=(0.9,0.9,0.9),size=(700, 700))
         self.simulation.Ψ_plot = self.simulation.Ψ/self.simulation.Ψmax
@@ -1020,8 +1021,11 @@ class TimeVisualizationSingleParticle3D(TimeVisualization):
            # print(psi)
 
             L = self.simulation.H.extent/2/L_norm
-            Z = self.simulation.H.z_extent/2/Z_norm
+            
+            Z = self.simulation.H.z_extent + 0.5*g*t**2
+            Z = Z/2/Z_norm
             N = self.simulation.H.N
+            Nz = self.simulation.H.Nz
 
             vol = mlab.pipeline.volume(mlab.pipeline.scalar_field(np.abs(psi)), vmin= contrast_vals[0], vmax= contrast_vals[1])          
             
@@ -1040,11 +1044,11 @@ class TimeVisualizationSingleParticle3D(TimeVisualization):
             
 
         
-            ax =mlab.axes(xlabel=x_latex, ylabel=y_latex, zlabel=z_latex,nb_labels=6 , ranges = (-L,L,-L,L,-Z,Z) )
-            ax.axes.font_factor = 1.9
+            ax =mlab.axes(xlabel=x_latex, ylabel=y_latex, zlabel=z_latex,nb_labels=4 , ranges = (-L,L,-L,L,-Z,Z) )
+            ax.axes.font_factor = 1.1
             ax.label_text_property.font_family = 'times'
             ax.title_text_property.font_family = 'times'
-            ax.axes.y_axis_visibility = False
+            ax.axes.y_axis_visibility = True
             ax.axes.label_format = '%-#6.2g'
             
             colorbar = mlab.colorbar(nb_labels=6,orientation = 'vertical')
@@ -1055,13 +1059,13 @@ class TimeVisualizationSingleParticle3D(TimeVisualization):
             colorbar.scalar_bar.unconstrained_font_size = True
             colorbar_label.font_size = 21
             #▒colorbar.scalar_bar.height = 20
-            mlab.view(azimuth=60,elevation=60,distance=N*4)
+            mlab.view(azimuth=60,elevation=60,distance=(N + N + Nz)/3 * dis)
             file = str(t/unit) + '.png'
             mlab.savefig(file)
             mlab.show()
             
             
-    def plot(self, t, L_norm = 1, Z_norm = 1,figsize=(7, 7),unit = femtoseconds, contrast_vals= [0.1, 0.25]):
+    def plot(self, t, L_norm = 1, Z_norm = 1,unit = 1,azimuth = 60, elev = 60,dis = 4, contrast_vals= [0.1, 0.25]):
 
         mlab.figure(1,bgcolor=(0,0,0), size=(700, 700))
         self.simulation.Ψ_plot = self.simulation.Ψ/self.simulation.Ψmax
@@ -1101,14 +1105,64 @@ class TimeVisualizationSingleParticle3D(TimeVisualization):
         colorbar.scalar_bar.label_format = '%.2f'
         colorbar.scalar_bar.unconstrained_font_size = True
         colorbar_label.font_size = 10
-        mlab.view(azimuth=60,elevation=60,distance=(N + N + Nz)/3 * 4)
+        mlab.view(azimuth=azimuth,elevation=elev,distance=(N + N + Nz)/3 * dis)
         colorbar = mlab.colorbar(orientation = 'vertical')
         colorbar.scalar_bar_representation.position = [0.85, 0.1]
         #colorbar.data_range = (0, 1)
+        t = t/unit
         file = str(t) + '.png'
         mlab.savefig(file)
         mlab.show()
 
+
+    def plot_c(self, t, L_norm = 1, Z_norm = 1,unit = 1,azimuth = 60, elev = 60,dis = 4, contrast_vals= [0.1, 0.25]):
+
+        mlab.figure(1,bgcolor=(0,0,0), size=(700, 700))
+        self.simulation.Ψ_plot = self.simulation.Ψ/self.simulation.Ψmax
+        index = int((self.simulation.store_steps)/self.simulation.total_time*t)   
+
+            
+        psi = self.simulation.Ψ_plot[index]
+         
+         
+    
+        L = self.simulation.H.extent/2/Å/L_norm
+        Z = self.simulation.H.z_extent/2/Å/Z_norm
+        N = self.simulation.H.N
+        Nz = self.simulation.H.Nz
+    
+        vol = mlab.contour3d(self.simulation.H.particle_system.x,self.simulation.H.particle_system.y,self.simulation.H.particle_system.z,np.abs(psi))          
+         
+        time_label = mlab.text(0.1,0.9,'',width=0.15)
+        time_label.property.color = (1.0,1.0,1.0)
+        time_label.text = 'Time: {:.2f} ms'.format(t/unit)
+    
+        mlab.outline()
+         
+         
+     
+        #mlab.axes(xlabel=x_latex, ylabel=y_latex, zlabel=z_latex,nb_labels=6 , ranges = (-L,L,-L,L,-Z,Z) )
+        ax = mlab.axes(xlabel='$x\ (mm)$', ylabel='$y\ (mm)$', zlabel='$z\ (mm)$',nb_labels=3 , ranges = (-L,L,-L,L,-Z,Z) )
+        ax.axes.font_factor = 1.3
+        ax.label_text_property.font_family = 'times'
+        ax.title_text_property.font_family = 'times'
+        ax.axes.label_format = '%-#6.1g'
+        
+        colorbar = mlab.colorbar(nb_labels=6,orientation = 'vertical')
+        colorbar.scalar_bar_representation.position = [0.85, 0.1]
+        colorbar_label = colorbar.scalar_bar.label_text_property
+        colorbar_label.font_family = 'times'
+        colorbar.scalar_bar.label_format = '%.2f'
+        colorbar.scalar_bar.unconstrained_font_size = True
+        colorbar_label.font_size = 10
+        mlab.view(azimuth=azimuth,elevation=elev,distance=(N + N + Nz)/3 * dis)
+        colorbar = mlab.colorbar(orientation = 'vertical')
+        colorbar.scalar_bar_representation.position = [0.85, 0.1]
+        #colorbar.data_range = (0, 1)
+        t = t/unit
+        file = str(t) + '.png'
+        mlab.savefig(file)
+        mlab.show()
 
 
 

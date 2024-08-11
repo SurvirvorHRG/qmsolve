@@ -87,7 +87,7 @@ class SplitStepCupy(Method):
         self.p2 = self.H.particle_system.p2
 
 
-    def run(self, initial_wavefunction, total_time, dt, store_steps = 1):
+    def run(self, initial_wavefunction, total_time, dt, store_steps = 1,g=0):
 
         import cupy as cp 
 
@@ -123,11 +123,18 @@ class SplitStepCupy(Method):
 
         t0 = time.time()
         bar = progressbar.ProgressBar()
+        t_count = 0
+        t = 0
         for i in bar(range(store_steps)):
+            self.H.particle_system.z += 0.5*g*t**2
             tmp = cp.copy(Ψ[i])
+            g_exp = cp.exp(1.j*m*g*t/hbar * (cp.array(self.H.particle_system.z) + g*t**2/6))
+            tmp =  g_exp * tmp
             for j in range(Nt_per_store_step):
                 c = cp.fft.fftshift(cp.fft.fftn(Ur*tmp))
                 tmp = Ur*cp.fft.ifftn( cp.fft.ifftshift(Uk*c))
+                t_count += 1
+                t = t_count * self.simulation.dt
             Ψ[i+1] = tmp
         print("Took", time.time() - t0)
 

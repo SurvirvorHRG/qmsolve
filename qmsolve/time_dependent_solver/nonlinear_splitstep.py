@@ -321,6 +321,8 @@ class NonlinearSplitStepCupy(Method):
         
         if self.H.spatial_ndim == 2:
             self.split_step.set_absorb2D(self.H.particle_system.x,self.H.particle_system.y,self.H.extent,self.H.extent,dt,absorb_coeff)
+        else:
+            self.split_step.set_absorb2D(self.H.particle_system.x,self.H.particle_system.y,self.H.extent,self.H.extent,dt,0)
             
         self.simulation.store_steps = store_steps
         dt_store = total_time/store_steps

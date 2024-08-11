@@ -579,7 +579,7 @@ class TimeVisualizationSingleParticle2D(TimeVisualization):
         plt.show()      # Displays figure on screen
 
 
-    def final_plot_3D_x(self,L_norm = 1, Z_norm = 1,unit = 1, figsize=(15, 15),time="ms"):
+    def final_plot_3D_x(self,L_norm = 1, Z_norm = 1,unit = 1,extent=0,fixmaximum = 0):
         
         from mpl_toolkits.mplot3d import Axes3D
         L = self.simulation.H.extent/2/L_norm
@@ -595,32 +595,49 @@ class TimeVisualizationSingleParticle2D(TimeVisualization):
 
         
         # Generates the plot
+        if extent == 0:
+            extent = self.simulation.H.extent
+
+        L = extent/2/L_norm
+        #extent = 10
+        x_indices = np.where((x >= -extent/2) & (x <= extent/2))[0]
+        y_indices = np.where((y >= -extent/2) & (y <= extent/2))[0]
+
+        # Extract the submatrices for X, Y, and Z
+        #X_sub = X[np.ix_(y_indices, x_indices)]
+        #Y_sub = Y[np.ix_(y_indices, x_indices)]
+        #Z_sub = Z[np.ix_(y_indices, x_indices)]
         self.simulation.Ψ_plot = self.simulation.Ψ/self.simulation.Ψmax
         mid = int(Nx / 2) - 1
         toplot= np.abs(self.simulation.Ψ_plot[:,mid,:])**2
+        toplot = toplot[:, x_indices]
         toplot = toplot.T
+        
+        if fixmaximum>0:
+            toplot[toplot>fixmaximum]=fixmaximum
         
         mlab.figure(fgcolor=(0.1,0.1,0.1),bgcolor=(1,1,1),size=(700, 700))
 
         
         #surf = mlab.mesh(zz/Z_norm/Å,tt/unit,toplot,colormap='jet')
-        surf = mlab.surf(toplot,warp_scale="auto",colormap='jet')
-        #surf.module_manager.scalar_lut_manager.reverse_lut = True
-        #surf = mlab.surf(toplot,warp_scale="auto",colormap='jet')
+        surf = mlab.surf(zz/L_norm,tt/unit,toplot,warp_scale='auto',colormap='jet')
+        ax = mlab.axes(xlabel='$x\ (\mu m)$', ylabel='$t\ (ms)$', zlabel='',nb_labels=8 , ranges = (-L,L,0,total_time/unit,np.min(toplot),np.max(toplot)) )
         
-        #surf = mlab.surf(psi[:,:,49],colormap='jet')
-        #mlab.colorbar(surf,title='psi',orientation='vertical')  
-              
-
-        #mlab.axes(xlabel=x_latex, ylabel=y_latex, zlabel=z_latex,nb_labels=3 , ranges = (-L,L,0,total_time/unit,np.min(toplot),np.max(toplot)) )
-        ax = mlab.axes(xlabel='$x\ (mm)$', ylabel='$t\ (s)$', zlabel='',nb_labels=3 , ranges = (-L,L,0,total_time/unit,np.min(toplot),np.max(toplot)) )
-        #ax.axes.y_axis_visibility = False
-        ax.axes.font_factor = 1.3
+        axes_actor = ax.axes
+        #x_axis = axes_actor.label_text_property[0]
+        ax.axes.font_factor = 0.9
         ax.label_text_property.font_family = 'times'
         ax.title_text_property.font_family = 'times'
-        ax.axes.label_format = '%-#6.1g'
-        #colorbar = mlab.colorbar(orientation = 'vertical')
+        ax.axes.label_format = '%-#6.2g'
+        colorbar = mlab.colorbar(nb_labels=6,orientation = 'vertical')
+        colorbar.scalar_bar_representation.position = [0.85, 0.1]
+        colorbar_label = colorbar.scalar_bar.label_text_property
+        colorbar_label.font_family = 'times'
+        colorbar.scalar_bar.unconstrained_font_size = True
+        colorbar.scalar_bar.label_format = '%.2f'
+        colorbar_label.font_size = 22
         #colorbar.scalar_b
+        
         mlab.show()
         
         

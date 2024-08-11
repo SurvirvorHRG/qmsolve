@@ -171,7 +171,7 @@ fig, axs = plt.subplots(1, 2, figsize=(30, 15))
 
 # Lithium
 rd_lithium = readFile('l=3.txt')
-cont_lithium = rd_lithium.final_plot2(axs[0],  1e-6,Z_norm =1e-6,unit = omega_z*1e-3)
+cont_lithium = rd_lithium.final_plot2(axs[0],  1e-6,Z_norm =1e-6,unit = 1e-3)
 axs[0].set_title('$(a)\ \ell = 3$', fontsize=font)
 
 # Sodium
@@ -179,7 +179,7 @@ mass_sodium = 22.9 * uaumass  # Sodium
 r_t_sodium = np.sqrt(hbar / mass_sodium / omega_rho)  # 3e-6 meters
 
 rd_sodium = readFile('l=6.txt')
-cont_sodium = rd_sodium.final_plot2(axs[1],  1e-6,Z_norm =  1e-6,unit = omega_z*1e-3)
+cont_sodium = rd_sodium.final_plot2(axs[1],  1e-6,Z_norm =  1e-6,unit = 1e-3)
 axs[1].set_title('$(b)\ \ell = 6$', fontsize=font)
 
 
