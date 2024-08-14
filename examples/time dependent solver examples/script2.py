@@ -196,5 +196,5 @@ cbar.ax.tick_params(labelsize=40)  # Increase colorbar tick label size
 plt.show()
 
 #rd_lithium.final_plot3D(L_norm = 1e-3,unit = 1)
-rd_lithium.final_plot_3D_x(L_norm = 1e-3,unit = 1)
+#rd_lithium.final_plot_3D_x(L_norm = 1e-3,unit = 1)
 #rd_sodium.final_plot3D(L_norm = 1e-3,unit = 1)

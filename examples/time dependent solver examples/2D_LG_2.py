@@ -40,7 +40,7 @@ g3d = 4*Ntot*np.pi*hbar**2*a_s / mass/4
 #g3d = 500 * hbar * omega_rho * a_p * 2*np.pi*(a_z**2)
 
 
-Nx = 1024                     # Grid points
+Nx = 512                     # Grid points
 Ny = Nx
 tmax = 20                # End of propagation
 dt = 0.0001                # Evolution step
@@ -50,13 +50,10 @@ xmax = 20 * a_p                  # x-window size
 l = 1
 alpha = 2*l
 beta = 2*l
-#### THIGHING
-#k = 9.25e47
-#k=3.5e18
+#k = 0.5e46
+# l = 3 : k = 0.5e18
 
-#USE THESE COEFF
-#¸k = 2e47
-#êk = 0.5e19
+#k=0.5e18
 k=0.5
 U0 = k * mass * omega_rho**2
 U1 = k * mass * omega_z**2
@@ -73,19 +70,16 @@ print('U1 =', U1)
 muq = (g3d * U0**(3/alpha) * (l+1)*(alpha+2) / 2 / np.pi / l)**(alpha/(alpha + 3))
 
 
-V0 = 1000 * hbar * omega_rho 
-#V0 = 1
+V0 = 1000 * hbar * omega_rho
 sigma = 0.632 * np.sqrt(2) * a_p
-#♦V0 = V0 / np.sqrt(2*np.pi) / sigma
 #sigma =5 * np.sqrt(2) * a_p
 
 def potential(x,y,z):
     rho = np.sqrt(x**2 + y**2)
     U_rho = U0 *rho**(alpha)
-    V_rho = V0 * np.exp(-2*(rho/sigma)**2) 
+    #V_rho = V0 * np.exp(-2*(rho/sigma)**2) 
     #V_rho = V0 * np.exp(-2*(x/sigma)**2) + V0 * np.exp(-2*(y/sigma)**2) 
-    #V_rho = V0 * np.exp(-2*(x/sigma)**2) 
-    #V_rho = V0 * np.exp(-0.5*(x/sigma)**2)
+    V_rho = V0 * np.exp(-2*(x/sigma)**2) 
     return U_rho + V_rho
     
 
@@ -114,10 +108,10 @@ def non_linear(psi,t,particle):
     V = 0
     rho = np.sqrt(particle.x**2 + particle.y**2)
     if t < 0.02:
-        V = V0 * np.exp(-2*(rho/sigma)**2)
+        #V = V0 * np.exp(-2*(rho/sigma)**2)
         #V = V0 * np.exp(-2*(particle.x/sigma)**2) + V0 * np.exp(-2*(particle.y/sigma)**2) 
-        #V = V0 * np.exp(-2*(particle.x/sigma)**2)
-       # V = V0 * np.exp(-0.5*(particle.x/sigma)**2)
+        #V = V0 * np.exp(-2*(particle.x/sigma)**2
+        V = V0 * np.exp(-2*(particle.x/sigma)**2)
     else:
         V = 0
         
@@ -139,26 +133,26 @@ sim = TimeSimulation(hamiltonian = H, method = "nonlinear-split-step-cupy")
 sim.method.split_step._hbar = hbar
 sim.method.split_step.set_nonlinear_term(non_linear)
 
-total_t = 0.2
-dt_t = 1e-5 
-stored = 1024
-#/stored = 1
+total_t = 0.20
+dt_t = 1e-5
+stored = 200
+#stored = 1
 #dt_t = total_t
 
-sim.run(psi_0, total_time = total_t, dt = dt_t, store_steps = stored,non_linear_function=None,norm = False,absorb_coeff=0)
+sim.run(psi_0, total_time = total_t, dt = dt_t, store_steps = stored,non_linear_function=None,norm = False,absorb_coeff=20)
 
 #=========================================================================================================#
 # Finally, we visualize the time dependent simulation
 #=========================================================================================================#
 
 visualization = init_visualization(sim)
-#visualization.plotSI(t = 0)
+visualization.plotSI(t = 0)
 
 #for i in range(201):
     #visualization.plotSI(i * total_t/200)
 #5visualization.animate(save_animation=True)
-#visualization.final_plot_x(L_norm = 1,Z_norm = 1,unit = 1)
-visualization.final_plot_3D_x(L_norm = 1e-6, Z_norm = 1e-6,unit = 1e-3,extent=xmax,fixmaximum = 0)
+visualization.final_plot_x(L_norm = 1,Z_norm = 1,unit = 1)
 
-#☺for i in range(21):
-    #visualization.plotSI(i * total_t/20)
+
+#for i in range(21):
+    #visualization.plot3D(i * total_t/20)

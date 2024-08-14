@@ -2,8 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
-font = 58
-subfont = 54
+font = 68
+subfont = 64
 
 class readFile:
     def __init__(self, filename):
@@ -50,34 +50,34 @@ class readFile:
 hbar = 1.054571596e-34
 uaumass = 1.66053873e-27
 omega_rho = 1.0e3  # 1kHz
-
+omega_z = 0.01 * omega_rho
 plt.style.use("default")
 
 # Create subplots
 mass_lithium = 7.016004 * uaumass  # Lithium
-r_t_lithium = np.sqrt(hbar / mass_lithium / omega_rho)  # 3e-6 meters
+L_z = np.sqrt(hbar/mass_lithium/omega_z)
 
-fig, axs = plt.subplots(1, 3, figsize=(50, 15))
+fig, axs = plt.subplots(1, 3, figsize=(70, 30))
 
 # Lithium
 rd_lithium = readFile('lithium.txt')
-cont_lithium = rd_lithium.final_plot2(axs[0], L_norm=1/r_t_lithium*1e-6, Z_norm=1/r_t_lithium*1e-6, unit=omega_rho*1e-3)
+cont_lithium = rd_lithium.final_plot2(axs[0],L_norm = 1/L_z * 1e-6,Z_norm = 1/L_z * 1e-6,unit = omega_z * 1e-3,fixmaximum = 0.1)
 axs[0].set_title('$(a)\ ^{7}Li$', fontsize=font)
 
 # Sodium
 mass_sodium = 22.9 * uaumass  # Sodium
-r_t_sodium = np.sqrt(hbar / mass_sodium / omega_rho)  # 3e-6 meters
+L_z = np.sqrt(hbar/mass_sodium/omega_z)
 
 rd_sodium = readFile('sodium.txt')
-cont_sodium = rd_sodium.final_plot2(axs[1], L_norm=1/r_t_sodium*1e-6, Z_norm=1/r_t_sodium*1e-6, unit=omega_rho*1e-3)
+cont_sodium = rd_sodium.final_plot2(axs[1], L_norm = 1/L_z * 1e-6,Z_norm = 1/L_z * 1e-6,unit = omega_z * 1e-3,fixmaximum = 0.1)
 axs[1].set_title('$(b)\ ^{23}Na$', fontsize=font)
 
 # Rubidium
 mass_rubidium = 86.909 * uaumass  # Rubidium
-r_t_rubidium = np.sqrt(hbar / mass_rubidium / omega_rho)  # 3e-6 meters
+L_z = np.sqrt(hbar/mass_rubidium/omega_z)
 
 rd_rubidium = readFile('rubidium.txt')
-cont_rubidium = rd_rubidium.final_plot2(axs[2], L_norm=1/r_t_rubidium*1e-6, Z_norm=1/r_t_rubidium*1e-6, unit=omega_rho*1e-3)
+cont_rubidium = rd_rubidium.final_plot2(axs[2],L_norm = 1/L_z * 1e-6,Z_norm = 1/L_z * 1e-6,unit = omega_z * 1e-3,fixmaximum = 0.1)
 axs[2].set_title('$(c)\ ^{87}Rb$', fontsize=font)
 
 # Adjust layout

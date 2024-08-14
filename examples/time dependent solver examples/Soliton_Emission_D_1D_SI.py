@@ -27,6 +27,8 @@ a_0 = 4 * np.pi * epsilon0 * hbar**2 / echarge / echarge / emass
 
 # Define parameters
 #mass=7.016004 * uaumass # Lithium
+#mass = 22.9
+#mass = 
 mass=86.909  # Atoms mass Cs 132.905 , Rb 86.909 (united atomic unit of mass)
 mass  = mass * uaumass
 Ntot= 20e4
@@ -48,33 +50,34 @@ sigma = 0.632 * np.sqrt(2) *L_z
 #omega_z = 0.01* omega_rho
 #a_s = L * V0_tilde * np.sqrt(np.pi) / 2 / N
 a_s = 94.7*a_0
+#a_s = 2.65e-9
 #g_s = 2 * Ntot * omega_rho * a_s / omega_z  / L_z
-#g_s = 2 * Ntot * omega_rho * a_s / omega_z  / L_z
+g_s = 600 * hbar * omega_z * L_z
+#g_s = 2 * Ntot * a_s * hbar * omega_rho
 #g_s = g_s * hbar
-g_s = 500 * hbar * omega_z * L_z
+#g_s = 500 * hbar * omega_z * L_z
 
-Nx = 4096                        # Grid points
+Nx = 1024                        # Grid points
 Ny = Nx
 tmax = 20 / omega_z               # End of propagation
-dt = 0.00001 / omega_z               # Evolution step
+dt = 0.0001 / omega_z               # Evolution step
 xmax =  15 * L_z                   # x-window size
 ymax = xmax                    # y-window size
 images = 400                # number of .png images
 absorb_coeff = 0        # 0 = periodic boundary
 
-#dt = tmax
+#(dt = tmax
 #images = 1
 
-#◙muq = 0.5 * (3/2)**(2/3) * g_s**(2/3)
 
-k = 1e47
+k = 0.5
+#k=1.6e17
+#k = 3.4e43
 U1 = k * mass * omega_z**2
-l=6
-#muq = 0.5 * (3/2)**(2/3) * g_s**(2/3)
+l=1
 beta = 2*l
 muq = ((beta + 1)*g_s/2/beta)**(beta/(1+beta)) *U1**(1/(beta+1))
-#muq = (9/4 * k * mass * omega_z**2  *g_s**2)**(1/3)
-#params = 0.5
+
 
 
 def potential(x,y,k):
@@ -132,6 +135,7 @@ H = Hamiltonian(particles=SingleParticle(m = mass),
 sim = TimeSimulation(hamiltonian = H, method = "nonlinear-split-step")
 sim.method.split_step._hbar = hbar
 sim.method.split_step.set_nonlinear_term(non_linear_f2)
+
 sim.run(psi_0, total_time =tmax, dt = dt, store_steps = images,non_linear_function=None,norm = False)
 
 #=========================================================================================================#
@@ -141,8 +145,8 @@ sim.run(psi_0, total_time =tmax, dt = dt, store_steps = images,non_linear_functi
 visualization = init_visualization(sim)
 visualization.plot1D(t = 0)
 #5visualization.animate(save_animation=True)
-visualization.final_plot(L_norm = 1/L_z * 1e-3,Z_norm = 1/L_z * 1e-3,unit = omega_z*1e-3)
-#visualization.save('test.txt')
+visualization.final_plot(L_norm =1e-3,Z_norm =   1e-3,unit = 1e-3)
+visualization.save('l=1_bb.txt')
 
 """
 ###################################################################################

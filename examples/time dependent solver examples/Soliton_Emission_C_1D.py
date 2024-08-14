@@ -37,9 +37,9 @@ a_s = L * V0_tilde * np.sqrt(np.pi) / 2 / N
 
 Nx = 4000                        # Grid points
 Ny = Nx
-tmax = 80                # End of propagation
+tmax = 160                # End of propagation
 dt = tmax/10000                # Evolution step
-xmax = 100                    # x-window size
+xmax = 200                    # x-window size
 ymax = xmax                    # y-window size
 images = 100                # number of .png images
 
@@ -70,8 +70,8 @@ def V(particle,params):
 
 def interaction(psi,t,particle):
     
-    a1 = 1.5e-9
-    a2 = -0.2e-9
+    a1 = 3e-9
+    a2 = -1e-9
     V = 0
 
     if t<8:
@@ -132,4 +132,4 @@ sim.run(psi_0, total_time = total_time, dt = dt, store_steps = 100,non_linear_fu
 
 visualization = init_visualization(sim)
 visualization.final_plot(L_norm = 1/r_t*1e-3,Z_norm = 1/r_t*1e-3,unit = omega_rho*1e-3 )
-visualization.save('lithium.txt')
+#visualization.save('lithium.txt')

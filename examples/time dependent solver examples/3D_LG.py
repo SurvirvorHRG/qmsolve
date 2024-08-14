@@ -24,15 +24,12 @@ a_0 = 4 * np.pi * epsilon0 * hbar**2 / echarge / echarge / emass
 #mass=7.016004 * uaumass # Lithium
 mass=86.909  # Atoms mass Cs 132.905 , Rb 86.909 (united atomic unit of mass)
 mass  = mass * uaumass
-l = 3
+l = 1
 Ntot= 20e4
-omega_rho = 2*np.pi*6.8
+omega_rho = 2*np.pi*160
 omega_z = 2*np.pi*6.8
-#k= 0.5
-#k = 0.5e46
-k = 0.5e18
-U0 = k * mass * omega_rho**2
-U1 = k * mass * omega_z**2
+U0 = 0.5 * mass * omega_rho**2
+U1 = 0.5 * mass * omega_z**2
 alpha = 2*l
 beta = 2*l
 print('omega_rho =', omega_rho)
@@ -43,17 +40,18 @@ a_p = np.sqrt(hbar/mass/omega_rho)
 a_z = np.sqrt(hbar/mass/omega_z)
 sigma = 0.632
 a_s = 94.7*a_0
-g3d = 4*Ntot*np.pi*hbar**2*a_s / mass /4
+g3d = 4*Ntot*np.pi*hbar**2*a_s / mass 
 
 
-Nx = 128                        # Grid points
+Nx = 64                        # Grid points
 Ny = Nx
-Nz = 128
+Nz = 512
 tmax = 20                # End of propagation
 dt = 0.0001                # Evolution step
-xmax = 25 * a_p                   # x-window size
+xmax = 40 * a_p                   # x-window size
 ymax = xmax                    # y-window size
-zmax = 25 * a_z                     # x-window size
+zmax = 40 * a_z                     # x-window size
+images = 20                # number of .png images
 
 
 eta = 1/2 + 1/beta + 2/alpha
@@ -62,14 +60,12 @@ muq = muq**(2/(2*eta + 1))
 
 print('muq = ', muq)
 V0 = 500 * hbar * omega_z
-sigma = 0.5*0.632 * np.sqrt(2) * a_z
+sigma = 0.632 * np.sqrt(2) * a_z
 
 
 def potential(x,y,z):
     rho = np.sqrt(x**2 + y**2)
-    #c =  np.sqrt(x**2 + y**2 + z**2)
     V_b = V0*np.exp(-2*(z/sigma)**2 )
-    #V_b = V0*np.exp(-2*(c/sigma)**2 )
     U_rho = U0 * rho**(alpha)
     U_z = U1 * z**(beta)
     return U_rho + V_b + U_z
@@ -99,13 +95,31 @@ def V(particle,params):
 def interaction(psi,t,particle):
     import cupy as cp
     V = 0
-    #c =  np.sqrt(particle.x**2 + particle.y**2 + particle.z**2)
-    if t < 0.02:
+    if t < 0.07:
         V =  V0*np.exp(-2*(particle.z/sigma)**2 )
-        #V = V0*np.exp(-2*(c/sigma)**2 )
     else:
         V = 0
-    return cp.array(V) + g3d*cp.abs(psi)*2
+    return cp.array(V) + g3d*abs(psi)*2
+
+
+def non_linear_cupy(psi,t,particle):
+    import cupy as cp
+    # The linear part of the potential is a shallow trap modeled by an inverted Gaussian
+    # The nonlinear part is a cubic term whose sign and strength change abruptly in time.
+    V_b = cp.array(1 * np.exp(-2*( (particle.x)**2 + (particle.z)**2 ) ))
+    
+    if t  < 10e-3:
+        a_s = 8e-9
+        g3d = 4*Ntot*np.pi*hbar**2*a_s / mass 
+        V = g3d*cp.abs(psi)**2 
+    else:
+        a_s = -5e-9
+        g3d = 4*Ntot*np.pi*hbar**2*a_s / mass 
+        V = g3d*cp.abs(psi)**2 
+    
+    return V;
+
+
 
 
 
@@ -124,21 +138,17 @@ sim = TimeSimulation(hamiltonian = H, method = "nonlinear-split-step-cupy")
 sim.method.split_step._hbar = hbar
 sim.method.split_step.set_nonlinear_term(interaction)
 
-total_t = 0.40
-dt_t = 1e-5
-stored = 100
+total_t = 0.47 / 2
+dt_t = 1e-6
 #dt_t = total_t
-#stored = 1
-sim.run(psi_0, total_time = total_t, dt = dt_t, store_steps = stored,non_linear_function=None,norm = False)
+#dt_t = 0.01 *seconds
+sim.run(psi_0, total_time = total_t, dt = dt_t, store_steps = 100,non_linear_function=None,norm = False)
 
 #=========================================================================================================#
 # Finally, we visualize the time dependent simulation
 #=========================================================================================================#
 
 visualization = init_visualization(sim)
-visualization.plot(t = 0,L_norm = 1e-3,Z_norm = 1e-3,unit = 1e-3,azimuth = 0,elev = 90,dis = 3.25)
+visualization.plot(t = 0)
 #5visualization.animate(save_animation=True)
-visualization.final_plot(L_norm = 1e-3,Z_norm = 1e-3,unit = 1e-3)
-
-for i in range(51):
-    visualization.plot(t = i * total_t/50,L_norm = 1e-3,Z_norm = 1e-3,unit = 1e-3,azimuth = 0,elev = 90,dis = 3.25)
+#visualization.final_plot(L_norm = 1,Z_norm = 1,unit = 1)
