@@ -1,3 +1,18 @@
+# Initially, a BEC is tighly confined along the axial direction within an Laguerre-Gaussian trap 
+#and more elongated along the radial direction alowing a 2D-reduction of the GPE equation. 
+#separated by a Gaussian barrier in its center resulting in 2 BECs 
+
+
+#At a given time, a the Guassian barrier is removed. Then,
+# the two separated BECs collide.
+# This results in the formation of a bunch of par dark-solitons that interacts in the trap.
+
+#References : 
+#Jameel Hussain, Javed Akram, Farhan Saif , 
+#Gray/dark soliton behavior and population under a symmetric and asymmetric potential trap,
+#J. Low Temp. Phy. 195, 429 (2019)
+
+
 from tvtk.util import ctf
 import numpy as np
 from qmsolve import visualization
@@ -21,13 +36,13 @@ conv_C12_au=uaumass/emass
 a_0 = 4 * np.pi * epsilon0 * hbar**2 / echarge / echarge / emass
 
 # Define parameters
-mass=7.016004 * uaumass # Lithium
-#mass=86.909  # Atoms mass Cs 132.905 , Rb 86.909 (united atomic unit of mass)
+#mass=7.016004 * uaumass # Lithium
+mass=86.909  # Atoms mass Cs 132.905 , Rb 86.909 (united atomic unit of mass)
 mass  = mass * uaumass
 l = 1
-Ntot= 5e4
-omega_rho = 1e3
-omega_z = 0.01 * omega_rho
+Ntot= 20e4
+omega_rho = 2*np.pi*6.8
+omega_z = 2*np.pi*160
 U0 = 0.5 * mass * omega_rho**2
 U1 = 0.5 * mass * omega_z**2
 alpha = 2*l
@@ -38,93 +53,77 @@ print('U0 =', U0)
 print('U1 =', U1)
 a_p = np.sqrt(hbar/mass/omega_rho)
 a_z = np.sqrt(hbar/mass/omega_z)
-#a_s = 94.7*a_0
+a_s = 94.7*a_0
+#g3d = 4*Ntot*np.pi*hbar**2*a_s / mass /16
 
-V0 = hbar * omega_z / 4
-L = 10 * a_z
-L_tilde = L/a_z/np.sqrt(2)
-V0_tilde = V0 / hbar / omega_z
-sigma = L
-V0_z = V0 / hbar / omega_z
-#dimension-less variables
-#omega_z = 0.01* omega_rho
-a_s = L * V0_tilde * np.sqrt(np.pi) / 2 / Ntot
-g3d = 4*Ntot*np.pi*hbar**2*a_s / mass 
+g3d = 100 * hbar * omega_rho * a_p * 2*np.pi*(a_z**2)
 
 
 Nx = 1064                        # Grid points
 Ny = Nx
 Nz = 512
-tmax = 20  / omega_z              # End of propagation
-dt = 0.0001  / omega_z              # Evolution step
-xmax = 30 * a_z                   # x-window size
+tmax = 20                # End of propagation
+dt = 0.0001                # Evolution step
+xmax = 10 * a_p                   # x-window size
+#xmax = 2* 1e3 * a_p
 ymax = xmax                    # y-window size
 zmax = 40 * a_z                     # x-window size
 images = 20                # number of .png images
 
 
 eta = 1/2 + 1/beta + 2/alpha
-muq = gamma(eta + 3/2)/gamma(1  + 2/alpha)/gamma(1 + 1/beta)*(g3d * U0**(2/alpha) * U1**(1/beta) / 4*np.pi )
+muq = gamma(eta + 3/2)/gamma(1  + 2/alpha)/gamma(1 + 1/beta)*(g3d * U0**(2/alpha) * U1**(1/beta) / 2*np.pi )
 muq = muq**(2/(2*eta + 1))
 
 
-#V0 = 500 * hbar * omega_z
-#sigma = 0.632 * np.sqrt(2) * a_z
+V0 = 500 * hbar * omega_rho
+sigma = 0.632 * np.sqrt(2) * a_p
+#sigma =5 * np.sqrt(2) * a_p
 
 def potential(x,y,z):
-    U_z = U1 *z**(beta)
-    V_z = V0*( 1 - np.exp(-(z/sigma)**2) )
-    return U_z + V_z
+    rho = np.sqrt(x**2 + y**2)
+    U_rho = U0 *rho**(alpha)
+    V_rho = V0 * np.exp(-2*(rho/sigma)**2)
+    return U_rho + V_rho
     
 
 def psi_0(particle,params):
-    V = potential(0,0,particle.x)
+    V = potential(particle.x,particle.y,0)
     psi = np.zeros_like(particle.x)
     
     for i in range(Nx):
-        if muq > V[i]:
-            psi[i] = np.sqrt((muq - V[i])/g3d)
+        for j in range(Nx):
+            if muq > V[i,j]:
+                psi[i,j] = np.sqrt((muq - V[i,j])/g3d)
             
     return psi
     
 
 
-def V(particle,params):        
-    U_z = U1 * particle.x**(beta)
-    V_z = V0*( 1 - np.exp(-(particle.x/sigma)**2) )
-    return U_z + V_z
+def V(particle,params): 
+    rho = np.sqrt(particle.x**2 + particle.y**2)       
+    U_rho = U0 * rho**(alpha)
+    return U_rho
 
 
 def interaction(psi,t,particle):
     return g3d*abs(psi)*2
 
-def non_linear_f_as(psi,t,particle):
-    a1 = 1.5e-9
-    a2 = -0.2e-9
-    
-    if t  < 2/omega_z:
-        g1 = 4*Ntot*np.pi*hbar**2*a1/ mass
-        V = g1*np.abs(psi)**2 
-    else:
-        g2 = 4*Ntot*np.pi*hbar**2*a2 / mass
-        V = g2*np.abs(psi)**2 
-    
-    return V
-
-
 def non_linear(psi,t,particle):
+    import cupy as cp
     V = 0
+    rho = np.sqrt(particle.x**2 + particle.y**2)
     if t < 0.07:
-        V = V0 * np.exp(-2*(particle.x/sigma)**2)
+        V = V0 * np.exp(-2*(rho/sigma)**2)
     else:
         V = 0
         
-    return V + g3d*abs(psi)**2
+    return cp.array(V) + g3d*abs(psi)**2
 
 
 H = Hamiltonian(particles=SingleParticle(m = mass),
                 potential=V,
-                spatial_ndim=1, N=Nx,extent=2*xmax)
+                spatial_ndim=2, N=Nx,extent=2*xmax)
 
 #=========================================================================================================#
 # Set and run the simulation
@@ -133,22 +132,26 @@ H = Hamiltonian(particles=SingleParticle(m = mass),
 #set the time dependent simulation
 ##sim = TimeSimulation(hamiltonian = H, method = "crank-nicolson")
 #sim = TimeSimulation(hamiltonian = H, method = "split-step")
-sim = TimeSimulation(hamiltonian = H, method = "nonlinear-split-step")
+sim = TimeSimulation(hamiltonian = H, method = "nonlinear-split-step-cupy")
 sim.method.split_step._hbar = hbar
-sim.method.split_step.set_nonlinear_term(non_linear_f_as)
+sim.method.split_step.set_nonlinear_term(non_linear)
 
-total_t = tmax
-dt_t = dt
-stored = 200
+total_t = 0.47
+dt_t = 1e-5
+stored = 400
+#stored = 1
 #dt_t = total_t
 
-sim.run(psi_0, total_time = total_t, dt = dt_t, store_steps = stored,non_linear_function=None,norm = False)
+sim.run(psi_0, total_time = total_t, dt = dt_t, store_steps = stored,non_linear_function=None,norm = False,absorb_coeff=20)
 
 #=========================================================================================================#
 # Finally, we visualize the time dependent simulation
 #=========================================================================================================#
 
 visualization = init_visualization(sim)
-visualization.plot1D(t = 0)
+visualization.plotSI(t = 0)
+
+for i in range(201):
+    visualization.plotSI(i * total_t/200)
 #5visualization.animate(save_animation=True)
-visualization.final_plot(L_norm = 1,Z_norm = 1,unit = 1,fixmaximum = 0.1)
+#visualization.final_plot(L_norm = 1,Z_norm = 1,unit = 1)

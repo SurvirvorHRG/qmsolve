@@ -1,3 +1,17 @@
+# Initially, a BEC is tighly confined along the radial direction within an harmonic trap 
+#and more elongated along the axial direction alowing a 1D-reduction of the GPE equation. 
+
+#At a given time, a repulsive interaction is turned on and the wave starts expanding. Then,
+# the sign of the nonlinear term is changed and the interaction becomes attractive.
+# This results in the formation of a bunch of solitons that escape from the trap.
+
+#References : 
+#Michinel, Humberto and Paredes, \'Angel and Valado, Mar\'{\i}a M. and Feijoo, 
+#David,Coherent emission of atomic soliton pairs by Feshbach-resonance tuning
+#PhysRevA.86.013620
+
+
+
 from tvtk.util import ctf
 import numpy as np
 from qmsolve import visualization
@@ -68,10 +82,10 @@ xmax = 20                   # x-window size
 ymax = xmax                    # y-window size
 images = 500                # number of .png images
 absorb_coeff = 0        # 0 = periodic boundary
-k = 0.5e-4
+k = 0.5
 
 U1 = k
-l=3
+l=1
 beta = 2*l
 muq = ((beta + 1)*g_s/2/beta)**(beta/(1+beta)) *U1**(1/(beta+1))
 
@@ -131,26 +145,16 @@ H = Hamiltonian(particles=SingleParticle(m = m_e),
 #=========================================================================================================#
 # Set and run the simulation
 #=========================================================================================================#
-#total_time = tmax
 #set the time dependent simulation
-##sim = TimeSimulation(hamiltonian = H, method = "crank-nicolson")
-#sim = TimeSimulation(hamiltonian = H, method = "split-step")
 sim = TimeSimulation(hamiltonian = H, method = "nonlinear-split-step")
-#sim.method.split_step.normalize_at_each_step(True)
 sim.method.split_step.set_nonlinear_term(non_linear_f)
 sim.run(psi_0, total_time =tmax, dt = dt, store_steps = images,non_linear_function=None,norm = False)
 
 #=========================================================================================================#
 # Finally, we visualize the time dependent simulation
 #=========================================================================================================#
-
 visualization = init_visualization(sim)
-#visualization.plot1D(t = 0)
-#5visualization.animate(save_animation=True)
 visualization.final_plot(L_norm = 1/L_z * 1e-6,Z_norm = 1/L_z * 1e-6,unit = omega_z * 1e-3,fixmaximum = 0.1)
-#visualization.save('k=1.txt')
-
-
 
 
 

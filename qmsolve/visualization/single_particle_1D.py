@@ -429,7 +429,7 @@ class TimeVisualizationSingleParticle1D(TimeVisualization):
         
         plt.contourf(xx/L_norm, tt/unit, toplot.T, 100, cmap=cm.jet, linewidth=0, antialiased=False)
         cbar=plt.colorbar()               # colorbar
-        plt.xlabel('$z\ (mm)$',fontsize=20)                 # axes labels, title, plot and axes range
+        plt.xlabel('$z\ (\mu m)$',fontsize=20)                 # axes labels, title, plot and axes range
         plt.ylabel('$t\ (ms)$',fontsize=20)
         cbar.set_label('$|\psi|^2$',fontsize=20)
         plt.show()      # Displays figure on screen

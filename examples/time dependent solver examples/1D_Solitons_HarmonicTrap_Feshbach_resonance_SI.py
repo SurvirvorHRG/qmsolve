@@ -1,3 +1,17 @@
+# Initially, a BEC is tighly confined along the radial direction within an harmonic trap 
+#and more elongated along the axial direction alowing a 1D-reduction of the GPE equation. 
+
+#At a given time, a repulsive interaction is turned on and the wave starts expanding. Then,
+# the sign of the nonlinear term is changed and the interaction becomes attractive.
+# This results in the formation of a bunch of solitons that escape from the trap.
+
+#References : 
+#Michinel, Humberto and Paredes, \'Angel and Valado, Mar\'{\i}a M. and Feijoo, 
+#David,Coherent emission of atomic soliton pairs by Feshbach-resonance tuning
+#PhysRevA.86.013620
+
+
+
 from tvtk.util import ctf
 import numpy as np
 from qmsolve import visualization
@@ -135,13 +149,9 @@ H = Hamiltonian(particles=SingleParticle(m = mass),
 #=========================================================================================================#
 # Set and run the simulation
 #=========================================================================================================#
-#total_time = tmax
 #set the time dependent simulation
-##sim = TimeSimulation(hamiltonian = H, method = "crank-nicolson")
-#sim = TimeSimulation(hamiltonian = H, method = "split-step")
 sim = TimeSimulation(hamiltonian = H, method = "nonlinear-split-step")
 sim.method.split_step._hbar = hbar
-#sim.method.split_step.normalize_at_each_step(True)
 sim.method.split_step.set_nonlinear_term(non_linear_f)
 sim.run(psi_0, total_time =tmax, dt = dt, store_steps = images,non_linear_function=None,norm = False)
 
@@ -150,8 +160,6 @@ sim.run(psi_0, total_time =tmax, dt = dt, store_steps = images,non_linear_functi
 #=========================================================================================================#
 
 visualization = init_visualization(sim)
-#visualization.plot1D(t = 0)
-#5visualization.animate(save_animation=True)
 visualization.plot1D(t = 0)
 visualization.final_plot(L_norm = 1e-6,Z_norm = 1e-6,unit = 1e-3,fixmaximum = 0.1)
 #visualization.save('k=1.txt')

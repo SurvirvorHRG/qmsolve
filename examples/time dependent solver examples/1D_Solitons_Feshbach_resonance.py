@@ -1,5 +1,14 @@
-import numpy as np
+# Initially, a Gaussian wave packet is confined within a shallow trap. At a given
+# time, a repulsive interaction is turned on and the wave starts expanding. Then,
+# the sign of the nonlinear term is changed and the interaction becomes attractive.
+# This results in the formation of a bunch of solitons that escape from the trap.
 
+#References : 
+#Michinel, Humberto and Paredes, \'Angel and Valado, Mar\'{\i}a M. and Feijoo, 
+#David,Coherent emission of atomic soliton pairs by Feshbach-resonance tuning
+#PhysRevA.86.013620
+
+import numpy as np
 from qmsolve import Hamiltonian, SingleParticle, TimeSimulation,NonlinearSplitStepMethod, init_visualization,meters, m_e
 
 # Define parameters

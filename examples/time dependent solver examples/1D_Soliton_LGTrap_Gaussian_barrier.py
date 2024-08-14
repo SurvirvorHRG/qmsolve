@@ -1,3 +1,19 @@
+# Initially, a BEC is tighly confined along the radial direction within an Laguerre-Gaussian trap 
+#and more elongated along the axial direction alowing a 1D-reduction of the GPE equation. 
+#separated by a Gaussian barrier in its center resulting in 2 BECs 
+
+
+#At a given time, a the Guassian barrier is removed. Then,
+# the two separated BECs collide.
+# This results in the formation of a bunch of par dark-solitons that interacts in the trap.
+
+#References : 
+#Jameel Hussain, Javed Akram, Farhan Saif , 
+#Gray/dark soliton behavior and population under a symmetric and asymmetric potential trap,
+#J. Low Temp. Phy. 195, 429 (2019)
+
+
+
 from tvtk.util import ctf
 import numpy as np
 from qmsolve import visualization
@@ -6,7 +22,8 @@ import math
 import scipy.special as sc
 import numpy as np
 
-#Dark-Soliton emissions with gaussian barier in 2D
+#Dark-Soliton emissions with gaussian barier in 1D
+
 
 # Define parameters
 
@@ -61,24 +78,25 @@ tmax = 20                # End of propagation
 dt = 0.0001                # Evolution step
 xmax = 10                    # x-window size
 ymax = xmax                    # y-window size
-images = 400                # number of .png images
-absorb_coeff = 0        # 0 = periodic boundary
-output_choice = 1      # If 1, it plots on the screen but does not save the images
-                            # If 2, it saves the images but does not plot on the screen
-                            # If 3, it saves the images and plots on the screen
-fixmaximum= 0            # Fixes a maximum scale of |psi|**2 for the plots. If 0, it does not fix it.
+images = 200                # number of .png images
 
-muq = 0.5 * (3/2)**(2/3) * g_s**(2/3)
+#dt = tmax
+#images = 1
+U1 = 1e-4
+l=3
+#muq = 0.5 * (3/2)**(2/3) * g_s**(2/3)
+beta = 2*l
+muq = ((beta + 1)*g_s/2/beta)**(beta/(1+beta)) *U1**(1/(beta+1))
 
 #muq = (9/8 * mass * omega_z**2 * Ntot**2 *g_s**2)**(1/3)
 def potential(x,y):
-    V_h = 0.5 * m *  x**2 + 
-    V_b = V0*np.exp(-(x/sigma)**2 -(y/sigma)**2)
+    V_h = U1 * x**(beta)
+    V_b = V0*np.exp(-(x/sigma)**2)
     V = V_h + V_b
     return V
     
     
-def psi_0(particle):
+def psi_0(particle,params):
     V = potential(particle.x,0)
     psi = np.zeros_like(particle.x)
     for i in range(len(particle.x)):
@@ -89,47 +107,18 @@ def psi_0(particle):
             
     return psi
 
-def V(particle):        
-    # The linear part of the potential is a shallow trap modeled by an inverted Gaussian
-    # The nonlinear part is a cubic term whose sign and strength change abruptly in time.
-    V_h = 0.5 * particle.x**2
-    V_b = V0*np.exp(-(particle.x/sigma)**2)
+def V(particle,params):        
+    # The linear part of the potential is a gaussian barrier with a LG trap
+    V_h = U1 * particle.x**(beta)
+    #V_b = V0*np.exp(-(particle.x/sigma)**2)
     
     V = V_h
     
     return V
 
+
 def non_linear_f(psi,t,particle):
-    # The linear part of the potential is a shallow trap modeled by an inverted Gaussian
-    # The nonlinear part is a cubic term whose sign and strength change abruptly in time.
-    #print(t)
-    V_h = particle.x**2/2
-    V_b = V0*np.exp(-(particle.x/sigma)**2)
-    
-    if t  < 3:
-        V = V_b + g_s*abs(psi)**2 
-    else:
-        V = g_s*abs(psi)**2 
-    
-    return V;
-
-def non_linear_cupy(psi,t,particle):
-    import cupy as cp
-    # The linear part of the potential is a shallow trap modeled by an inverted Gaussian
-    # The nonlinear part is a cubic term whose sign and strength change abruptly in time.
-    V_h = particle.x**2/2
-    V_b = cp.array(V0*np.exp(-(particle.x/sigma)**2))
-    
-    if t  < 3:
-        V = V_b + g_s*cp.abs(psi)**2 
-    else:
-        V = g_s*cp.abs(psi)**2 
-    
-    return V;
-
-def non_linear_f2(psi,t,particle):
-    # The linear part of the potential is a shallow trap modeled by an inverted Gaussian
-    # The nonlinear part is a cubic term whose sign and strength change abruptly in time.
+    # The linear part of the potential is a gaussian barrier
     V_b = V0*np.exp(-(particle.x/sigma)**2)
     
     if t  < 3:
@@ -141,7 +130,7 @@ def non_linear_f2(psi,t,particle):
 
 H = Hamiltonian(particles=SingleParticle(m = m_e),
                 potential=V,
-                spatial_ndim=2, N=Nx,extent=xmax * 2)
+                spatial_ndim=1, N=Nx,extent=xmax * 2)
 
 #=========================================================================================================#
 # Set and run the simulation
@@ -151,7 +140,7 @@ H = Hamiltonian(particles=SingleParticle(m = m_e),
 ##sim = TimeSimulation(hamiltonian = H, method = "crank-nicolson")
 #sim = TimeSimulation(hamiltonian = H, method = "split-step")
 sim = TimeSimulation(hamiltonian = H, method = "nonlinear-split-step")
-sim.method.split_step.set_nonlinear_term(non_linear_f2)
+sim.method.split_step.set_nonlinear_term(non_linear_f)
 sim.run(psi_0, total_time =tmax, dt = dt, store_steps = images,non_linear_function=None,norm = False)
 
 #=========================================================================================================#

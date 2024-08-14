@@ -1,7 +1,7 @@
 import numpy as np
 from .method import Method
 import time
-from ..util.constants import hbar, Å, femtoseconds
+from ..util.constants import hbar, Å, femtoseconds, seconds
 from ..particle_system import SingleParticle, TwoParticles
 import progressbar
 
@@ -126,6 +126,7 @@ class SplitStepCupy(Method):
         t_count = 0
         t = 0
         for i in bar(range(store_steps)):
+            #print(t/seconds)
             self.H.particle_system.z += 0.5*g*t**2
             tmp = cp.copy(Ψ[i])
             g_exp = cp.exp(1.j*m*g*t/hbar * (cp.array(self.H.particle_system.z) + g*t**2/6))

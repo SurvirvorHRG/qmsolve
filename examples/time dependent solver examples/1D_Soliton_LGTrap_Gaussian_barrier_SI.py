@@ -1,3 +1,20 @@
+# Initially, a BEC is tighly confined along the radial direction within an Laguerre-Gaussian trap 
+#and more elongated along the axial direction alowing a 1D-reduction of the GPE equation. 
+#separated by a Gaussian barrier in its center resulting in 2 BECs 
+
+
+#At a given time, a the Guassian barrier is removed. Then,
+# the two separated BECs collide.
+# This results in the formation of a bunch of par dark-solitons that interacts in the trap.
+
+#References : 
+#Jameel Hussain, Javed Akram, Farhan Saif , 
+#Gray/dark soliton behavior and population under a symmetric and asymmetric potential trap,
+#J. Low Temp. Phy. 195, 429 (2019)
+
+
+
+
 from tvtk.util import ctf
 import numpy as np
 from qmsolve import visualization
@@ -109,8 +126,7 @@ def psi_0(particle,params):
 
 
 def non_linear_f2(psi,t,particle):
-    # The linear part of the potential is a shallow trap modeled by an inverted Gaussian
-    # The nonlinear part is a cubic term whose sign and strength change abruptly in time.
+    # The linear part of the potential is a gaussian barrier with a LG trap
     #V_h = k * mass * omega_z**2 * particle.x**2
     V_b = V0*np.exp(-2*(particle.x/sigma)**2)
     
@@ -128,10 +144,7 @@ H = Hamiltonian(particles=SingleParticle(m = mass),
 #=========================================================================================================#
 # Set and run the simulation
 #=========================================================================================================#
-#total_time = tmax
 #set the time dependent simulation
-##sim = TimeSimulation(hamiltonian = H, method = "crank-nicolson")
-#sim = TimeSimulation(hamiltonian = H, method = "split-step")
 sim = TimeSimulation(hamiltonian = H, method = "nonlinear-split-step")
 sim.method.split_step._hbar = hbar
 sim.method.split_step.set_nonlinear_term(non_linear_f2)
@@ -146,93 +159,4 @@ visualization = init_visualization(sim)
 visualization.plot1D(t = 0)
 #5visualization.animate(save_animation=True)
 visualization.final_plot(L_norm =1e-3,Z_norm =   1e-3,unit = 1e-3)
-visualization.save('l=1_bb.txt')
-
-"""
-###################################################################################
-#Subplots
-
-import matplotlib.pyplot as plt
-import numpy as np
-plt.style.use("default")
-font = 44
-
-# Create subplots
-fig, axs = plt.subplots(1, 4, figsize=(50, 15))
-# Plot on each subplot using the modified final_plot function
-visualization.final_plot2(axs[0],L_norm = 1e-3,Z_norm =  1e-3,unit = 1e-3)
-axs[0].set_title('$(a)\ K = 0.25$',fontsize = font)
-
-
-# K = 0.5
-H = Hamiltonian(particles=SingleParticle(m = mass),
-                potential=potential_p,
-                spatial_ndim=1, N=Nx,extent=xmax * 2,params = [0.5])
-
-#=========================================================================================================#
-# Set and run the simulation
-#=========================================================================================================#
-
-sim = TimeSimulation(hamiltonian = H, method = "nonlinear-split-step")
-sim.method.split_step._hbar = hbar
-sim.method.split_step.set_nonlinear_term(non_linear_f2)
-sim.run(psi_0, total_time =tmax, dt = dt, store_steps = images,non_linear_function=None,norm = False)
-
-
-visualization = init_visualization(sim)
-visualization.final_plot2(axs[1],L_norm =  1e-3,Z_norm =  1e-3,unit = 1e-3)
-axs[1].set_title('$(b)\ K = 0.5$',fontsize = font)
-
-# K = 0.75
-k = 0.75
-    
-    
-H = Hamiltonian(particles=SingleParticle(m = mass),
-                potential=potential_p,
-                spatial_ndim=1, N=Nx,extent=xmax * 2,params = [0.75])
-
-#=========================================================================================================#
-# Set and run the simulation
-#=========================================================================================================#
-
-sim = TimeSimulation(hamiltonian = H, method = "nonlinear-split-step")
-sim.method.split_step._hbar = hbar
-sim.method.split_step.set_nonlinear_term(non_linear_f2)
-sim.run(psi_0, total_time =tmax, dt = dt, store_steps = images,non_linear_function=None,norm = False)
-
-
-visualization = init_visualization(sim)
-visualization.final_plot2(axs[2],L_norm =  1e-3,Z_norm =  1e-3,unit = 1e-3)
-axs[2].set_title('$(c)\ K = 0.75$',fontsize = font)
-
-# K = 1
-k = 1
-H = Hamiltonian(particles=SingleParticle(m = mass),
-                potential=potential_p,
-                spatial_ndim=1, N=Nx,extent=xmax * 2,params = [1])
-
-#=========================================================================================================#
-# Set and run the simulation
-#=========================================================================================================#
-
-sim = TimeSimulation(hamiltonian = H, method = "nonlinear-split-step")
-sim.method.split_step._hbar = hbar
-sim.method.split_step.set_nonlinear_term(non_linear_f2)
-sim.run(psi_0, total_time =tmax, dt = dt, store_steps = images,non_linear_function=None,norm = False)
-
-
-visualization = init_visualization(sim)
-cont = visualization.final_plot2(axs[3],L_norm =  1e-3,Z_norm =  1e-3,unit = 1e-3)
-axs[3].set_title('$(d)\ K = 1$',fontsize = font)
-
-# Adjust layout
-plt.tight_layout()
-
-cbar = fig.colorbar(cont, ax=axs, orientation='vertical', fraction=0.02, pad=0.01)
-cbar.set_label('$|\psi|^2$', fontsize=44)
-cbar.ax.tick_params(labelsize=40)  # Increase colorbar tick label size
-
-
-# Display the plot
-plt.show()
-"""
+#visualization.save('l=1_bb.txt')

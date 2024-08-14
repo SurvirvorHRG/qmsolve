@@ -1,3 +1,19 @@
+# Initially, a BEC is tighly confined along the axial direction within an Laguerre-Gaussian trap 
+#and more elongated along the radial direction alowing a 2D-reduction of the GPE equation. 
+#separated by a Gaussian barrier in its center resulting in 2 BECs 
+
+
+#At a given time, a the Guassian barrier is removed. Then,
+# the two separated BECs collide.
+# This results in the formation of a bunch of par dark-solitons that interacts in the trap.
+
+#References : 
+#Jameel Hussain, Javed Akram, Farhan Saif , 
+#Gray/dark soliton behavior and population under a symmetric and asymmetric potential trap,
+#J. Low Temp. Phy. 195, 429 (2019)
+
+
+
 from tvtk.util import ctf
 import numpy as np
 from qmsolve import visualization
@@ -36,7 +52,7 @@ print('omega_z =', omega_z)
 a_p = np.sqrt(hbar/mass/omega_rho)
 a_z = np.sqrt(hbar/mass/omega_z)
 a_s = 94.7*a_0
-g3d = 4*Ntot*np.pi*hbar**2*a_s / mass
+g3d = 4*Ntot*np.pi*hbar**2*a_s / mass/4
 #g3d = 500 * hbar * omega_rho * a_p * 2*np.pi*(a_z**2)
 
 
@@ -47,27 +63,27 @@ dt = 0.0001                # Evolution step
 xmax = 20 * a_p                  # x-window size
 #xmax = 2* 1e3 * a_p
 
-l = 6
+l = 1
 alpha = 2*l
 beta = 2*l
-k = 0.5e44
+#k = 0.5e46
 # l = 3 : k = 0.5e18
 
-#k=0.5e17
-#♠k=0.5
+#k=0.5e18
+k=0.5
 U0 = k * mass * omega_rho**2
 U1 = k * mass * omega_z**2
 print('U0 =', U0)
 print('U1 =', U1)
 
 
-eta = 1/2 + 1/beta + 2/alpha
-muq = gamma(eta + 3/2)/gamma(1  + 2/alpha)/gamma(1 + 1/beta)*(g3d * U0**(2/alpha) * U1**(1/beta) / 2*np.pi )
-muq = muq**(2/(2*eta + 1))
+#eta = 1/2 + 1/beta + 2/alpha
+#muq = gamma(eta + 3/2)/gamma(1  + 2/alpha)/gamma(1 + 1/beta)*(g3d * U0**(2/alpha) * U1**(1/beta) / 2*np.pi )
+#muq = muq**(2/(2*eta + 1))
 
 
 
-#muq = (g3d * U0**(3/alpha) * (l+1)*(alpha+2) / 2 / np.pi / l)**(alpha/(alpha + 3))
+muq = (g3d * U0**(3/alpha) * (l+1)*(alpha+2) / 2 / np.pi / l)**(alpha/(alpha + 3))
 
 
 V0 = 1000 * hbar * omega_rho
@@ -77,9 +93,9 @@ sigma = 0.632 * np.sqrt(2) * a_p
 def potential(x,y,z):
     rho = np.sqrt(x**2 + y**2)
     U_rho = U0 *rho**(alpha)
-    V_rho = V0 * np.exp(-2*(rho/sigma)**2) 
+    #V_rho = V0 * np.exp(-2*(rho/sigma)**2) 
     #V_rho = V0 * np.exp(-2*(x/sigma)**2) + V0 * np.exp(-2*(y/sigma)**2) 
-    #V_rho = V0 * np.exp(-2*(x/sigma)**2) 
+    V_rho = V0 * np.exp(-2*(x/sigma)**2) 
     return U_rho + V_rho
     
 
@@ -108,10 +124,10 @@ def non_linear(psi,t,particle):
     V = 0
     rho = np.sqrt(particle.x**2 + particle.y**2)
     if t < 0.02:
-        V = V0 * np.exp(-2*(rho/sigma)**2)
+        #V = V0 * np.exp(-2*(rho/sigma)**2)
         #V = V0 * np.exp(-2*(particle.x/sigma)**2) + V0 * np.exp(-2*(particle.y/sigma)**2) 
         #V = V0 * np.exp(-2*(particle.x/sigma)**2
-        #V = V0 * np.exp(-2*(particle.x/sigma)**2)
+        V = V0 * np.exp(-2*(particle.x/sigma)**2)
     else:
         V = 0
         
@@ -134,7 +150,7 @@ sim.method.split_step._hbar = hbar
 sim.method.split_step.set_nonlinear_term(non_linear)
 
 total_t = 0.20
-dt_t = 1e-5 
+dt_t = 1e-5
 stored = 200
 #stored = 1
 #dt_t = total_t
