@@ -82,10 +82,10 @@ xmax = 20                   # x-window size
 ymax = xmax                    # y-window size
 images = 500                # number of .png images
 absorb_coeff = 0        # 0 = periodic boundary
-k = 0.5
+k = 0.5e20
 
 U1 = k
-l=1
+l=3
 beta = 2*l
 muq = ((beta + 1)*g_s/2/beta)**(beta/(1+beta)) *U1**(1/(beta+1))
 

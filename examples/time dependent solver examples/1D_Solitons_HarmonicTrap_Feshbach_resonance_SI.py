@@ -80,11 +80,14 @@ xmax = 20   * L_z                # x-window size
 ymax = xmax                    # y-window size
 images = 1024                # number of .png images
 absorb_coeff = 0        # 0 = periodic boundary
-k = 0.5e35
+# l = 3 , k = 0.5e13
+
+#l = 3 k = 0.75e13
 #dt = tmax
 #images = 1
 
-
+#k = 0.5e33
+k = 0.5e33
 U1 = k * mass * omega_z**2
 l=6
 beta = 2*l
@@ -162,7 +165,7 @@ sim.run(psi_0, total_time =tmax, dt = dt, store_steps = images,non_linear_functi
 visualization = init_visualization(sim)
 visualization.plot1D(t = 0)
 visualization.final_plot(L_norm = 1e-6,Z_norm = 1e-6,unit = 1e-3,fixmaximum = 0.1)
-#visualization.save('k=1.txt')
+visualization.save('333.txt')
 
 
 
