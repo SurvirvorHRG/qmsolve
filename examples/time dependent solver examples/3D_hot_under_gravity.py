@@ -57,7 +57,8 @@ def radians_to_degrees(radians):
 #g = 9.8065 *   # Example value for gravity
 #g = 1
 g = (9.8065*meters)/(s*s)  # Example value for gravity
-
+g1 = g
+g=0
 
 def w(z):
     return w_o * np.sqrt(1 + (z/z_R)**2)
@@ -100,15 +101,15 @@ def pot(particle,params):
     return V
 
 def gravity_potential(particle,params):
-    V = g*mass*particle.z
+    V = g1*mass*particle.z
     return V
 
 
 
 #build the Hamiltonian of the system
 H = Hamiltonian(particles=SingleParticle(m = mass),
-                potential=pot,
-                spatial_ndim=3, N=64,Nz = 512,extent=10*w_o,z_extent = 50*lambda_)
+                potential=gravity_potential,
+                spatial_ndim=3, N=128,Nz = 256,extent=10*w_o,z_extent = 40*lambda_)
 
 
 def initial_wavefunction(particle):
@@ -120,7 +121,7 @@ def initial_wavefunction(particle):
 #=========================================================================================================#
 
 
-total_time = 0.002 * seconds
+total_time = 2e-3 * seconds
 sim = TimeSimulation(hamiltonian = H, method = "split-step-cupy")
 #sim = TimeSimulation(hamiltonian = H, method = "nonlinear-split-step-cupy")
 dt = total_time / 100000.
@@ -138,7 +139,9 @@ dis = 5.2
 visualization = init_visualization(sim)
 visualization.plot_hot(t=0,L_norm = w_o,Z_norm = lambda_,unit=seconds * 1e-3,dis= dis)
 visualization.plot_hot(t=total_time,L_norm = w_o,Z_norm = lambda_,unit=seconds * 1e-3,dis= dis)
-visualization.final_plot3D_hot(L_norm = w_o,Z_norm = lambda_,unit=seconds * 1e-3,g=g,tmax=total_time)
+visualization.final_plot3D_hot_x(L_norm = w_o,Z_norm = lambda_,unit=seconds * 1e-3,g=g,tmax=total_time)
+visualization.final_plot3D_hot_y(L_norm = w_o,Z_norm = lambda_,unit=seconds * 1e-3,g=g,tmax=total_time)
+visualization.final_plot3D_hot_z(L_norm = w_o,Z_norm = lambda_,unit=seconds * 1e-3,g=g,tmax=total_time)
 #for i in range(129):
     #visualization.plot2D_hot_xz(t=i * total_time/128,L_norm = w_o,Z_norm = lambda_,unit=seconds * 1e-3)
 

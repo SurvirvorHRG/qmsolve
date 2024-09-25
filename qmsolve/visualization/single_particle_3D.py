@@ -555,9 +555,161 @@ class TimeVisualizationSingleParticle3D(TimeVisualization):
         """
         plt.show()
         
-    
         
-    def final_plot3D_hot(self,L_norm = 1, Z_norm = 1,unit = 1, figsize=(15, 15),time="ms",g=0,tmax = 0):
+        
+    def final_plot3D_hot_y(self,L_norm = 1, Z_norm = 1,unit = 1, figsize=(15, 15),time="ms",g=0,tmax = 0):
+        
+        from mpl_toolkits.mplot3d import Axes3D
+        from matplotlib import cm
+        
+        y = self.simulation.H.particle_system.y[0,:,0]
+        total_time = self.simulation.Nt_per_store_step*self.simulation.store_steps*self.simulation.dt
+        tvec=np.linspace(0,self.simulation.Nt_per_store_step*self.simulation.store_steps*self.simulation.dt,self.simulation.store_steps+1)
+        tt,yy=np.meshgrid(tvec,y)
+        
+        # Generate the 3D plot
+        fig = plt.figure("Evolution of 1D cut at y=0")
+        ax = fig.add_subplot(111, projection='3d')
+        self.simulation.Ψ_plot = self.simulation.Ψ/self.simulation.Ψmax
+        #toplot= np.abs(self.simulation.Ψ_plot[:,49,49,:])**2
+        mid = int(self.simulation.H.N / 2) - 1
+        toplot= np.abs(self.simulation.Ψ_plot[:,mid,:,mid])
+        toplot = toplot.T
+
+        # Generates the plot
+        # Plot the surface
+        surf = ax.plot_surface(yy/L_norm,tt/unit,toplot, cmap=cm.jet, linewidth=0, antialiased=False)
+        
+        # Add colorbar and labels
+        cbar = fig.colorbar(surf, shrink=0.5, aspect=5)
+        cbar.set_label('$|\psi|$', fontsize=14)
+        ax.set_xlabel('$y/w_o$')
+        ax.set_ylabel('$t\ (ms)$')
+        ax.set_zlabel('$|Ψ|^2$')
+
+
+        
+        L = self.simulation.H.extent/2/L_norm
+        Z = self.simulation.H.z_extent/2/Z_norm
+       
+        plt.show()      # Displays figure on screen
+        
+        mlab.figure(fgcolor=(0,0,0),bgcolor=(0.9,0.9,0.9),size=(700, 700))
+        L = self.simulation.H.extent/2/L_norm
+        Z = self.simulation.H.z_extent + 0.5*g*tmax**2
+        Z = Z/2/Z_norm
+        N = self.simulation.H.N
+        
+        surf = mlab.surf(yy/L_norm,tt/unit,toplot,warp_scale="auto",colormap='jet')
+        mlab.colorbar(surf,orientation='vertical')  
+              
+       #♠ mlab.outline()
+        
+         
+        x_latex = '$y/w_o$'
+        y_latex = '$T\ (ms)$'
+        z_latex = ''
+         
+        ax = mlab.axes(xlabel=x_latex, ylabel=y_latex,zlabel = z_latex,nb_labels=6 , ranges = (-L,L,0,total_time/unit,0,1))
+        #ax.label_text_property.font_size = 50
+        #ax.label_text_property.font_size = 20
+        #ax.title_text_property.font_size = 20
+        ax.axes.font_factor = 1.9
+        ax.label_text_property.font_family = 'times'
+        ax.title_text_property.font_family = 'times'
+        ax.axes.y_axis_visibility = False
+        ax.axes.label_format = '%-#6.2g'
+        
+        
+
+        
+        colorbar = mlab.colorbar(nb_labels=6,orientation = 'vertical')
+        colorbar.scalar_bar_representation.position = [0.85, 0.1]
+        colorbar_label = colorbar.scalar_bar.label_text_property
+        colorbar_label.font_family = 'times'
+        colorbar.scalar_bar.unconstrained_font_size = True
+        colorbar.scalar_bar.label_format = '%.2f'
+        colorbar_label.font_size = 22
+        mlab.show()        
+        
+        
+
+    def final_plot3D_hot_x(self,L_norm = 1, Z_norm = 1,unit = 1, figsize=(15, 15),time="ms",g=0,tmax = 0):
+        
+        from mpl_toolkits.mplot3d import Axes3D
+        from matplotlib import cm
+        
+        x = self.simulation.H.particle_system.x[:,0,0]
+        total_time = self.simulation.Nt_per_store_step*self.simulation.store_steps*self.simulation.dt
+        tvec=np.linspace(0,self.simulation.Nt_per_store_step*self.simulation.store_steps*self.simulation.dt,self.simulation.store_steps+1)
+        tt,xx=np.meshgrid(tvec,x)
+        
+        # Generate the 3D plot
+        fig = plt.figure("Evolution of 1D cut at y=0")
+        ax = fig.add_subplot(111, projection='3d')
+        self.simulation.Ψ_plot = self.simulation.Ψ/self.simulation.Ψmax
+        #toplot= np.abs(self.simulation.Ψ_plot[:,49,49,:])**2
+        mid = int(self.simulation.H.N / 2) - 1
+        toplot= np.abs(self.simulation.Ψ_plot[:,:,mid,mid])
+        toplot = toplot.T
+
+        # Generates the plot
+        # Plot the surface
+        surf = ax.plot_surface(xx/L_norm,tt/unit,toplot, cmap=cm.jet, linewidth=0, antialiased=False)
+        
+        # Add colorbar and labels
+        cbar = fig.colorbar(surf, shrink=0.5, aspect=5)
+        cbar.set_label('$|\psi|$', fontsize=14)
+        ax.set_xlabel('$x/w_o$')
+        ax.set_ylabel('$t\ (ms)$')
+        ax.set_zlabel('$|Ψ|^2$')
+
+
+        
+        L = self.simulation.H.extent/2/L_norm
+        Z = self.simulation.H.z_extent/2/Z_norm
+       
+        plt.show()      # Displays figure on screen
+        
+        mlab.figure(fgcolor=(0,0,0),bgcolor=(0.9,0.9,0.9),size=(700, 700))
+        L = self.simulation.H.extent/2/L_norm
+        Z = self.simulation.H.z_extent + 0.5*g*tmax**2
+        Z = Z/2/Z_norm
+        N = self.simulation.H.N
+        
+        surf = mlab.surf(xx/L_norm,tt/unit,toplot,warp_scale="auto",colormap='jet')
+        mlab.colorbar(surf,orientation='vertical')  
+              
+       #♠ mlab.outline()
+        
+         
+        x_latex = '$x/w_o$'
+        y_latex = '$T\ (ms)$'
+        z_latex = ''
+         
+        ax = mlab.axes(xlabel=x_latex, ylabel=y_latex,zlabel = z_latex,nb_labels=6 , ranges = (-L,L,0,total_time/unit,0,1))
+        #ax.label_text_property.font_size = 50
+        #ax.label_text_property.font_size = 20
+        #ax.title_text_property.font_size = 20
+        ax.axes.font_factor = 1.9
+        ax.label_text_property.font_family = 'times'
+        ax.title_text_property.font_family = 'times'
+        ax.axes.y_axis_visibility = False
+        ax.axes.label_format = '%-#6.2g'
+        
+        
+
+        
+        colorbar = mlab.colorbar(nb_labels=6,orientation = 'vertical')
+        colorbar.scalar_bar_representation.position = [0.85, 0.1]
+        colorbar_label = colorbar.scalar_bar.label_text_property
+        colorbar_label.font_family = 'times'
+        colorbar.scalar_bar.unconstrained_font_size = True
+        colorbar.scalar_bar.label_format = '%.2f'
+        colorbar_label.font_size = 22
+        mlab.show()
+        
+    def final_plot3D_hot_z(self,L_norm = 1, Z_norm = 1,unit = 1, figsize=(15, 15),time="ms",g=0,tmax = 0):
         
         from mpl_toolkits.mplot3d import Axes3D
         from matplotlib import cm
