@@ -54,55 +54,46 @@ print('q =', q)
 rabi = (2*np.pi)*10 * 1e6
 rabi = rabi * Hz
 
-def radians_to_degrees(radians):
-    return radians * (180.0 / math.pi)
-
 #g = 9.8065 *   # Example value for gravity
 #g = 1
 g = (9.8065*meters)/(s*s)  # Example value for gravity
 g1 = g
+#g= 0
+p = 0
 
+U0 = 0.5 * mass * omega_rho**2
+U1 = 0.5 * mass * omega_nu**2
+C_p_l = np.sqrt(math.factorial(p) / (np.abs(l) + p))
+a_s = 5.2383 * nm
+g3d = 4*N*np.pi*hbar**2*a_s / mass 
+alpha_ = 2*l
+beta = 2*l
+eta = 1/2 + 1/beta + 2/alpha_
+muq = gamma(eta + 3/2)/gamma(1  + 2/alpha)/gamma(1 + 1/beta)*(g3d * U0**(2/alpha_) * U1**(1/beta) / 4*np.pi )
+muq = muq**(2/(2*eta + 1))
+
+def w_xi(xi):
+    return w_o * np.sqrt(alpha * xi**2 + 1)
+
+def get_U(rho,xi):
+    return C_p_l**2 * w_o**2 / (w_xi(xi)**2) * (np.sqrt(2) / w_xi(xi) * ( np.sqrt(np.abs(l)/2) *w_xi(xi) + rho))**(2*l)* np.exp(-2* ( np.sqrt(np.abs(l)/2) *w_xi(xi) + rho)**2 / (w_xi(xi)**2))
     
 
 def w(z):
     return w_o * np.sqrt(1 + (z/z_R)**2)
 
-
-def radial_part(x, y, z):
-    rho = np.sqrt(x**2 + y**2) - np.sqrt(np.abs(l) / 2) * w(z)
-    return (((mass * omega_rho) / (np.pi * hbar))**(1/4)) * np.exp(((-mass * omega_rho) / (2 * hbar)) * rho**2)
-
-
-def angular_part(phi, z):
+def potential(particle):
+    phi = np.arctan2(particle.y, particle.x)
+    z = particle.z
     nu = (l*phi)/k + z
-    return ((mass * omega_nu) / (np.pi * hbar))**(1/4) * np.exp(((-mass * omega_nu) / (2 * hbar)) * nu**2)
-
-
-def axial_part(z):
+    rho = np.sqrt(particle.x**2 + particle.y**2) - np.sqrt(np.abs(l) / 2) * w(particle.z)
     xi = z / (np.abs(l)/k)
-    sin_arg = np.arcsin(z / z_R) + np.pi / 2
-    ce_val = mathieu_cem(0,sin_arg, q)[0]
-    sqrt_term = 1 - alpha * xi**2
-    sqrt_term = np.maximum(sqrt_term, 0)
-    #if sqrt_term == 0:
-    #    return np.zeros_like(ce_val)
-    #else:
-    #    return np.sqrt(2 / np.pi) * (1 / np.sqrt(sqrt_term))**(1/4) * ce_val
-    return np.sqrt(2 / np.pi) * (1 / np.sqrt(sqrt_term))**(1/4) * ce_val
-
-
-def psi_function(x, y, z):
-    return radial_part(x, y, z) * angular_part(np.arctan2(y, x), z) * axial_part(z)
-
-#interaction potential
-def pot(particle,params):
-    #print(particle.z.shape)
-    #particle.z = -1/2*g*t**2
-
-    #V = -g*mass*particle.z
-    #V = -10*particle.z
-    V = np.zeros_like(particle.x)
+    U_2_l = get_U(rho,xi)
+    V = hbar * rabi**2 / Delta * U_2_l**2 * np.cos(k*nu)**2
     return V
+    
+
+
 
 def gravity_potential(particle,params):
     V = g1*mass*particle.z
@@ -117,10 +108,23 @@ H = Hamiltonian(particles=SingleParticle(m = mass),
                 potential=gravity_potential,
                 spatial_ndim=3, N=Nx,Nz = Nz,extent=4*w_o,z_extent = 4*lambda_)
 
-space = 3.0
-def initial_wavefunction(particle):
-    return psi_function(particle.x +space *w_o, particle.y+space*w_o, particle.z) + psi_function(particle.x - space *w_o, particle.y -space * w_o, particle.z)
 
+muq = 0
+def psi_0(particle):
+    V = potential(particle)
+    psi = np.zeros_like(particle.x)
+    
+    indices = muq > V
+    
+    psi[indices] = np.sqrt((muq - V[indices])/g3d)
+    """
+    for i in range(Nx):
+        for j in range(Ny):
+            for k in range(Nz):
+                if muq > V[i,j,k]:
+                    psi[i,j,k] = np.sqrt((muq - V[i,j,k])/g3d)
+    """    
+    return psi
 
 #=========================================================================================================#
 # Set and run the simulation
@@ -134,7 +138,7 @@ dt = total_time / 100000.
 store_steps = 128
 dt =  total_time
 store_steps = 1
-sim.run(initial_wavefunction, total_time = total_time,dt = dt, store_steps = store_steps,g=g)
+sim.run(psi_0, total_time = total_time,dt = dt, store_steps = store_steps,g=0)
 
 
     

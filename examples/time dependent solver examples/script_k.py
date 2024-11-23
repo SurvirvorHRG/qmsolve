@@ -90,6 +90,6 @@ plt.tight_layout()
 cbar = fig.colorbar(cont_rubidium, ax=axs, orientation='vertical', fraction=0.04, pad=0.01)
 cbar.set_label('$|\psi|^2$', fontsize=font)
 cbar.ax.tick_params(labelsize=subfont)  # Increase colorbar tick label size
-
+plt.savefig("myImagePDF.pdf", format="pdf")
 # Display the plot
 plt.show()
